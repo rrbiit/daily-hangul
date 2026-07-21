@@ -4071,7 +4071,7 @@
       let total = 0, mCount = 0
       LESSONS.forEach(l => {
         const ws = VOCAB[l.num] || []
-        ws.forEach(w => { total++; var d = srs[wk(w, l.num)]; if (d && d.lv >= 5) mCount++ })
+        ws.forEach(w => { total++; var d = srs[wk(w, l.num)]; if (d && d.lv >= 4) mCount++ })
       })
       document.getElementById('settings-word-count').textContent = total + ' 词'
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
