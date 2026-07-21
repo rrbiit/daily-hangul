@@ -2772,7 +2772,7 @@
       if (!btn || !w) return
       var key = wk(w, w.lessonNum)
       var st = srsStatus(key)
-      var label = btn.querySelector('.ctrl-label')
+      var label = btn.parentNode ? btn.parentNode.querySelector('.ctrl-label') : null
       if (label) label.textContent = st.text
       if (st.lv >= 4) btn.classList.add('active')
       else btn.classList.remove('active')
@@ -3276,9 +3276,15 @@
     }
 
     function startStudy(lessonNum, startIndex) {
-      studyWords = (VOCAB[lessonNum] || []).map(function(w) {
-        return Object.assign({ lessonNum: lessonNum }, w)
-      })
+      var raw = VOCAB[lessonNum] || []
+      studyWords = []
+      for (var i = 0; i < raw.length; i++) {
+        var w = {}
+        var src = raw[i]
+        for (var k in src) { if (src.hasOwnProperty(k)) w[k] = src[k] }
+        w.lessonNum = lessonNum
+        studyWords.push(w)
+      }
       if (studyWords.length === 0) return
       studyIndex = (typeof startIndex === 'number' && startIndex >= 0 && startIndex < studyWords.length) ? startIndex : 0
       isFlipped = false
@@ -3765,7 +3771,9 @@
       lessonNums.forEach(num => {
         const words = VOCAB[num] || []
         words.forEach(w => {
-          const item = { ...w, lessonNum: num }
+          var item = {}
+          for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }
+          item.lessonNum = num
           if (type === 'all') pool.push(item)
           else if (type === 'due' && _isDue(w, num)) pool.push(item)
           else if (type === 'unmastered' && _isUnmastered(w, num)) pool.push(item)
@@ -3776,9 +3784,9 @@
     }
 
     function startStudyPool(pool, label) {
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pool[i], pool[j]] = [pool[j], pool[i]]
+      for (var i = pool.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp
       }
       studyWords = pool
       studyIndex = 0
