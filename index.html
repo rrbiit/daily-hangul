@@ -3459,10 +3459,24 @@
       else btn.classList.remove('active')
     }
 
-    // SRS 评分（旧 toggleMastered 已替换）
+    // 一键已掌握：直接升到 lv=4
     function toggleMastered() {
-      // 兼容旧调用：点击"已掌握"按钮 → 默认按"一般"评分
-      srsRate(2)
+      var w = studyWords[studyIndex]
+      if (!w) return
+      var key = wk(w, w.lessonNum)
+      var d = srs[key]
+      var now = Date.now()
+      if (d && d.lv >= 4) {
+        // 已经掌握了 → 取消掌握，重置为新词
+        delete srs[key]
+      } else {
+        // 标记已掌握
+        srs[key] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1) }
+      }
+      updateSrsStatus()
+      updateHomeStats()
+      renderLessons()
+      saveUserData()
     }
 
     // updateMasterBtn 已不再需要，由 updateSrsStatus 替代
