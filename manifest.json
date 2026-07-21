@@ -1,0 +1,16 @@
+{
+  "name": "每日韩语",
+  "short_name": "韩语",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#7eb8da",
+  "description": "延世韩国语1 · 每日学韩语",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><text x='60' y='60' text-anchor='middle' dominant-baseline='central' font-size='88'>🐶</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
