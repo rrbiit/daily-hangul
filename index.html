@@ -1,0 +1,4081 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="referrer" content="no-referrer" />
+  <title>每日韩语</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><text x='60' y='60' text-anchor='middle' dominant-baseline='central' font-size='88'>🐶</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><text x='60' y='60' text-anchor='middle' dominant-baseline='central' font-size='88'>🐶</text></svg>">
+  <meta name="theme-color" content="#7eb8da">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="每日韩语">
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --surface: rgba(255,255,255,0.94);
+      --primary: #7eb8da;
+      --primary-dim: #5fa3c7;
+      --primary-light: #dceef7;
+      --accent-green: #81c784;
+      --accent-green-light: #e8f5e9;
+      --accent-pink: #f48fb1;
+      --accent-pink-light: #fce4ec;
+      --accent-yellow: #ffcc80;
+      --accent-yellow-light: #fff8e1;
+      --accent-coral: #ffab91;
+      --accent-coral-light: #fbe9e7;
+      --accent-purple: #b39ddb;
+      --accent-purple-light: #ede7f6;
+      --text: #4a5568;
+      --text-dim: #8e9aaf;
+      --text-subtle: #b0b8c8;
+      --border: #edf0f5;
+      --star: #f6a973;
+      --shadow: 0 1px 3px rgba(0,0,0,0.05);
+      --font-display: 'Noto Sans KR', 'Noto Sans SC', sans-serif;
+      --font-body: 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a2e; --surface: rgba(30,30,50,0.92);
+        --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a;
+        --accent-green: #81c784; --accent-green-light: #1b2e1b;
+        --accent-pink: #f48fb1; --accent-pink-light: #2e1b24;
+        --accent-yellow: #ffcc80; --accent-yellow-light: #2e2418;
+        --accent-coral: #ffab91; --accent-coral-light: #2e1e18;
+        --accent-purple: #b39ddb; --accent-purple-light: #221b2e;
+        --text: #c9d1d9; --text-dim: #7a8a9a; --text-subtle: #5a6a7a;
+        --border: #2a2a45; --star: #f6a973;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; }
+    input, textarea { -webkit-user-select: auto; user-select: auto; }
+    body {
+      font-family: var(--font-body); background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 48px 24px 96px; }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 200ms ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── 首页 ─── */
+    .home-hero {
+      background: linear-gradient(160deg, #fef5f7 0%, #faf7f9 40%, #f8f4f2 100%);
+      border-radius: 20px; padding: 18px 20px; margin-bottom: 16px;
+      position: relative; overflow: hidden; border: 1px solid #f3e8ec;
+      box-shadow: 0 4px 20px rgba(180,160,170,0.1);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .home-hero-emoji { font-size: 30px; flex-shrink: 0; line-height: 1; }
+    .home-hero-text { flex: 1; }
+    .greeting { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.2; color: #4a3f50; }
+    .greeting-sub { color: #9a8ea4; font-size: 13px; margin-top: 2px; }
+    .greeting-date { font-size: 11px; color: #c4bcc8; margin-top: 2px; }
+
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--surface); border-radius: 16px; padding: 16px 10px; text-align: center;
+      border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.2s;
+    }
+    .stat-card .sc-icon { font-size: 20px; margin-bottom: 4px; }
+    .stat-card .sc-num { font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 1.2; }
+    .stat-card .sc-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .sc-mastered .sc-num { color: var(--accent-green); }
+    .sc-learning .sc-num { color: var(--accent-coral); }
+    .sc-starred .sc-num { color: var(--star); }
+
+    .home-progress-bar-wrap { background: var(--surface); border-radius: 16px; padding: 14px 18px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .home-progress-bar-wrap .hp-label { font-size: 13px; color: var(--text-dim); }
+    .home-progress-bar-wrap .hp-pct { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--primary); }
+    .home-progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .home-progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; background: linear-gradient(90deg, var(--accent-green), var(--primary), var(--accent-purple)); }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .quick-action {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px 14px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); text-decoration: none; color: var(--text);
+    }
+    .quick-action:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .quick-action .qa-icon {
+      width: 40px; height: 40px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .qa-review .qa-icon { background: var(--accent-coral-light); }
+    .qa-course .qa-icon { background: var(--accent-purple-light); }
+    .qa-search .qa-icon { background: var(--primary-light); }
+    .qa-starred .qa-icon { background: var(--accent-yellow-light); }
+    .quick-action .qa-title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+    .quick-action .qa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+    .course-section { margin-top: 0; }
+    .course-section h2 { font-size: 14px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; margin-bottom: 10px; }
+    .course-content, .course-list { display: flex; flex-direction: column; gap: 10px; }
+    /* ─── 底部导航 ─── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      border-top: 1px solid var(--border); display: flex; justify-content: center;
+      padding: 8px 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.85); box-shadow: 0 -1px 0 var(--border);
+    }
+    @media (prefers-color-scheme: dark) {
+      .bottom-nav { background: rgba(30,30,50,0.88); }
+      .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
+      .greeting { color: #d5cbd8; }
+      .greeting-sub { color: #8a7e8e; }
+      .greeting-date { color: #5a4e58; }
+      .card-front { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
+      .card-kr { color: #d5cbd8; }
+      .card-hint { color: #7a6e78; }
+      .card-stars .star-off { color: #4a3e48; }
+      .study-controls { background: rgba(26,26,46,0.88); }
+      .srs-rate-btn { background: #1e1e2e; color: #ccc; border-color: #3a3a5a; }
+      .srs-rate-btn.rate-again { border-color: #c62828; color: #ef9a9a; }
+      .srs-rate-btn.rate-again:hover { background: #2a1a1a; }
+      .srs-rate-btn.rate-hard { border-color: #e65100; color: #ffcc80; }
+      .srs-rate-btn.rate-hard:hover { background: #2a2018; }
+      .srs-rate-btn.rate-good { border-color: #2e7d32; color: #a5d6a7; }
+      .srs-rate-btn.rate-good:hover { background: #1a2a1a; }
+      .srs-rate-btn.rate-easy { border-color: #1565c0; color: #90caf9; }
+      .srs-rate-btn.rate-easy:hover { background: #1a2230; }
+    }
+    .nav-inner { max-width: 640px; width: 100%; display: flex; justify-content: space-around; padding: 0 16px; }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 4px 16px; cursor: pointer; border: none; background: none;
+      color: var(--text-subtle); font-size: 11px; font-family: var(--font-body); transition: color 0.2s;
+    }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-item.active { color: var(--primary); }
+
+    /* ─── 课程详情页 ─── */
+    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .back-btn {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
+      cursor: pointer; color: var(--text); transition: all 0.2s; flex-shrink: 0; box-shadow: var(--shadow);
+    }
+    .back-btn:hover { background: var(--primary-light); color: var(--primary); }
+    .back-btn svg { width: 20px; height: 20px; }
+    .page-header .title-area h1 { font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.3; }
+    .page-header .title-area p { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
+    .lesson-list { display: flex; flex-direction: column; gap: 10px; }
+    .lesson-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .lesson-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .lesson-item .num { width: 40px; font-family: var(--font-display); font-size: 14px; font-weight: 500; flex-shrink: 0; }
+    .lesson-item:nth-child(5n+1) .num { color: var(--accent-blue, #7eb8da); }
+    .lesson-item:nth-child(5n+2) .num { color: var(--accent-pink); }
+    .lesson-item:nth-child(5n+3) .num { color: var(--accent-green); }
+    .lesson-item:nth-child(5n+4) .num { color: var(--accent-purple); }
+    .lesson-item:nth-child(5n+5) .num { color: var(--accent-coral); }
+    .lesson-item .info { flex: 1; }
+    .lesson-item .info .title { font-family: var(--font-display); font-size: 15px; font-weight: 500; }
+    .lesson-item .info .meta { font-size: 13px; color: var(--text-dim); margin-top: 1px; }
+    .lesson-item .stats { display: flex; align-items: center; gap: 8px; }
+    .lesson-item .stats .bar-wrap { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .lesson-item .stats .bar-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
+    .lesson-item .stats .count { font-size: 12px; color: var(--text-dim); min-width: 32px; text-align: right; }
+
+    .course-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.2s; cursor: pointer; box-shadow: var(--shadow);
+    }
+    .course-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .course-item.locked { opacity: 0.4; pointer-events: none; }
+    .course-item .name { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+    .course-item .sub { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
+    .course-item .right { display: flex; align-items: center; gap: 12px; }
+    .course-item .right .bar-wrap { width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .course-item .right .bar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.5s; }
+    .course-item .right .pct { font-size: 12px; color: var(--text-dim); width: 24px; text-align: right; }
+    .course-item .right .arrow { color: var(--text-subtle); }
+    .course-item .right .arrow svg { width: 16px; height: 16px; }
+
+    /* ─── 单词列表页 ─── */
+    .word-count { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+    .word-list { margin-top: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .word-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; display: flex; flex-direction: column; align-items: stretch;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+      position: relative; min-height: 0;
+    }
+    .word-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .word-item .left-col { flex: 1; min-width: 0; }
+    .word-item .kr {
+      font-family: var(--font-display); font-size: 16px; font-weight: 500;
+      letter-spacing: 0.01em; line-height: 1.3; word-break: keep-all;
+    }
+    .word-item .pos {
+      font-size: 10px; color: var(--accent-pink); font-weight: 500;
+      background: var(--accent-pink-light); padding: 0px 6px; border-radius: 3px;
+      display: inline-block; margin-top: 4px;
+    }
+    .word-item .cn {
+      font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.3;
+    }
+    .word-item .right-col { position: absolute; top: 6px; right: 8px; }
+    .word-item.expanded { grid-column: 1 / -1; }
+    .stars {
+      color: var(--star); font-size: 12px; letter-spacing: 1px;
+    }
+
+    /* ─── 标签切换 ─── */
+    .tab-bar {
+      display: flex; gap: 4px; margin-bottom: 20px;
+      background: var(--border); border-radius: 12px; padding: 4px;
+    }
+    .tab-btn {
+      flex: 1; padding: 8px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text-dim);
+      font-family: var(--font-body); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--surface); color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    /* ─── 语法卡片 ─── */
+    .grammar-list { display: flex; flex-direction: column; gap: 12px; }
+    .grammar-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+      transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .grammar-card .pattern-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .grammar-card .grammar-star {
+      font-size: 20px; color: var(--star); cursor: pointer;
+      padding: 4px; transition: transform 0.2s;
+    }
+    .grammar-card .grammar-star:hover { transform: scale(1.2); }
+    .grammar-card .pattern {
+      font-family: var(--font-display);
+      font-size: 20px; font-weight: 500; color: var(--accent-purple);
+      line-height: 1.3;
+    }
+    .grammar-card .meaning {
+      font-size: 14px; color: var(--text-dim); margin-top: 4px;
+    }
+    .grammar-card .formula {
+      font-size: 13px; color: var(--text-subtle);
+      background: var(--bg); padding: 3px 10px; border-radius: 6px;
+      display: inline-block; margin-top: 10px;
+      font-family: 'Monaco', 'Menlo', monospace; letter-spacing: 0.3px;
+    }
+    .grammar-card .explanation {
+      font-size: 14px; color: var(--text); margin-top: 12px;
+      line-height: 1.8; padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .grammar-card .grammar-examples {
+      margin-top: 12px; padding: 12px; background: var(--bg);
+      border-radius: 8px;
+    }
+    .grammar-card .grammar-examples .ex-title {
+      font-size: 12px; color: var(--text-subtle);
+      margin-bottom: 8px; font-weight: 500;
+    }
+    .grammar-card .grammar-examples .ex-item {
+      margin-bottom: 8px;
+    }
+    .grammar-card .grammar-examples .ex-item:last-child {
+      margin-bottom: 0;
+    }
+    .grammar-card .grammar-examples .kr {
+      font-family: var(--font-display);
+      font-size: 15px; color: var(--text);
+    }
+    .grammar-card .grammar-examples .cn {
+      font-size: 13px; color: var(--text-dim); margin-top: 1px;
+    }
+    .grammar-card .grammar-notes {
+      margin-top: 10px; font-size: 13px; color: var(--text-dim);
+      padding: 8px 12px; background: var(--bg); border-radius: 8px;
+      line-height: 1.6;
+    }
+    .grammar-card .grammar-notes .notes-icon {
+      margin-right: 4px;
+    }
+
+    /* ─── 学习模式页 ─── */
+    .study-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .study-header .back-btn { width: 36px; height: 36px; }
+    .study-title { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+    .study-progress { font-size: 14px; color: var(--text-dim); }
+
+    .flashcard-area {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 80px 20px 130px;
+    }
+
+    .flashcard {
+      width: 100%; max-width: 360px; aspect-ratio: 3/4.2;
+      perspective: 1000px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transition: transform 400ms cubic-bezier(0.4,0,0.2,1);
+      transform-style: preserve-3d;
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+
+    .card-front, .card-back {
+      position: absolute; inset: 0;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 28px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 36px 28px;
+      overflow: hidden;
+    }
+    .card-front {
+      background: linear-gradient(160deg, #fef5f7 0%, #faf7f9 40%, #f8f4f2 100%);
+      border: 1px solid #f3e8ec;
+      border-radius: 26px;
+      box-shadow: 0 4px 20px rgba(180,160,170,0.12), 0 1px 4px rgba(0,0,0,0.04);
+      z-index: 2;
+    }
+    .card-front .card-emoji {
+      position: absolute; top: 22px; left: 24px; font-size: 20px;
+    }
+    .card-back {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
+      transform: rotateY(180deg);
+      justify-content: flex-start;
+      padding: 32px 24px 20px;
+      overflow-y: auto;
+    }
+
+    .flashcard.slide-right { animation: slideFromRight 250ms ease; }
+    .flashcard.slide-left { animation: slideFromLeft 250ms ease; }
+    @keyframes slideFromRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideFromLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .card-kr {
+      font-family: var(--font-display);
+      font-size: 40px; font-weight: 400;
+      letter-spacing: 0.04em;
+      line-height: 1.5;
+      text-align: center;
+      word-break: keep-all;
+      color: #4a3f50;
+    }
+    .card-stars {
+      font-size: 14px; letter-spacing: 2px;
+      margin-top: 14px;
+    }
+    .card-stars .star-on { color: #f6a973; }
+    .card-stars .star-off { color: #dfd8e0; }
+    .card-hint {
+      position: absolute; bottom: 28px;
+      font-size: 11px; color: #c4b0ba;
+      letter-spacing: 0.02em;
+    }
+
+    .card-cn {
+      font-size: 30px; font-weight: 400;
+      color: var(--text); line-height: 1.4;
+      text-align: center; word-break: keep-all;
+    }
+    .card-pos {
+      font-size: 12px; color: var(--accent-pink);
+      background: var(--accent-pink-light);
+      padding: 3px 14px; border-radius: 20px;
+      display: inline-block; margin-top: 14px;
+      font-weight: 500;
+    }
+    .card-examples {
+      margin-top: 20px; width: 100%;
+    }
+    .card-examples .ex-section-title {
+      font-size: 11px; color: var(--text-subtle);
+      margin-bottom: 10px; font-weight: 500;
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .example-pair {
+      background: var(--bg); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 8px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .example-pair:hover { background: #f0ecf2; }
+    .ex-clickable { cursor: pointer; }
+    .example-pair:last-child { margin-bottom: 0; }
+    .example-item {
+      font-family: var(--font-display);
+      font-size: 14px; color: var(--text); line-height: 1.5;
+    }
+    .example-item-cn {
+      font-size: 12px; color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .study-controls {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; align-items: flex-start; justify-content: center;
+      gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 8px));
+      background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+    }
+    .study-controls > div {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .ctrl-btn {
+      width: 46px; height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .ctrl-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .ctrl-btn svg { width: 20px; height: 20px; pointer-events: none; }
+    .ctrl-btn.ctrl-speak {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f48fb1, #ffab91);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 4px 16px rgba(244,143,177,0.35);
+    }
+    .ctrl-btn.ctrl-speak:hover { background: linear-gradient(135deg, #f06292, #ff8a65); transform: scale(1.05); }
+    .ctrl-btn.active { color: var(--accent-green); border-color: var(--accent-green); background: var(--accent-green-light); }
+    .ctrl-btn.active svg { fill: var(--accent-green); stroke: var(--accent-green); }
+    .ctrl-label {
+      font-size: 10px; color: var(--text-dim); white-space: nowrap;
+    }
+
+    /* ─── SRS 评分按钮 ─── */
+    .srs-rate-bar {
+      display: none;
+      flex-wrap: wrap; justify-content: center; gap: 8px;
+      padding: 12px 16px; margin-top: 12px;
+    }
+    .srs-rate-bar.show { display: flex; }
+    .srs-rate-btn {
+      flex: 1; min-width: 60px; max-width: 90px;
+      padding: 10px 6px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .srs-rate-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .srs-rate-btn .rate-emoji { font-size: 20px; }
+    .srs-rate-btn.rate-again { border-color: #ef9a9a; color: #c62828; }
+    .srs-rate-btn.rate-again:hover { background: #ffebee; }
+    .srs-rate-btn.rate-hard { border-color: #ffcc80; color: #e65100; }
+    .srs-rate-btn.rate-hard:hover { background: #fff3e0; }
+    .srs-rate-btn.rate-good { border-color: #a5d6a7; color: #2e7d32; }
+    .srs-rate-btn.rate-good:hover { background: #e8f5e9; }
+    .srs-rate-btn.rate-easy { border-color: #90caf9; color: #1565c0; }
+    .srs-rate-btn.rate-easy:hover { background: #e3f2fd; }
+
+    /* ─── 搜索页 ─── */
+    .search-box {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 16px;
+      transition: border-color 0.2s; box-shadow: var(--shadow);
+    }
+    .search-box:focus-within { border-color: var(--primary); }
+    .search-box svg { color: var(--text-dim); flex-shrink: 0; }
+    .search-box input {
+      flex: 1; border: none; background: none;
+      font-family: var(--font-body); font-size: 16px;
+      color: var(--text); outline: none;
+    }
+    .search-box input::placeholder { color: var(--text-subtle); }
+    .review-options { display: flex; flex-direction: column; gap: 10px; }
+    .review-option {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .review-option:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .review-option .ro-icon { font-size: 24px; flex-shrink: 0; }
+    .review-option .ro-title { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+    .review-option .ro-desc { font-size: 13px; color: var(--text-dim); margin-top: 1px; }
+    .review-option .ro-count {
+      margin-left: auto; font-family: var(--font-display);
+      font-size: 18px; font-weight: 500; color: var(--accent-coral); flex-shrink: 0;
+    }
+    .search-result-item .lesson-tag {
+      font-size: 11px; color: var(--accent-purple);
+      background: var(--accent-purple-light); padding: 1px 8px;
+      border-radius: 4px; display: inline-block; margin-top: 2px;
+    }
+
+    /* SVG 图标 */
+    .icon-book, .icon-clock, .icon-chevron, .icon-home, .icon-grid, .icon-search, .icon-settings,
+    .icon-speaker, .icon-star, .icon-check {
+      fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ═══════════ 首页 ═══════════ -->
+    <div id="page-home" class="page active">
+      <div class="container">
+        <!-- 顶部 Hero 卡片 -->
+        <div class="home-hero">
+          <div class="home-hero-emoji" id="home-emoji">🫶</div>
+          <div class="home-hero-text">
+            <p class="greeting" id="greeting-text">좋은 아침</p>
+            <p class="greeting-sub" id="greeting-sub">今天也一起学习吧 ✨</p>
+            <p class="greeting-date" id="greeting-date"></p>
+          </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stat-cards">
+          <div class="stat-card sc-mastered">
+            <div class="sc-icon">⏰</div>
+            <div class="sc-num" id="home-mastered">0</div>
+            <div class="sc-label" id="stat-mastered-label">待复习</div>
+          </div>
+          <div class="stat-card sc-learning">
+            <div class="sc-icon">📖</div>
+            <div class="sc-num" id="home-remaining">0</div>
+            <div class="sc-label" id="stat-remaining-label">学习中</div>
+          </div>
+          <div class="stat-card sc-starred">
+            <div class="sc-icon">⭐</div>
+            <div class="sc-num" id="home-starred">0</div>
+            <div class="sc-label">已收藏</div>
+          </div>
+        </div>
+
+        <!-- 总进度条 -->
+        <div class="home-progress-bar-wrap">
+          <div class="hp-top">
+            <span class="hp-label">📚 学习进度 · <span id="home-total">0</span> 个词汇</span>
+            <span class="hp-pct" id="home-pct">0%</span>
+          </div>
+          <div class="home-progress-bar">
+            <div class="home-progress-fill" id="home-progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- 快捷入口 -->
+        <div class="quick-actions">
+          <div class="quick-action qa-review" onclick="showReviewSetup()">
+            <div class="qa-icon">🔄</div>
+            <div>
+              <div class="qa-title">复习模式</div>
+              <div class="qa-desc">查漏补缺</div>
+            </div>
+          </div>
+          <div class="quick-action qa-course" onclick="showPage('page-course')">
+            <div class="qa-icon">📗</div>
+            <div>
+              <div class="qa-title">课程列表</div>
+              <div class="qa-desc">연세 한국어 1</div>
+            </div>
+          </div>
+          <div class="quick-action qa-search" onclick="showSearch()">
+            <div class="qa-icon">🔍</div>
+            <div>
+              <div class="qa-title">搜索词汇</div>
+              <div class="qa-desc">中文 / 韩语</div>
+            </div>
+          </div>
+          <div class="quick-action qa-starred" onclick="showStarred()">
+            <div class="qa-icon">❤️</div>
+            <div>
+              <div class="qa-title">我的收藏</div>
+              <div class="qa-desc">重点回顾</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 课程列表 -->
+        <div class="course-section">
+          <h2>📚 延世韩国语 1 · 课程目录</h2>
+          <div class="course-content" id="home-course-list"></div>
+        </div>
+      </div>
+    </div>
+
+<!-- ═══════════ 课程页 ═══════════ -->
+<!-- ═══════════ 课程页 ═══════════ -->
+    <div id="page-course" class="page">
+      <div class="container">
+        <div class="page-header">
+          <button class="back-btn" onclick="showPage('page-home')">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <div class="title-area">
+            <h1>연세 한국어 1</h1>
+            <p>延世韩国语1 · <span id="course-count">0</span>课 · <span id="course-words">0</span>个词汇</p>
+          </div>
+        </div>
+        <div class="lesson-list" id="lesson-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 单词列表页 ═══════════ -->
+    <div id="page-words" class="page">
+      <div class="container">
+        <div class="page-header">
+          <button class="back-btn" onclick="showPage('page-course')">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <div class="title-area">
+            <h1 id="words-title">제1과 - 소개</h1>
+            <p class="word-count" id="words-count">加载中...</p>
+          </div>
+        </div>
+        <!-- 标签切换：单词 / 语法 -->
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-vocab" onclick="switchLessonTab('vocab')">单词</button>
+          <button class="tab-btn" id="tab-grammar" onclick="switchLessonTab('grammar')">语法</button>
+        </div>
+
+        <!-- 单词列表 -->
+        <div id="lesson-vocab">
+          <div class="word-list" id="word-list"></div>
+        </div>
+
+        <!-- 语法列表 -->
+        <div id="lesson-grammar" style="display:none;">
+          <div class="grammar-list" id="grammar-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 学习模式页 ═══════════ -->
+    <div id="page-study" class="page">
+      <div class="study-header">
+        <button class="back-btn" onclick="exitStudy()">
+          <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        <span class="study-title" id="study-title">제1과</span>
+        <span class="study-progress" id="study-progress">1/20</span>
+      </div>
+
+      <div class="flashcard-area">
+        <div class="flashcard" id="flashcard" onclick="flipCard(event)">
+          <div class="card-inner" id="card-inner">
+            <!-- 正面 -->
+            <div class="card-front">
+              <div class="card-emoji" id="card-emoji">🐻</div>
+              <div class="card-kr" id="card-kr">안녕하세요</div>
+              <div class="card-stars" id="card-stars">★★★★★</div>
+              <div class="card-hint">탭! 轻点翻面 🫶</div>
+            </div>
+            <!-- 背面 -->
+            <div class="card-back">
+              <div class="card-cn" id="card-cn">你好</div>
+              <div class="card-pos" id="card-pos">问候语</div>
+              <div class="card-examples" id="card-examples">
+                <div class="ex-section-title">예문 例句</div>
+                <div class="example-pair">
+                  <div class="example-item">안녕하세요, 저는 민수입니다.</div>
+                  <div class="example-item-cn">你好，我是敏秀。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="srs-rate-bar" id="srs-rate-bar">
+        <button class="srs-rate-btn rate-again" onclick="srsRate(0)">
+          <span class="rate-emoji">🔴</span>忘记了
+        </button>
+        <button class="srs-rate-btn rate-hard" onclick="srsRate(1)">
+          <span class="rate-emoji">🟠</span>困难
+        </button>
+        <button class="srs-rate-btn rate-good" onclick="srsRate(2)">
+          <span class="rate-emoji">🟢</span>一般
+        </button>
+        <button class="srs-rate-btn rate-easy" onclick="srsRate(3)">
+          <span class="rate-emoji">🔵</span>简单
+        </button>
+      </div>
+
+      <div class="study-controls">
+        <div>
+          <button class="ctrl-btn" onclick="prevCard()" title="上一张">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="22" height="22"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <span class="ctrl-label">上一张</span>
+        </div>
+
+        <div>
+          <button class="ctrl-btn ctrl-star" onclick="toggleStar()" title="收藏" id="ctrl-star">
+            <svg viewBox="0 0 24 24" class="icon-star" width="22" height="22">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </button>
+          <span class="ctrl-label">收藏</span>
+        </div>
+
+        <div>
+          <button class="ctrl-btn ctrl-speak" onclick="speakWord()" title="发音">
+            <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+          </button>
+          <span class="ctrl-label">发音</span>
+        </div>
+
+        <div>
+          <button class="ctrl-btn ctrl-check" onclick="toggleMastered()" title="已掌握" id="ctrl-check">
+            <svg viewBox="0 0 24 24" class="icon-check" width="22" height="22">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </button>
+          <span class="ctrl-label">已掌握</span>
+        </div>
+
+        <div>
+          <button class="ctrl-btn" onclick="nextCard()" title="下一张">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="22" height="22"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
+          <span class="ctrl-label">下一张</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 收藏页 ═══════════ -->
+    <div id="page-starred" class="page">
+      <div class="container">
+        <div class="page-header" style="margin-bottom:16px;">
+          <div class="title-area">
+            <h1>收藏</h1>
+            <p id="starred-count">共 0 项</p>
+          </div>
+        </div>
+
+        <div class="tab-bar" style="margin-bottom:20px;">
+          <button class="tab-btn active" id="stab-vocab" onclick="switchStarTab('vocab')">单词</button>
+          <button class="tab-btn" id="stab-grammar" onclick="switchStarTab('grammar')">语法</button>
+        </div>
+
+        <div id="starred-empty" style="display:none; text-align:center; padding:80px 0; color:var(--text-dim);">
+          <p style="font-size:48px; margin-bottom:16px;">☆</p>
+          <p>还没有收藏的内容</p>
+          <p style="font-size:14px; margin-top:4px;">在卡片或语法上点击 ☆ 即可收藏</p>
+        </div>
+
+        <div id="starred-vocab"><div class="word-list" id="starred-list"></div></div>
+        <div id="starred-grammar" style="display:none;"><div class="grammar-list" id="starred-glist"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 搜索页 ═══════════ -->
+    <div id="page-search" class="page">
+      <div class="container">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" class="icon-search" width="18" height="18"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.3-4.3" /></svg>
+          <input type="text" id="search-input" placeholder="输入韩语或中文搜索..." autocomplete="off" />
+        </div>
+        <div id="search-results" class="word-list" style="margin-top:16px;"></div>
+        <div id="search-empty" style="display:none; text-align:center; padding:60px 0; color:var(--text-dim); font-size:14px;">
+          <p id="search-empty-text"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 复习设置页 ═══════════ -->
+    <div id="page-review" class="page">
+      <div class="container">
+        <div class="page-header" style="margin-bottom:16px;">
+          <button class="back-btn" onclick="showPage('page-home')">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <div class="title-area">
+            <h1>复习模式</h1>
+            <p>选单元 → 选类型 → 开始复习</p>
+          </div>
+        </div>
+
+        <!-- 类型标签 -->
+        <div class="tab-bar" style="margin-bottom:12px;">
+          <button class="tab-btn active" id="rtab-due" onclick="switchReviewTab('due')">待复习</button>
+          <button class="tab-btn" id="rtab-unmastered" onclick="switchReviewTab('unmastered')">未掌握</button>
+          <button class="tab-btn" id="rtab-starred" onclick="switchReviewTab('starred')">收藏</button>
+          <button class="tab-btn" id="rtab-all" onclick="switchReviewTab('all')">全部</button>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button onclick="reviewQuick('due')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">⏰ 全部待复习</button>
+          <button onclick="reviewQuick('all')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">📚 全部随机</button>
+          <button onclick="reviewQuick('unmastered')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">📖 全部未掌握</button>
+          <button onclick="reviewQuick('starred')" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">⭐ 全部收藏</button>
+        </div>
+
+        <!-- 逐单元选择 -->
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">按单元选择 · 勾选一个或多个</div>
+        <div class="review-lesson-list" id="review-lesson-list" style="padding-bottom:100px;"></div>
+
+        <div id="review-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text-dim);">
+          <p style="font-size:40px;margin-bottom:12px;">📭</p>
+          <p id="review-empty-text">暂无词汇</p>
+        </div>
+
+        <!-- 已选汇总 + 开始按钮 -->
+        <div id="review-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--bg);border-top:1px solid var(--border);text-align:center;z-index:10;">
+          <span id="review-selected-info" style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:8px;"></span>
+          <button id="review-start-btn" onclick="doReview()" style="width:100%;max-width:400px;padding:14px;border:none;border-radius:12px;background:var(--primary);color:white;font-family:var(--font-display);font-size:16px;font-weight:500;cursor:pointer;">开始复习</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 设置页 ═══════════ -->
+    <div id="page-settings" class="page">
+      <div class="container">
+        <div class="page-header" style="margin-bottom:24px;">
+          <div class="title-area">
+            <h1>设置</h1>
+            <p>调整学习体验</p>
+          </div>
+        </div>
+
+        <!-- 发音 -->
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">🗣️ 发音</h3>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <span style="font-size:15px;">语速</span>
+              <span id="tts-rate-label" style="font-size:14px;color:var(--primary);font-weight:500;">正常 (0.85)</span>
+            </div>
+            <input type="range" id="tts-rate" min="0.5" max="1.2" step="0.05" value="0.85" style="width:100%;accent-color:var(--primary);" oninput="updateTtsRate(this.value)" />
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-subtle);margin-top:4px;">
+              <span>慢</span><span>正常</span><span>快</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片方向 -->
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">🔄 卡片方向</h3>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <button id="carddir-kr" onclick="setCardDir('kr-first')" style="display:block;width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);background:var(--primary-light);color:var(--primary);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">🇰🇷 韩语 → 中文</button>
+            <button id="carddir-cn" onclick="setCardDir('cn-first')" style="display:block;width:100%;padding:14px 20px;border:none;background:transparent;color:var(--text);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">🇨🇳 中文 → 韩语</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-subtle);margin-top:6px;padding-left:4px;">正面显示的语言，翻转后显示对应翻译</div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">📊 数据管理</h3>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <button onclick="exportData()" style="display:block;width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);background:transparent;color:var(--text);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">📤 导出数据</button>
+            <button onclick="importData()" style="display:block;width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);background:transparent;color:var(--text);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">📥 导入数据</button>
+            <button onclick="resetAllData()" style="display:block;width:100%;padding:14px 20px;border:none;background:transparent;color:#D35;font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">🗑️ 清除所有记录</button>
+          </div>
+        </div>
+
+        <!-- 关于 -->
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">ℹ️ 关于</h3>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:15px;">版本</span><span style="color:var(--text-dim);">연세 한국어 1 · v1.1</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:15px;">总词汇</span><span style="color:var(--text-dim);" id="settings-word-count">-</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:15px;">掌握</span><span style="color:var(--primary);" id="settings-mastered-count">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 底部导航 ═══════════ -->
+    <nav class="bottom-nav">
+      <div class="nav-inner">
+        <button class="nav-item active" data-page="page-home" onclick="showPage('page-home')">
+          <svg viewBox="0 0 24 24" class="icon-home"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6" /></svg>
+          <span>首页</span>
+        </button>
+        <button class="nav-item" data-page="page-course" onclick="showPage('page-course')">
+          <svg viewBox="0 0 24 24" class="icon-grid"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+          <span>课程</span>
+        </button>
+        <button class="nav-item" data-page="page-starred" onclick="showStarred()">
+          <svg viewBox="0 0 24 24" class="icon-star" width="22" height="22">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          <span>收藏</span>
+        </button>
+        <button class="nav-item" data-page="page-search" onclick="showSearch()">
+          <svg viewBox="0 0 24 24" class="icon-search" width="22" height="22"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.3-4.3" /></svg>
+          <span>搜索</span>
+        </button>
+        <button class="nav-item" data-page="page-settings" onclick="showSettings()">
+          <svg viewBox="0 0 24 24" class="icon-settings"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       微信兼容补丁（微信 X5 内核可能有残缺的 Set）
+       不检测直接覆盖，确保所有环境一致
+       ═══════════════════════════════════════════ */
+    (function() {
+      // 检测原生 Set 是否完整
+      var useNative = false
+      try {
+        if (typeof Set !== 'undefined') {
+          var s = new Set([1])
+          if (s.has(1) && s.size === 1) { s.add(2); if (s.size === 2) { s.delete(1); if (s.size === 1) useNative = true } }
+        }
+      } catch(e) {}
+      if (useNative) return  // 原生的完整，不替换
+
+      // 自己实现一个完整的 Set
+      window.Set = (function() {
+        function MySet(arr) {
+          this.clear()
+          if (arr) { for (var i = 0; i < arr.length; i++) this.add(arr[i]) }
+        }
+        MySet.prototype.has = function(v) { return this._v.hasOwnProperty('s'+v) }
+        MySet.prototype.add = function(v) { if (!this.has(v)) { this._v['s'+v] = 1; this._n++ }; return this }
+        MySet.prototype.delete = function(v) { if (this.has(v)) { delete this._v['s'+v]; this._n--; return true }; return false }
+        MySet.prototype.clear = function() { this._v = {}; this._n = 0 }
+        MySet.prototype.forEach = function(fn, ctx) {
+          var self = this, ks = Object.keys(this._v)
+          for (var i = 0; i < ks.length; i++) { var k = ks[i].slice(1); fn.call(ctx, k, k, self) }
+        }
+        Object.defineProperty(MySet.prototype, 'size', { get: function() { return this._n }, configurable: true })
+        return MySet
+      })()
+    })()
+
+    // Set → 数组 兼容
+    function setKeys(s) { var a = []; s.forEach(function(v) { a.push(v) }); return a }
+    // 单词唯一标识：课号|韩语（同词跨课不冲突）
+    function wk(w, num) { return num + '|' + w.kr }
+
+    // localStorage 安全包装
+    function lsGet(key, fallback) {
+      try { var v = localStorage.getItem(key); return v !== null && v !== undefined ? v : fallback } catch(e) { return fallback }
+    }
+    function lsSet(key, val) { try { localStorage.setItem(key, val) } catch(e) {} }
+
+    // 全局错误显示（方便排查微信问题）
+    window._showError = function(msg) {
+      var div = document.getElementById('ys-error')
+      if (!div) {
+        div = document.createElement('div')
+        div.id = 'ys-error'
+        div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#C0392B;color:#fff;padding:12px 16px;z-index:9999;font-size:14px;text-align:center;'
+        document.body.appendChild(div)
+      }
+      div.textContent = '⚠️ ' + msg
+      div.style.display = 'block'
+    }
+
+    /* ═══════════════════════════════════════════
+       词汇数据 · 延世韩国语1 第1~3课
+       ═══════════════════════════════════════════ */
+
+    const VOCAB = {
+      1: [
+        { kr: '안녕하세요', cn: '你好', pos: '问候语', stars: 5 },
+        { kr: '감사합니다', cn: '谢谢', pos: '问候语', stars: 5 },
+        { kr: '네', cn: '是的', pos: '感叹词', stars: 5 },
+        { kr: '아니요', cn: '不是的', pos: '感叹词', stars: 5 },
+        { kr: '저', cn: '我', pos: '代词', stars: 5 },
+        { kr: '제', cn: '我的', pos: '代词', stars: 5 },
+        { kr: '이름', cn: '名字', pos: '名词', stars: 4 },
+        { kr: '선생님', cn: '老师', pos: '名词', stars: 5 },
+        { kr: '씨', cn: '先生/女士', pos: '依存名词', stars: 4 },
+        { kr: '친구', cn: '朋友', pos: '名词', stars: 5 },
+        { kr: '학생', cn: '学生', pos: '名词', stars: 5 },
+        { kr: '대학생', cn: '大学生', pos: '名词', stars: 4 },
+        { kr: '회사원', cn: '公司职员', pos: '名词', stars: 4 },
+        { kr: '의사', cn: '医生', pos: '名词', stars: 4 },
+        { kr: '가수', cn: '歌手', pos: '名词', stars: 3 },
+        { kr: '경찰', cn: '警察', pos: '名词', stars: 3 },
+        { kr: '간호사', cn: '护士', pos: '名词', stars: 3 },
+        { kr: '변호사', cn: '律师', pos: '名词', stars: 3 },
+        { kr: '기자', cn: '记者', pos: '名词', stars: 3 },
+        { kr: '교수', cn: '教授', pos: '名词', stars: 3 },
+        { kr: '비서', cn: '秘书', pos: '名词', stars: 3 },
+        { kr: '은행원', cn: '银行职员', pos: '名词', stars: 3 },
+        { kr: '한국', cn: '韩国', pos: '名词', stars: 5 },
+        { kr: '중국', cn: '中国', pos: '名词', stars: 5 },
+        { kr: '미국', cn: '美国', pos: '名词', stars: 4 },
+        { kr: '일본', cn: '日本', pos: '名词', stars: 4 },
+        { kr: '영국', cn: '英国', pos: '名词', stars: 4 },
+        { kr: '독일', cn: '德国', pos: '名词', stars: 3 },
+        { kr: '러시아', cn: '俄罗斯', pos: '名词', stars: 3 },
+        { kr: '인도', cn: '印度', pos: '名词', stars: 3 },
+        { kr: '태국', cn: '泰国', pos: '名词', stars: 3 },
+        { kr: '호주', cn: '澳大利亚', pos: '名词', stars: 3 },
+        { kr: '캐나다', cn: '加拿大', pos: '名词', stars: 3 },
+        { kr: '국적', cn: '国籍', pos: '名词', stars: 3 },
+        { kr: '직업', cn: '职业', pos: '名词', stars: 4 },
+        { kr: '무엇', cn: '什么', pos: '代词', stars: 5 },
+        { kr: '누구', cn: '谁', pos: '代词', stars: 5 },
+        { kr: '어디', cn: '哪里', pos: '代词', stars: 5 },
+        { kr: '무슨', cn: '什么（修饰语）', pos: '冠词', stars: 4 },
+        { kr: '나라', cn: '国家', pos: '名词', stars: 4 },
+        { kr: '그럼', cn: '那么', pos: '副词', stars: 4 },
+        { kr: '그런데', cn: '但是，然而', pos: '副词', stars: 4 },
+        { kr: '반갑다', cn: '高兴，喜欢', pos: '形容词', stars: 4 },
+        { kr: '아니다', cn: '不是', pos: '形容词', stars: 5 },
+        { kr: '있다', cn: '有，在', pos: '形容词', stars: 5, ex: [
+          { kr: '집에 냉장고가 있습니다.', cn: '家里有冰箱。' },
+          { kr: '지금 학교에 있습니다.', cn: '现在在学校。' },
+          { kr: '시간이 있으면 만나요.', cn: '有时间的话见面吧。' },
+          { kr: '교실에 아무도 없었어요.', cn: '教室里一个人都没有。' },
+          { kr: '궁금한 게 있어요.', cn: '有个好奇的事情。' },
+        ] },
+        { kr: '가다', cn: '去', pos: '动词', stars: 5, ex: [
+          { kr: '주말에 친구랑 영화 보러 갔어요.', cn: '周末和朋友去看了电影。' },
+          { kr: '내일 한국에 갑니다.', cn: '明天去韩国。' },
+          { kr: '학교에 어떻게 가요?', cn: '怎么去学校？' },
+          { kr: '시간이 없어서 못 갔어요.', cn: '没时间去不了。' },
+          { kr: '같이 도서관에 갈래요?', cn: '一起去图书馆吗？' },
+        ] },
+        { kr: '오다', cn: '来', pos: '动词', stars: 5 },
+        { kr: '만나다', cn: '见面', pos: '动词', stars: 4 },
+        { kr: '먹다', cn: '吃', pos: '动词', stars: 5, ex: [
+          { kr: '아침을 먹고 학교에 갑니다.', cn: '吃完早饭去学校。' },
+          { kr: '어제 친구랑 불고기를 먹었어요.', cn: '昨天和朋友吃了烤肉。' },
+          { kr: '뭐 먹고 싶어요?', cn: '想吃什么？' },
+          { kr: '한국에서 비빔밥을 꼭 먹어 보세요.', cn: '在韩国一定要尝尝拌饭。' },
+          { kr: '밥을 아직 안 먹었어요.', cn: '还没吃饭。' },
+        ] },
+        { kr: '마시다', cn: '喝', pos: '动词', stars: 5, ex: [
+          { kr: '커피를 자주 마셔요?', cn: '经常喝咖啡吗？' },
+          { kr: '날씨가 더워서 시원한 물을 마셨어요.', cn: '天气热所以喝了凉水。' },
+          { kr: '술을 너무 많이 마시지 마세요.', cn: '请不要喝太多酒。' },
+          { kr: '뭐 마실래요? 주스 아니면 콜라?', cn: '想喝什么？果汁还是可乐？' },
+          { kr: '따뜻한 차 한잔 마시고 싶어요.', cn: '想喝一杯热茶。' },
+        ] },
+        { kr: '보다', cn: '看', pos: '动词', stars: 5, ex: [
+          { kr: '어제 재미있는 영화를 봤어요.', cn: '昨天看了一部有趣的电影。' },
+          { kr: '책을 보는 것을 좋아해요.', cn: '喜欢看书。' },
+          { kr: '잠깐 이것 좀 봐 주세요.', cn: '请帮我看一下这个。' },
+          { kr: '텔레비전을 너무 많이 보지 마세요.', cn: '请别看太多电视。' },
+          { kr: '한국 드라마를 자주 봐요.', cn: '经常看韩剧。' },
+        ] },
+        { kr: '듣다', cn: '听', pos: '动词', stars: 5, ex: [
+          { kr: '한국 노래를 자주 들어요.', cn: '经常听韩国歌曲。' },
+          { kr: '선생님 말씀을 잘 들으세요.', cn: '请好好听老师的话。' },
+          { kr: '이 노래 들어 봤어요? 정말 좋아요.', cn: '听过这首歌吗？真的很棒。' },
+          { kr: '라디오를 들으면서 공부해요.', cn: '边听收音机边学习。' },
+          { kr: '친구의 충고를 들어야 해요.', cn: '应该听朋友的忠告。' },
+        ] },
+        { kr: '읽다', cn: '读', pos: '动词', stars: 5, ex: [
+          { kr: '한국어 책을 읽을 수 있어요.', cn: '能读韩语书。' },
+          { kr: '이 소설을 읽어 봤어요?', cn: '读过这本小说吗？' },
+          { kr: '아침마다 신문을 읽습니다.', cn: '每天早上读报纸。' },
+          { kr: '책을 많이 읽으면 어휘가 늘어요.', cn: '读很多书的话词汇量会增加。' },
+          { kr: '아이에게 동화책을 읽어 주었어요.', cn: '给孩子读了童话书。' },
+        ] },
+        { kr: '쓰다', cn: '写', pos: '动词', stars: 5, ex: [
+          { kr: '이름을 여기에 써 주세요.', cn: '请把名字写在这里。' },
+          { kr: '일기를 매일 쓰고 있어요.', cn: '每天在写日记。' },
+          { kr: '한글로 편지를 써 봤어요.', cn: '用韩文写过信。' },
+          { kr: '연필로 그림을 그리고 글을 썼어요.', cn: '用铅笔画了画又写了字。' },
+          { kr: '숙제를 공책에 썼어요.', cn: '把作业写在笔记本上了。' },
+        ] },
+        { kr: '공부하다', cn: '学习', pos: '动词', stars: 5, ex: [
+          { kr: '매일 도서관에서 한국어를 공부합니다.', cn: '每天在图书馆学韩语。' },
+          { kr: '시험 때문에 밤늦게까지 공부했어요.', cn: '因为考试学习到很晚。' },
+          { kr: '같이 공부할 친구를 찾고 있어요.', cn: '在找一起学习的朋友。' },
+          { kr: '열심히 공부하면 꼭 합격할 거예요.', cn: '努力学的话一定会通过的。' },
+          { kr: '혼자 공부하는 것보다 같이 공부하는 게 더 좋아요.', cn: '比起一个人学，一起学更好。' },
+        ] },
+        { kr: '인사하다', cn: '打招呼', pos: '动词', stars: 4 },
+      ],
+      2: [
+        { kr: '교과서', cn: '教科书', pos: '名词', stars: 4 },
+        { kr: '책', cn: '书', pos: '名词', stars: 5 },
+        { kr: '공책', cn: '笔记本', pos: '名词', stars: 4 },
+        { kr: '책상', cn: '书桌', pos: '名词', stars: 4 },
+        { kr: '의자', cn: '椅子', pos: '名词', stars: 4 },
+        { kr: '가방', cn: '书包', pos: '名词', stars: 4 },
+        { kr: '필통', cn: '笔袋', pos: '名词', stars: 3 },
+        { kr: '볼펜', cn: '圆珠笔', pos: '名词', stars: 3 },
+        { kr: '연필', cn: '铅笔', pos: '名词', stars: 3 },
+        { kr: '지우개', cn: '橡皮', pos: '名词', stars: 3 },
+        { kr: '자', cn: '尺子', pos: '名词', stars: 3 },
+        { kr: '휴지', cn: '纸巾', pos: '名词', stars: 3 },
+        { kr: '손수건', cn: '手帕', pos: '名词', stars: 2 },
+        { kr: '지갑', cn: '钱包', pos: '名词', stars: 3 },
+        { kr: '열쇠', cn: '钥匙', pos: '名词', stars: 4 },
+        { kr: '돈', cn: '钱', pos: '名词', stars: 5 },
+        { kr: '카드', cn: '卡', pos: '名词', stars: 4 },
+        { kr: '여권', cn: '护照', pos: '名词', stars: 3 },
+        { kr: '신분증', cn: '身份证', pos: '名词', stars: 3 },
+        { kr: '시계', cn: '手表，时钟', pos: '名词', stars: 4 },
+        { kr: '카메라', cn: '相机', pos: '名词', stars: 3 },
+        { kr: '컴퓨터', cn: '电脑', pos: '名词', stars: 4 },
+        { kr: '노트북', cn: '笔记本电脑', pos: '名词', stars: 3 },
+        { kr: '휴대폰', cn: '手机', pos: '名词', stars: 5 },
+        { kr: '침대', cn: '床', pos: '名词', stars: 4 },
+        { kr: '냉장고', cn: '冰箱', pos: '名词', stars: 4 },
+        { kr: '텔레비전', cn: '电视', pos: '名词', stars: 4 },
+        { kr: '거울', cn: '镜子', pos: '名词', stars: 3 },
+        { kr: '모자', cn: '帽子', pos: '名词', stars: 3 },
+        { kr: '옷', cn: '衣服', pos: '名词', stars: 5 },
+        { kr: '문', cn: '门', pos: '名词', stars: 4 },
+        { kr: '창문', cn: '窗户', pos: '名词', stars: 3 },
+        { kr: '칠판', cn: '黑板', pos: '名词', stars: 3 },
+        { kr: '분필', cn: '粉笔', pos: '名词', stars: 2 },
+        { kr: '교실', cn: '教室', pos: '名词', stars: 4 },
+        { kr: '학교', cn: '学校', pos: '名词', stars: 5 },
+        { kr: '도서관', cn: '图书馆', pos: '名词', stars: 4 },
+        { kr: '식당', cn: '食堂，餐厅', pos: '名词', stars: 4 },
+        { kr: '화장실', cn: '洗手间', pos: '名词', stars: 4 },
+        { kr: '사무실', cn: '办公室', pos: '名词', stars: 4 },
+        { kr: '서점', cn: '书店', pos: '名词', stars: 3 },
+        { kr: '우체국', cn: '邮局', pos: '名词', stars: 3 },
+        { kr: '은행', cn: '银行', pos: '名词', stars: 4 },
+        { kr: '병원', cn: '医院', pos: '名词', stars: 4 },
+        { kr: '약국', cn: '药店', pos: '名词', stars: 3 },
+        { kr: '회사', cn: '公司', pos: '名词', stars: 4 },
+        { kr: '공원', cn: '公园', pos: '名词', stars: 4 },
+        { kr: '극장', cn: '剧场，电影院', pos: '名词', stars: 3 },
+        { kr: '백화점', cn: '百货商店', pos: '名词', stars: 3 },
+        { kr: '시장', cn: '市场', pos: '名词', stars: 4 },
+        { kr: '가게', cn: '店铺', pos: '名词', stars: 3 },
+        { kr: '커피숍', cn: '咖啡店', pos: '名词', stars: 3 },
+        { kr: '건물', cn: '建筑物', pos: '名词', stars: 3 },
+        { kr: '집', cn: '家', pos: '名词', stars: 5 },
+        { kr: '앞', cn: '前面', pos: '名词', stars: 4 },
+        { kr: '뒤', cn: '后面', pos: '名词', stars: 4 },
+        { kr: '옆', cn: '旁边', pos: '名词', stars: 4 },
+        { kr: '위', cn: '上面', pos: '名词', stars: 4 },
+        { kr: '아래', cn: '下面', pos: '名词', stars: 4 },
+        { kr: '안', cn: '里面', pos: '名词', stars: 4 },
+        { kr: '밖', cn: '外面', pos: '名词', stars: 4 },
+        { kr: '있다', cn: '有，在', pos: '形容词', stars: 5 },
+        { kr: '없다', cn: '没有，不在', pos: '形容词', stars: 5 },
+        { kr: '많다', cn: '多', pos: '形容词', stars: 4 },
+        { kr: '적다', cn: '少', pos: '形容词', stars: 3 },
+        { kr: '크다', cn: '大', pos: '形容词', stars: 5 },
+        { kr: '작다', cn: '小', pos: '形容词', stars: 5 },
+        { kr: '좋다', cn: '好', pos: '形容词', stars: 5, ex: [
+          { kr: '오늘 날씨가 정말 좋아요.', cn: '今天天气真好。' },
+          { kr: '이 가방이 마음에 들어요, 아주 좋아요.', cn: '这个包我很满意，非常好。' },
+          { kr: '한국어를 배우는 게 좋아요.', cn: '学韩语很好。' },
+          { kr: '별로 안 좋아요.', cn: '不太好。' },
+          { kr: '여기 분위기가 참 좋네요.', cn: '这里的氛围真不错。' },
+        ] },
+        { kr: '나쁘다', cn: '坏，不好', pos: '形容词', stars: 4 },
+        { kr: '날씨', cn: '天气', pos: '名词', stars: 4 },
+        { kr: '물건', cn: '物品，东西', pos: '名词', stars: 4 },
+        { kr: '사전', cn: '词典', pos: '名词', stars: 3 },
+        { kr: '잡지', cn: '杂志', pos: '名词', stars: 3 },
+        { kr: '신문', cn: '报纸', pos: '名词', stars: 3 },
+        { kr: '우유', cn: '牛奶', pos: '名词', stars: 3 },
+        { kr: '주스', cn: '果汁', pos: '名词', stars: 3 },
+        { kr: '컵', cn: '杯子', pos: '名词', stars: 3 },
+        { kr: '맥주', cn: '啤酒', pos: '名词', stars: 3 },
+        { kr: '전화', cn: '电话', pos: '名词', stars: 4 },
+        { kr: '이것', cn: '这个', pos: '代词', stars: 5 },
+        { kr: '그것', cn: '那个', pos: '代词', stars: 5 },
+        { kr: '저것', cn: '那个（远）', pos: '代词', stars: 4 },
+        { kr: '여기', cn: '这里', pos: '代词', stars: 5 },
+        { kr: '거기', cn: '那里', pos: '代词', stars: 5 },
+        { kr: '저기', cn: '那里（远）', pos: '代词', stars: 4 },
+        { kr: '버스', cn: '公交车', pos: '名词', stars: 4 },
+        { kr: '지하철', cn: '地铁', pos: '名词', stars: 4 },
+        { kr: '택시', cn: '出租车', pos: '名词', stars: 4 },
+      ],
+      3: [
+        { kr: '가족', cn: '家人', pos: '名词', stars: 5 },
+        { kr: '아버지', cn: '爸爸', pos: '名词', stars: 5 },
+        { kr: '어머니', cn: '妈妈', pos: '名词', stars: 5 },
+        { kr: '부모님', cn: '父母', pos: '名词', stars: 4 },
+        { kr: '형', cn: '哥哥（男称）', pos: '名词', stars: 4 },
+        { kr: '오빠', cn: '哥哥（女称）', pos: '名词', stars: 5 },
+        { kr: '누나', cn: '姐姐（男称）', pos: '名词', stars: 4 },
+        { kr: '언니', cn: '姐姐（女称）', pos: '名词', stars: 5 },
+        { kr: '남동생', cn: '弟弟', pos: '名词', stars: 4 },
+        { kr: '여동생', cn: '妹妹', pos: '名词', stars: 4 },
+        { kr: '할아버지', cn: '爷爷', pos: '名词', stars: 4 },
+        { kr: '할머니', cn: '奶奶', pos: '名词', stars: 4 },
+        { kr: '외할아버지', cn: '外公', pos: '名词', stars: 3 },
+        { kr: '외할머니', cn: '外婆', pos: '名词', stars: 3 },
+        { kr: '아들', cn: '儿子', pos: '名词', stars: 4 },
+        { kr: '딸', cn: '女儿', pos: '名词', stars: 4 },
+        { kr: '사진', cn: '照片', pos: '名词', stars: 4 },
+        { kr: '일', cn: '工作，事情', pos: '名词', stars: 5 },
+        { kr: '공부', cn: '学习', pos: '名词', stars: 5 },
+        { kr: '숙제', cn: '作业', pos: '名词', stars: 4 },
+        { kr: '이야기', cn: '故事，谈话', pos: '名词', stars: 4 },
+        { kr: '노래', cn: '歌', pos: '名词', stars: 4 },
+        { kr: '운동', cn: '运动', pos: '名词', stars: 4 },
+        { kr: '산책', cn: '散步', pos: '名词', stars: 3 },
+        { kr: '밥', cn: '饭', pos: '名词', stars: 5 },
+        { kr: '김치', cn: '泡菜', pos: '名词', stars: 4 },
+        { kr: '영화', cn: '电影', pos: '名词', stars: 4 },
+        { kr: '음악', cn: '音乐', pos: '名词', stars: 4 },
+        { kr: '사다', cn: '买', pos: '动词', stars: 5, ex: [
+          { kr: '시장에서 과일을 샀어요.', cn: '在市场买了水果。' },
+          { kr: '이 책을 어디에서 샀어요?', cn: '这本书在哪里买的？' },
+          { kr: '새 핸드폰을 사고 싶어요.', cn: '想买新手机。' },
+          { kr: '선물로 뭘 살지 고민이에요.', cn: '在苦恼买什么当礼物。' },
+          { kr: '인터넷으로 옷을 싸게 샀어요.', cn: '在网上便宜地买了衣服。' },
+        ] },
+        { kr: '부르다', cn: '唱，叫', pos: '动词', stars: 4 },
+        { kr: '배우다', cn: '学', pos: '动词', stars: 5, ex: [
+          { kr: '한국어를 배운 지 6개월 됐어요.', cn: '学韩语学了6个月了。' },
+          { kr: '어디에서 한국어를 배우세요?', cn: '在哪里学韩语？' },
+          { kr: '새로운 것을 배우는 게 즐거워요.', cn: '学新东西很开心。' },
+          { kr: '친구한테서 요리를 배웠어요.', cn: '跟朋友学了做菜。' },
+          { kr: '외국어를 배우려면 꾸준히 해야 해요.', cn: '学外语的话要坚持才行。' },
+        ] },
+        { kr: '가르치다', cn: '教', pos: '动词', stars: 4 },
+        { kr: '좋아하다', cn: '喜欢', pos: '动词', stars: 5, ex: [
+          { kr: '저는 한국 음식을 정말 좋아해요.', cn: '我真的很喜欢韩国饮食。' },
+          { kr: '무슨 음악을 좋아하세요?', cn: '喜欢什么音乐？' },
+          { kr: '제 친구는 고양이를 좋아해요.', cn: '我的朋友喜欢猫。' },
+          { kr: '저도 그 영화를 좋아했어요.', cn: '我也喜欢那部电影。' },
+          { kr: '봄보다 가을을 더 좋아합니다.', cn: '比起春天更喜欢秋天。' },
+        ] },
+        { kr: '재미있다', cn: '有意思', pos: '形容词', stars: 5, ex: [
+          { kr: '이 드라마 정말 재미있어요!', cn: '这部剧真有意思！' },
+          { kr: '한국어 공부가 점점 재미있어져요.', cn: '韩语学习越来越有意思了。' },
+          { kr: '어제 재미있는 영화를 봤어요.', cn: '昨天看了一部有趣的电影。' },
+          { kr: '친구들이랑 게임을 해서 재미있었어요.', cn: '跟朋友们玩游戏很有意思。' },
+          { kr: '이 책은 재미있으면서도 유익해요.', cn: '这本书既有趣又有益。' },
+        ] },
+        { kr: '아름답다', cn: '美丽', pos: '形容词', stars: 4 },
+        { kr: '깨끗하다', cn: '干净', pos: '形容词', stars: 4 },
+        { kr: '더럽다', cn: '脏', pos: '形容词', stars: 3 },
+        { kr: '시끄럽다', cn: '吵闹', pos: '形容词', stars: 3 },
+        { kr: '넓다', cn: '宽，宽敞', pos: '形容词', stars: 4 },
+        { kr: '좁다', cn: '窄', pos: '形容词', stars: 3 },
+        { kr: '춥다', cn: '冷', pos: '形容词', stars: 4 },
+        { kr: '덥다', cn: '热', pos: '形容词', stars: 4 },
+        { kr: '시원하다', cn: '凉快', pos: '形容词', stars: 4 },
+        { kr: '따뜻하다', cn: '温暖', pos: '形容词', stars: 4, ex: [
+          { kr: '오늘 날씨가 정말 따뜻해요.', cn: '今天天气真暖和。' },
+          { kr: '따뜻한 차 한잔 드릴까요?', cn: '给您倒一杯热茶吧？' },
+          { kr: '이 방은 겨울에도 따뜻해요.', cn: '这个房间冬天也暖和。' },
+          { kr: '따뜻한 마음으로 도와주셨어요.', cn: '怀着温暖的心帮助了我。' },
+          { kr: '봄이 되니까 날씨가 점점 따뜻해져요.', cn: '到了春天天气渐渐变暖。' },
+        ] },
+        { kr: '자주', cn: '经常', pos: '副词', stars: 4 },
+        { kr: '가끔', cn: '偶尔', pos: '副词', stars: 4 },
+        { kr: '매일', cn: '每天', pos: '副词', stars: 5 },
+        { kr: '함께', cn: '一起', pos: '副词', stars: 4 },
+        { kr: '계시다', cn: '在（敬语）', pos: '动词', stars: 4 },
+        { kr: '드시다', cn: '吃/喝（敬语）', pos: '动词', stars: 4 },
+        { kr: '말씀하시다', cn: '说（敬语）', pos: '动词', stars: 4 },
+        { kr: '큰아버지', cn: '伯父', pos: '名词', stars: 3 },
+        { kr: '작은아버지', cn: '叔父', pos: '名词', stars: 3 },
+        { kr: '큰어머니', cn: '伯母', pos: '名词', stars: 3 },
+        { kr: '작은어머니', cn: '婶婶', pos: '名词', stars: 3 },
+        { kr: '사촌', cn: '表亲', pos: '名词', stars: 3 },
+        { kr: '조카', cn: '侄子/女', pos: '名词', stars: 3 },
+        { kr: '쌍둥이', cn: '双胞胎', pos: '名词', stars: 3 },
+        { kr: '외동', cn: '独生子/女', pos: '名词', stars: 3 },
+        { kr: '막내', cn: '老幺', pos: '名词', stars: 3 },
+      ],
+      4: [
+        { kr: '식당', cn: '餐厅', pos: '名词', stars: 4 },
+        { kr: '레스토랑', cn: '西餐厅', pos: '名词', stars: 3 },
+        { kr: '불고기', cn: '烤肉', pos: '名词', stars: 4 },
+        { kr: '김치', cn: '泡菜', pos: '名词', stars: 4 },
+        { kr: '비빔밥', cn: '拌饭', pos: '名词', stars: 4 },
+        { kr: '냉면', cn: '冷面', pos: '名词', stars: 3 },
+        { kr: '된장찌개', cn: '大酱汤', pos: '名词', stars: 3 },
+        { kr: '삼겹살', cn: '五花肉', pos: '名词', stars: 3 },
+        { kr: '갈비', cn: '排骨', pos: '名词', stars: 3 },
+        { kr: '반찬', cn: '小菜', pos: '名词', stars: 3 },
+        { kr: '국', cn: '汤', pos: '名词', stars: 3 },
+        { kr: '물', cn: '水', pos: '名词', stars: 5 },
+        { kr: '음식', cn: '食物', pos: '名词', stars: 4 },
+        { kr: '맛있다', cn: '好吃', pos: '形容词', stars: 5, ex: [
+          { kr: '이 집 불고기가 정말 맛있어요.', cn: '这家烤肉真好吃。' },
+          { kr: '엄마가 만든 김치가 제일 맛있어요.', cn: '妈妈做的泡菜最好吃。' },
+          { kr: '한국 라면은 왜 이렇게 맛있어요?', cn: '韩国拉面为什么这么好吃？' },
+          { kr: '비빔밥을 처음 먹어 봤는데 아주 맛있었어요.', cn: '第一次吃拌饭，非常好吃。' },
+          { kr: '맛있게 드세요!', cn: '请慢用！' },
+        ] },
+        { kr: '맛없다', cn: '不好吃', pos: '形容词', stars: 4 },
+        { kr: '맵다', cn: '辣', pos: '形容词', stars: 4 },
+        { kr: '달다', cn: '甜', pos: '形容词', stars: 4 },
+        { kr: '짜다', cn: '咸', pos: '形容词', stars: 4 },
+        { kr: '시다', cn: '酸', pos: '形容词', stars: 3 },
+        { kr: '쓰다', cn: '苦', pos: '形容词', stars: 3 },
+        { kr: '기쁘다', cn: '高兴', pos: '形容词', stars: 4 },
+        { kr: '슬프다', cn: '悲伤', pos: '形容词', stars: 3 },
+        { kr: '화나다', cn: '生气', pos: '形容词', stars: 3 },
+        { kr: '주문하다', cn: '点餐', pos: '动词', stars: 4 },
+        { kr: '추천하다', cn: '推荐', pos: '动词', stars: 3 },
+        { kr: '준비하다', cn: '准备', pos: '动词', stars: 4 },
+        { kr: '돌아가다', cn: '回去', pos: '动词', stars: 3 },
+        { kr: '들어가다', cn: '进去', pos: '动词', stars: 3 },
+        { kr: '나가다', cn: '出去', pos: '动词', stars: 4 },
+        { kr: '들어오다', cn: '进来', pos: '动词', stars: 3 },
+        { kr: '조금', cn: '稍微，一点', pos: '副词', stars: 5 },
+        { kr: '아주', cn: '非常', pos: '副词', stars: 4 },
+        { kr: '별로', cn: '不太', pos: '副词', stars: 4 },
+        { kr: '진짜', cn: '真的', pos: '副词', stars: 5 },
+        { kr: '정말', cn: '真的', pos: '副词', stars: 5 },
+        { kr: '많이', cn: '很多地', pos: '副词', stars: 4 },
+        { kr: '술', cn: '酒', pos: '名词', stars: 4 },
+        { kr: '소주', cn: '烧酒', pos: '名词', stars: 3 },
+        { kr: '녹차', cn: '绿茶', pos: '名词', stars: 3 },
+        { kr: '커피', cn: '咖啡', pos: '名词', stars: 5 },
+        { kr: '콜라', cn: '可乐', pos: '名词', stars: 3 },
+        { kr: '아이스크림', cn: '冰淇淋', pos: '名词', stars: 3 },
+        { kr: '떡', cn: '年糕', pos: '名词', stars: 3 },
+        { kr: '찌개', cn: '汤锅', pos: '名词', stars: 4 },
+        { kr: '볶음밥', cn: '炒饭', pos: '名词', stars: 3 },
+        { kr: '라면', cn: '拉面', pos: '名词', stars: 4 },
+        { kr: '김밥', cn: '紫菜包饭', pos: '名词', stars: 3 },
+      ],
+      5: [
+        { kr: '지금', cn: '现在', pos: '名词', stars: 5 },
+        { kr: '시', cn: '点', pos: '依存名词', stars: 5 },
+        { kr: '분', cn: '分', pos: '依存名词', stars: 5 },
+        { kr: '시간', cn: '时间', pos: '名词', stars: 5 },
+        { kr: '반', cn: '半', pos: '名词', stars: 4 },
+        { kr: '오전', cn: '上午', pos: '名词', stars: 4 },
+        { kr: '오후', cn: '下午', pos: '名词', stars: 4 },
+        { kr: '일어나다', cn: '起床', pos: '动词', stars: 5 },
+        { kr: '세수하다', cn: '洗脸', pos: '动词', stars: 4 },
+        { kr: '이를 닦다', cn: '刷牙', pos: '词组', stars: 4 },
+        { kr: '운동하다', cn: '运动', pos: '动词', stars: 4 },
+        { kr: '쉬다', cn: '休息', pos: '动词', stars: 4, ex: [
+          { kr: '주말에는 집에서 쉬고 싶어요.', cn: '周末想在家休息。' },
+          { kr: '잠깐 쉬면서 차 한잔 할까요?', cn: '休息一下喝杯茶吧？' },
+          { kr: '너무 바빠서 쉴 시간이 없어요.', cn: '太忙了没时间休息。' },
+          { kr: '충분히 쉬어야 빨리 나아요.', cn: '充分休息才能快点好起来。' },
+          { kr: '공부하다가 10분만 쉬자.', cn: '学了一会儿休息10分钟吧。' },
+        ] },
+        { kr: '자다', cn: '睡觉', pos: '动词', stars: 5, ex: [
+          { kr: '어젯밤에 잘 잤어요?', cn: '昨晚睡得好吗？' },
+          { kr: '보통 11시에 잡니다.', cn: '通常11点睡觉。' },
+          { kr: '너무 피곤해서 일찍 자고 싶어요.', cn: '太累了想早点睡。' },
+          { kr: '아기가 지금 자고 있어요.', cn: '宝宝现在在睡觉。' },
+          { kr: '늦게 자면 아침에 일어나기 힘들어요.', cn: '睡晚了的话早上很难起来。' },
+        ] },
+        { kr: '아침', cn: '早上/早饭', pos: '名词', stars: 5 },
+        { kr: '점심', cn: '中午/午饭', pos: '名词', stars: 5 },
+        { kr: '저녁', cn: '晚上/晚饭', pos: '名词', stars: 5 },
+        { kr: '오늘', cn: '今天', pos: '名词', stars: 5 },
+        { kr: '어제', cn: '昨天', pos: '名词', stars: 5 },
+        { kr: '내일', cn: '明天', pos: '名词', stars: 5 },
+        { kr: '그저께', cn: '前天', pos: '名词', stars: 3 },
+        { kr: '모레', cn: '后天', pos: '名词', stars: 3 },
+        { kr: '년', cn: '年', pos: '依存名词', stars: 5 },
+        { kr: '월', cn: '月', pos: '依存名词', stars: 5 },
+        { kr: '일', cn: '日', pos: '依存名词', stars: 5 },
+        { kr: '지난주', cn: '上周', pos: '名词', stars: 4 },
+        { kr: '이번 주', cn: '这周', pos: '名词', stars: 4 },
+        { kr: '다음 주', cn: '下周', pos: '名词', stars: 4 },
+        { kr: '월요일', cn: '星期一', pos: '名词', stars: 4 },
+        { kr: '화요일', cn: '星期二', pos: '名词', stars: 4 },
+        { kr: '수요일', cn: '星期三', pos: '名词', stars: 4 },
+        { kr: '목요일', cn: '星期四', pos: '名词', stars: 4 },
+        { kr: '금요일', cn: '星期五', pos: '名词', stars: 4 },
+        { kr: '토요일', cn: '星期六', pos: '名词', stars: 4 },
+        { kr: '일요일', cn: '星期日', pos: '名词', stars: 4 },
+        { kr: '여행', cn: '旅行', pos: '名词', stars: 4 },
+        { kr: '기분', cn: '心情', pos: '名词', stars: 4 },
+        { kr: '기다리다', cn: '等待', pos: '动词', stars: 4, ex: [
+          { kr: '여기서 잠깐만 기다려 주세요.', cn: '请在这里稍等一下。' },
+          { kr: '친구를 한 시간째 기다리고 있어요.', cn: '等朋友等了1个小时了。' },
+          { kr: '기다리게 해서 죄송합니다.', cn: '让您久等了对不起。' },
+          { kr: '버스를 기다리는 사람이 많아요.', cn: '等公交的人很多。' },
+          { kr: '빨리 오세요, 기다리고 있을게요.', cn: '快点来哦，我会等着的。' },
+        ] },
+        { kr: '쉽다', cn: '简单', pos: '形容词', stars: 4, ex: [
+          { kr: '이 문제는 정말 쉬워요.', cn: '这个问题真的很简单。' },
+          { kr: '한국어 발음이 생각보다 쉬웠어요.', cn: '韩语发音比想象中简单。' },
+          { kr: '처음에는 쉽지 않지만 곧 익숙해져요.', cn: '一开始不容易但很快就会熟悉。' },
+          { kr: '이 책은 설명이 쉬워서 좋아요.', cn: '这本书说明简单所以喜欢。' },
+          { kr: '쉬운 것부터 차근차근 해 봐요.', cn: '从简单的开始一步步试试吧。' },
+        ] },
+        { kr: '어렵다', cn: '难', pos: '形容词', stars: 4, ex: [
+          { kr: '한국어 문법이 좀 어려워요.', cn: '韩语语法有点难。' },
+          { kr: '처음에는 어려웠지만 지금은 괜찮아요.', cn: '一开始很难但现在没关系了。' },
+          { kr: '이 시험은 생각보다 어려웠어요.', cn: '这个考试比想象中难。' },
+          { kr: '어려운 단어는 따로 메모해 두세요.', cn: '难的单词请另外记下来。' },
+          { kr: '어려워도 포기하지 마세요.', cn: '即使难也不要放弃。' },
+        ] },
+        { kr: '예쁘다', cn: '漂亮', pos: '形容词', stars: 5, ex: [
+          { kr: '오늘 옷이 정말 예뻐요.', cn: '今天衣服真漂亮。' },
+          { kr: '이 꽃이 너무 예쁘지 않아요?', cn: '这花不觉得很漂亮吗？' },
+          { kr: '예쁜 카페를 찾았어요.', cn: '找到了一家漂亮的咖啡店。' },
+          { kr: '언니가 예쁘게 머리를 묶어 줬어요.', cn: '姐姐给我绑了漂亮的头发。' },
+          { kr: '한복은 정말 예쁜 것 같아요.', cn: '韩服真的好像很漂亮。' },
+        ] },
+        { kr: '샤워하다', cn: '洗澡', pos: '动词', stars: 4 },
+        { kr: '화장하다', cn: '化妆', pos: '动词', stars: 3 },
+        { kr: '옷을 입다', cn: '穿衣', pos: '词组', stars: 4 },
+        { kr: '출근하다', cn: '上班', pos: '动词', stars: 4 },
+        { kr: '퇴근하다', cn: '下班', pos: '动词', stars: 4 },
+        { kr: '청소하다', cn: '打扫', pos: '动词', stars: 4 },
+        { kr: '빨래하다', cn: '洗衣服', pos: '动词', stars: 4 },
+        { kr: '요리하다', cn: '做饭', pos: '动词', stars: 4 },
+      ],
+      6: [
+        { kr: '꽃집', cn: '花店', pos: '名词', stars: 2 },
+        { kr: '빵집', cn: '面包店', pos: '名词', stars: 3 },
+        { kr: '편의점', cn: '便利店', pos: '名词', stars: 4 },
+        { kr: '문구점', cn: '文具店', pos: '名词', stars: 2 },
+        { kr: '선물', cn: '礼物', pos: '名词', stars: 4 },
+        { kr: '꽃다발', cn: '花束', pos: '名词', stars: 2 },
+        { kr: '케이크', cn: '蛋糕', pos: '名词', stars: 3 },
+        { kr: '빵', cn: '面包', pos: '名词', stars: 3 },
+        { kr: '과일', cn: '水果', pos: '名词', stars: 4 },
+        { kr: '포도', cn: '葡萄', pos: '名词', stars: 3 },
+        { kr: '귤', cn: '橘子', pos: '名词', stars: 2 },
+        { kr: '바나나', cn: '香蕉', pos: '名词', stars: 3 },
+        { kr: '옷 가게', cn: '服装店', pos: '名词', stars: 3 },
+        { kr: '바지', cn: '裤子', pos: '名词', stars: 4 },
+        { kr: '치마', cn: '裙子', pos: '名词', stars: 3 },
+        { kr: '셔츠', cn: '衬衫', pos: '名词', stars: 4 },
+        { kr: '티셔츠', cn: 'T恤', pos: '名词', stars: 3 },
+        { kr: '코트', cn: '大衣', pos: '名词', stars: 3 },
+        { kr: '스웨터', cn: '毛衣', pos: '名词', stars: 3 },
+        { kr: '구두', cn: '皮鞋', pos: '名词', stars: 3 },
+        { kr: '슬리퍼', cn: '拖鞋', pos: '名词', stars: 2 },
+        { kr: '한복', cn: '韩服', pos: '名词', stars: 3 },
+        { kr: '넥타이', cn: '领带', pos: '名词', stars: 2 },
+        { kr: '색깔', cn: '颜色', pos: '名词', stars: 4 },
+        { kr: '빨간색', cn: '红色', pos: '名词', stars: 4 },
+        { kr: '파란색', cn: '蓝色', pos: '名词', stars: 4 },
+        { kr: '노란색', cn: '黄色', pos: '名词', stars: 3 },
+        { kr: '하얀색', cn: '白色', pos: '名词', stars: 4 },
+        { kr: '검은색', cn: '黑色', pos: '名词', stars: 4 },
+        { kr: '길다', cn: '长', pos: '形容词', stars: 4 },
+        { kr: '짧다', cn: '短', pos: '形容词', stars: 4 },
+        { kr: '비싸다', cn: '贵', pos: '形容词', stars: 5, ex: [
+          { kr: '이 가방은 너무 비싸요.', cn: '这个包太贵了。' },
+          { kr: '서울은 물가가 비싼 것 같아요.', cn: '首尔物价好像很贵。' },
+          { kr: '비싸지만 품질이 정말 좋아요.', cn: '虽然贵但品质真的很好。' },
+          { kr: '좀 더 싼 걸로 보여 주세요.', cn: '请给我看一下更便宜的。' },
+          { kr: '너무 비싸서 못 사겠어요.', cn: '太贵了买不起。' },
+        ] },
+        { kr: '싸다', cn: '便宜', pos: '形容词', stars: 4 },
+        { kr: '무겁다', cn: '重', pos: '形容词', stars: 3 },
+        { kr: '가볍다', cn: '轻', pos: '形容词', stars: 3 },
+        { kr: '가깝다', cn: '近', pos: '形容词', stars: 4 },
+        { kr: '멀다', cn: '远', pos: '形容词', stars: 4 },
+        { kr: '튼튼하다', cn: '结实', pos: '形容词', stars: 3 },
+        { kr: '두껍다', cn: '厚', pos: '形容词', stars: 3 },
+        { kr: '얇다', cn: '薄', pos: '形容词', stars: 3 },
+        { kr: '송이', cn: '朵', pos: '量词', stars: 3 },
+        { kr: '개', cn: '个', pos: '量词', stars: 5 },
+        { kr: '명', cn: '名', pos: '量词', stars: 4 },
+        { kr: '장', cn: '张', pos: '量词', stars: 4 },
+        { kr: '권', cn: '本', pos: '量词', stars: 4 },
+        { kr: '병', cn: '瓶', pos: '量词', stars: 3 },
+        { kr: '잔', cn: '杯', pos: '量词', stars: 4 },
+        { kr: '켤레', cn: '双', pos: '量词', stars: 3 },
+        { kr: '대', cn: '台', pos: '量词', stars: 4 },
+        { kr: '입어 보다', cn: '试穿', pos: '词组', stars: 4 },
+        { kr: '깎다', cn: '砍价/削', pos: '动词', stars: 3 },
+        { kr: '구경하다', cn: '参观，浏览', pos: '动词', stars: 3 },
+      ],
+      7: [
+        { kr: '길', cn: '路', pos: '名词', stars: 4 },
+        { kr: '찾다', cn: '找', pos: '动词', stars: 5 },
+        { kr: '아파트', cn: '公寓', pos: '名词', stars: 4 },
+        { kr: '호', cn: '号', pos: '依存名词', stars: 3 },
+        { kr: '출구', cn: '出口', pos: '名词', stars: 3 },
+        { kr: '입구', cn: '入口', pos: '名词', stars: 3 },
+        { kr: '왼쪽', cn: '左边', pos: '名词', stars: 4 },
+        { kr: '오른쪽', cn: '右边', pos: '名词', stars: 4 },
+        { kr: '이쪽', cn: '这边', pos: '代词', stars: 4 },
+        { kr: '그쪽', cn: '那边', pos: '代词', stars: 3 },
+        { kr: '저쪽', cn: '那边（远）', pos: '代词', stars: 3 },
+        { kr: '건너다', cn: '过（马路）', pos: '动词', stars: 3 },
+        { kr: '횡단보도', cn: '人行横道', pos: '名词', stars: 3 },
+        { kr: '육교', cn: '天桥', pos: '名词', stars: 2 },
+        { kr: '지하도', cn: '地下通道', pos: '名词', stars: 2 },
+        { kr: '층', cn: '层', pos: '依存名词', stars: 4 },
+        { kr: '호텔', cn: '酒店', pos: '名词', stars: 4 },
+        { kr: '미술관', cn: '美术馆', pos: '名词', stars: 3 },
+        { kr: '대사관', cn: '大使馆', pos: '名词', stars: 3 },
+        { kr: '곧', cn: '直，笔直', pos: '副词', stars: 3 },
+        { kr: '나오다', cn: '出来', pos: '动词', stars: 4 },
+        { kr: '동문', cn: '东门', pos: '名词', stars: 2 },
+        { kr: '서문', cn: '西门', pos: '名词', stars: 2 },
+        { kr: '남문', cn: '南门', pos: '名词', stars: 2 },
+        { kr: '북문', cn: '北门', pos: '名词', stars: 2 },
+        { kr: '기숙사', cn: '宿舍', pos: '名词', stars: 4 },
+        { kr: '얼마나', cn: '多少，多久', pos: '副词', stars: 4 },
+        { kr: '걸리다', cn: '花费（时间）', pos: '动词', stars: 4 },
+        { kr: '호선', cn: '号线', pos: '依存名词', stars: 4 },
+        { kr: '시내버스', cn: '市内公交', pos: '名词', stars: 3 },
+        { kr: '고속버스', cn: '高速大巴', pos: '名词', stars: 2 },
+        { kr: '기차', cn: '火车', pos: '名词', stars: 4 },
+        { kr: '자전거', cn: '自行车', pos: '名词', stars: 4 },
+        { kr: '비행기', cn: '飞机', pos: '名词', stars: 4 },
+        { kr: '배', cn: '船', pos: '名词', stars: 4 },
+        { kr: '타다', cn: '乘坐', pos: '动词', stars: 5, ex: [
+          { kr: '학교에 버스로 타고 가요.', cn: '坐公交去学校。' },
+          { kr: '지하철을 타면 더 빨라요.', cn: '坐地铁的话更快。' },
+          { kr: '택시를 타고 집에 갔어요.', cn: '坐出租车回家了。' },
+          { kr: '비행기를 처음 타 봤어요.', cn: '第一次坐飞机。' },
+          { kr: '몇 번 버스를 타야 해요?', cn: '应该坐几路公交？' },
+        ] },
+        { kr: '내리다', cn: '下车', pos: '动词', stars: 4 },
+        { kr: '갈아타다', cn: '换乘', pos: '动词', stars: 3 },
+        { kr: '도착하다', cn: '到达', pos: '动词', stars: 4 },
+        { kr: '출발하다', cn: '出发', pos: '动词', stars: 4 },
+        { kr: '늦다', cn: '晚，迟到', pos: '形容词', stars: 4 },
+        { kr: '바쁘다', cn: '忙', pos: '形容词', stars: 5, ex: [
+          { kr: '요즘 너무 바빠요.', cn: '最近太忙了。' },
+          { kr: '바쁘신데 와 주셔서 감사합니다.', cn: '百忙之中前来非常感谢。' },
+          { kr: '바쁘니까 나중에 연락할게요.', cn: '因为忙所以之后再联系。' },
+          { kr: '아침부터 저녁까지 바쁘게 움직였어요.', cn: '从早到晚忙碌地跑了一天。' },
+          { kr: '바빠도 운동은 꼭 하세요.', cn: '即使忙也请一定要运动。' },
+        ] },
+        { kr: '빨리', cn: '快', pos: '副词', stars: 4 },
+        { kr: '자리', cn: '座位', pos: '名词', stars: 4 },
+        { kr: '사거리', cn: '十字路口', pos: '名词', stars: 3 },
+        { kr: '신호등', cn: '信号灯', pos: '名词', stars: 3 },
+        { kr: '직진', cn: '直走', pos: '名词', stars: 3 },
+        { kr: '좌회전', cn: '左转', pos: '名词', stars: 2 },
+        { kr: '우회전', cn: '右转', pos: '名词', stars: 2 },
+        { kr: '약속', cn: '约定', pos: '名词', stars: 4 },
+        { kr: '실례합니다', cn: '打扰一下', pos: '问候语', stars: 4 },
+        { kr: '교통카드', cn: '交通卡', pos: '名词', stars: 4 },
+        { kr: '정류장', cn: '公交站', pos: '名词', stars: 4 },
+        { kr: '지하철역', cn: '地铁站', pos: '名词', stars: 4 },
+      ],
+      8: [
+        { kr: '이따가', cn: '过一会儿', pos: '副词', stars: 3 },
+        { kr: '전화번호', cn: '电话号码', pos: '名词', stars: 4 },
+        { kr: '국제전화', cn: '国际电话', pos: '名词', stars: 2 },
+        { kr: '핸드폰', cn: '手机', pos: '名词', stars: 5 },
+        { kr: '문자', cn: '短信', pos: '名词', stars: 4 },
+        { kr: '메시지', cn: '留言', pos: '名词', stars: 4 },
+        { kr: '벨', cn: '铃声', pos: '名词', stars: 3 },
+        { kr: '울리다', cn: '响', pos: '动词', stars: 3 },
+        { kr: '걸다', cn: '打（电话）', pos: '动词', stars: 4 },
+        { kr: '받다', cn: '接（电话）/收到', pos: '动词', stars: 5 },
+        { kr: '보내다', cn: '发送', pos: '动词', stars: 4 },
+        { kr: '바꾸다', cn: '换', pos: '动词', stars: 4 },
+        { kr: '켜다', cn: '打开（开关）', pos: '动词', stars: 4 },
+        { kr: '끄다', cn: '关闭', pos: '动词', stars: 4 },
+        { kr: '확인하다', cn: '确认', pos: '动词', stars: 4 },
+        { kr: '남기다', cn: '留下', pos: '动词', stars: 3 },
+        { kr: '주문하다', cn: '预订', pos: '动词', stars: 4 },
+        { kr: '통화하다', cn: '通话', pos: '动词', stars: 3 },
+        { kr: '끊다', cn: '挂断', pos: '动词', stars: 3 },
+        { kr: '주소', cn: '地址', pos: '名词', stars: 4 },
+        { kr: '잘못', cn: '错误', pos: '名词', stars: 4 },
+        { kr: '잠깐만', cn: '稍等', pos: '副词', stars: 4 },
+        { kr: '후', cn: '以后', pos: '名词', stars: 4 },
+        { kr: '주말', cn: '周末', pos: '名词', stars: 4 },
+        { kr: '약속하다', cn: '约定', pos: '动词', stars: 4 },
+        { kr: '어기다', cn: '违反（约定）', pos: '动词', stars: 3 },
+        { kr: '지키다', cn: '遵守', pos: '动词', stars: 4 },
+        { kr: '할인', cn: '打折', pos: '名词', stars: 3 },
+        { kr: '배달', cn: '外卖，配送', pos: '名词', stars: 3 },
+        { kr: '부탁', cn: '拜托', pos: '名词', stars: 4 },
+        { kr: '일찍', cn: '早地', pos: '副词', stars: 4 },
+        { kr: '항상', cn: '总是', pos: '副词', stars: 4 },
+        { kr: '아직', cn: '还，仍然', pos: '副词', stars: 5 },
+        { kr: '아마', cn: '也许', pos: '副词', stars: 4 },
+        { kr: '왜', cn: '为什么', pos: '副词', stars: 5 },
+        { kr: '다', cn: '都，全部', pos: '副词', stars: 5 },
+        { kr: '심심하다', cn: '无聊', pos: '形容词', stars: 3 },
+        { kr: '늦다', cn: '晚', pos: '形容词', stars: 4 },
+        { kr: '전화하다', cn: '打电话', pos: '动词', stars: 5 },
+        { kr: '연락하다', cn: '联系', pos: '动词', stars: 4 },
+        { kr: '답장', cn: '回复', pos: '名词', stars: 4 },
+        { kr: '이메일', cn: '邮件', pos: '名词', stars: 4 },
+        { kr: '알리다', cn: '通知', pos: '动词', stars: 4 },
+        { kr: '연락', cn: '联系', pos: '名词', stars: 4 },
+        { kr: '화면', cn: '屏幕', pos: '名词', stars: 4 },
+        { kr: '앱', cn: '应用', pos: '名词', stars: 4 },
+        { kr: '인터넷', cn: '网络', pos: '名词', stars: 4 },
+        { kr: '검색하다', cn: '搜索', pos: '动词', stars: 4 },
+        { kr: '올리다', cn: '上传', pos: '动词', stars: 3 },
+        { kr: '저장하다', cn: '保存', pos: '动词', stars: 4 },
+        { kr: '삭제하다', cn: '删除', pos: '动词', stars: 3 },
+        { kr: '계정', cn: '账号', pos: '名词', stars: 3 },
+        { kr: '비밀번호', cn: '密码', pos: '名词', stars: 4 },
+        { kr: '로그인', cn: '登录', pos: '名词', stars: 3 },
+      ],
+      9: [
+        { kr: '약속', cn: '约定', pos: '名词', stars: 4 },
+        { kr: '약속하다', cn: '约定', pos: '动词', stars: 4 },
+        { kr: '약속 장소', cn: '约定场所', pos: '词组', stars: 3 },
+        { kr: '약속 시간', cn: '约定时间', pos: '词组', stars: 3 },
+        { kr: '시간을 바꾸다', cn: '改时间', pos: '词组', stars: 3 },
+        { kr: '어기다', cn: '违背', pos: '动词', stars: 3 },
+        { kr: '지키다', cn: '遵守', pos: '动词', stars: 4 },
+        { kr: '늦다', cn: '迟到', pos: '形容词', stars: 4 },
+        { kr: '만나다', cn: '见面', pos: '动词', stars: 5 },
+        { kr: '기다리다', cn: '等待', pos: '动词', stars: 4 },
+        { kr: '미안하다', cn: '对不起', pos: '形容词', stars: 5 },
+        { kr: '사과하다', cn: '道歉', pos: '动词', stars: 3 },
+        { kr: '괜찮다', cn: '没关系', pos: '形容词', stars: 5 },
+        { kr: '함께', cn: '一起', pos: '副词', stars: 4 },
+        { kr: '같이', cn: '一起', pos: '副词', stars: 5 },
+        { kr: '다음', cn: '下次', pos: '名词', stars: 4 },
+        { kr: '다시', cn: '再次', pos: '副词', stars: 5 },
+        { kr: '내일', cn: '明天', pos: '名词', stars: 5 },
+        { kr: '오늘', cn: '今天', pos: '名词', stars: 5 },
+        { kr: '내년', cn: '明年', pos: '名词', stars: 4 },
+        { kr: '작년', cn: '去年', pos: '名词', stars: 4 },
+        { kr: '올해', cn: '今年', pos: '名词', stars: 4 },
+        { kr: '지난 달', cn: '上个月', pos: '词组', stars: 3 },
+        { kr: '이번 달', cn: '这个月', pos: '词组', stars: 3 },
+        { kr: '다음 달', cn: '下个月', pos: '词组', stars: 3 },
+        { kr: '고향', cn: '故乡', pos: '名词', stars: 4 },
+        { kr: '결정하다', cn: '决定', pos: '动词', stars: 4 },
+        { kr: '약속을 지키다', cn: '守约', pos: '词组', stars: 3 },
+        { kr: '약속을 어기다', cn: '违约', pos: '词组', stars: 3 },
+        { kr: '약속을 잡다', cn: '定约', pos: '词组', stars: 3 },
+        { kr: '취소하다', cn: '取消', pos: '动词', stars: 4 },
+        { kr: '변경하다', cn: '变更', pos: '动词', stars: 3 },
+        { kr: '연락하다', cn: '联系', pos: '动词', stars: 4 },
+        { kr: '시간을 정하다', cn: '定时间', pos: '词组', stars: 3 },
+        { kr: '장소를 정하다', cn: '定地点', pos: '词组', stars: 3 },
+        { kr: '늦어서 죄송합니다', cn: '抱歉来晚了', pos: '问候语', stars: 4 },
+        { kr: '먼저', cn: '先', pos: '副词', stars: 4 },
+        { kr: '잠시', cn: '暂时', pos: '副词', stars: 4 },
+        { kr: '못 오다', cn: '不能来', pos: '词组', stars: 3 },
+        { kr: '꼭', cn: '一定', pos: '副词', stars: 5 },
+        { kr: '가능하다', cn: '可能', pos: '形容词', stars: 4 },
+        { kr: '생각하다', cn: '想/思考', pos: '动词', stars: 5 },
+        { kr: '알다', cn: '知道', pos: '动词', stars: 5 },
+        { kr: '모르다', cn: '不知道', pos: '动词', stars: 5 },
+        { kr: '기억하다', cn: '记住', pos: '动词', stars: 4 },
+        { kr: '참석하다', cn: '参加', pos: '动词', stars: 4 },
+        { kr: '당기다', cn: '提前', pos: '动词', stars: 3 },
+      ],
+      10: [
+        { kr: '휴일', cn: '休息日', pos: '名词', stars: 3 },
+        { kr: '공휴일', cn: '公休日', pos: '名词', stars: 3 },
+        { kr: '연휴', cn: '连休', pos: '名词', stars: 3 },
+        { kr: '방학', cn: '放假', pos: '名词', stars: 4 },
+        { kr: '봄방학', cn: '春假', pos: '名词', stars: 2 },
+        { kr: '여름방학', cn: '暑假', pos: '名词', stars: 3 },
+        { kr: '겨울방학', cn: '寒假', pos: '名词', stars: 3 },
+        { kr: '끝나다', cn: '结束', pos: '动词', stars: 4 },
+        { kr: '계획', cn: '计划', pos: '名词', stars: 4 },
+        { kr: '계획을 세우다', cn: '制定计划', pos: '词组', stars: 3 },
+        { kr: '동안', cn: '期间', pos: '名词', stars: 4 },
+        { kr: '초', cn: '初', pos: '名词', stars: 3 },
+        { kr: '설날', cn: '春节', pos: '名词', stars: 3 },
+        { kr: '졸업식', cn: '毕业典礼', pos: '名词', stars: 2 },
+        { kr: '쉬다', cn: '休息', pos: '动词', stars: 4 },
+        { kr: '고향', cn: '故乡', pos: '名词', stars: 4 },
+        { kr: '비자', cn: '签证', pos: '名词', stars: 3 },
+        { kr: '숙박', cn: '住宿', pos: '名词', stars: 3 },
+        { kr: '준비물', cn: '准备物品', pos: '名词', stars: 3 },
+        { kr: '학기', cn: '学期', pos: '名词', stars: 3 },
+        { kr: '복잡하다', cn: '复杂，拥挤', pos: '形容词', stars: 4 },
+        { kr: '구경', cn: '参观', pos: '名词', stars: 3 },
+        { kr: '방문', cn: '访问', pos: '名词', stars: 4 },
+        { kr: '그러니까', cn: '所以', pos: '副词', stars: 4 },
+        { kr: '아니면', cn: '或者', pos: '副词', stars: 4 },
+        { kr: '(사진을) 찍다', cn: '拍照', pos: '词组', stars: 4 },
+        { kr: '가지다', cn: '拥有', pos: '动词', stars: 5 },
+        { kr: '편하다', cn: '方便，舒服', pos: '形容词', stars: 4 },
+        { kr: '인터넷', cn: '网络', pos: '名词', stars: 4 },
+        { kr: '예약하다', cn: '预约', pos: '动词', stars: 4 },
+        { kr: '필요하다', cn: '需要', pos: '形容词', stars: 5 },
+        { kr: '제일', cn: '最', pos: '副词', stars: 4 },
+        { kr: '주로', cn: '主要', pos: '副词', stars: 3 },
+        { kr: '너무', cn: '太，过于', pos: '副词', stars: 5 },
+        { kr: '아프다', cn: '疼', pos: '形容词', stars: 4, ex: [
+          { kr: '머리가 너무 아파요.', cn: '头好疼。' },
+          { kr: '어디 아프세요? 병원에 가 보세요.', cn: '哪里不舒服？去医院看看吧。' },
+          { kr: '어제 넘어져서 다리를 다쳤어요, 많이 아파요.', cn: '昨天摔倒了腿受伤了，很疼。' },
+          { kr: '감기에 걸려서 목이 아파요.', cn: '感冒了喉咙疼。' },
+          { kr: '아프면 꼭 약을 드세요.', cn: '如果不舒服请一定吃药。' },
+        ] },
+        { kr: '이용하다', cn: '利用，使用', pos: '动词', stars: 4 },
+        { kr: '방법', cn: '方法', pos: '名词', stars: 4 },
+        { kr: '관광지', cn: '旅游胜地', pos: '名词', stars: 3 },
+        { kr: '활동', cn: '活动', pos: '名词', stars: 4 },
+        { kr: '휴가', cn: '休假', pos: '名词', stars: 4 },
+        { kr: '관광', cn: '观光', pos: '名词', stars: 4 },
+        { kr: '표', cn: '票', pos: '名词', stars: 4 },
+        { kr: '공항', cn: '机场', pos: '名词', stars: 4 },
+        { kr: '짐', cn: '行李', pos: '名词', stars: 4 },
+        { kr: '기념품', cn: '纪念品', pos: '名词', stars: 3 },
+        { kr: '일정', cn: '日程', pos: '名词', stars: 4 },
+        { kr: '체크인', cn: '入住', pos: '名词', stars: 3 },
+        { kr: '체크아웃', cn: '退房', pos: '名词', stars: 3 },
+        { kr: '예매하다', cn: '预购', pos: '动词', stars: 3 },
+        { kr: '왕복', cn: '往返', pos: '名词', stars: 3 },
+        { kr: '편도', cn: '单程', pos: '名词', stars: 3 },
+        { kr: '출발', cn: '出发', pos: '名词', stars: 4 },
+        { kr: '도착', cn: '到达', pos: '名词', stars: 4 },
+        { kr: '관광객', cn: '游客', pos: '名词', stars: 3 },
+        { kr: '가이드', cn: '导游', pos: '名词', stars: 3 },
+        { kr: '여행사', cn: '旅行社', pos: '名词', stars: 3 },
+        { kr: '환전하다', cn: '换钱', pos: '动词', stars: 4 },
+      ],
+    }
+
+    /* ═══════════════════════════════════════════
+       课程信息
+       ═══════════════════════════════════════════ */
+
+    const GRAMMAR = {
+      1: [
+        {
+          pattern: '-입니다',
+          meaning: '是……（陈述）',
+          formula: '名词 + 입니다',
+          exp: '格式体（敬语）陈述句终结词尾。放在名词后面，表示"是……"。这是韩语中最基本、最正式的肯定句结尾方式。在正式场合、职场、初次见面时使用。注意：名词不管有没有收音，都直接加"입니다"。',
+          examples: [
+            { kr: '저는 학생입니다.', cn: '我是学生。' },
+            { kr: '이것은 책입니다.', cn: '这是书。' },
+            { kr: '제 직업은 의사입니다.', cn: '我的职业是医生。' },
+            { kr: '오늘은 월요일입니다.', cn: '今天是星期一。' },
+          ],
+          notes: '与此相对，非正式场合用"-예요/이에요"更自然。口语中"-입니다"常读作"-임니다"。'
+        },
+        {
+          pattern: '-입니까?',
+          meaning: '是……吗？（疑问）',
+          formula: '名词 + 입니까?',
+          exp: '格式体疑问句终结词尾。将"-입니다"的"다"换成"까"就变成疑问句。相当于"是……吗？"。注意：这是正式疑问句，回答时用"네（是的）"或"아니요（不是）"。',
+          examples: [
+            { kr: '한국 사람입니까?', cn: '是韩国人吗？' },
+            { kr: '학생입니까?', cn: '是学生吗？' },
+            { kr: '이것은 무엇입니까?', cn: '这是什么？' },
+          ],
+          notes: '"-입니까"比"-이에요?"更正式。日常对话中用"-이에요?"更自然。'
+        },
+        {
+          pattern: '-이/가 아닙니다',
+          meaning: '不是……（否定）',
+          formula: '名词 + 이/가 아닙니다',
+          exp: '格式体否定句。表示"不是……"。有收音的名词用"이 아닙니다"，无收音的名词用"가 아닙니다"。例如：학생이 아닙니다（不是学生），의사가 아닙니다（不是医生）。',
+          examples: [
+            { kr: '저는 학생이 아닙니다.', cn: '我不是学生。' },
+            { kr: '그분은 의사가 아닙니다.', cn: '那位不是医生。' },
+            { kr: '이것은 책이 아닙니다.', cn: '这不是书。' },
+          ],
+          notes: '口语中更常说"-이/가 아니에요"。注意"아니다"是形容词性质的，前面需要主格助词이/가。'
+        },
+        {
+          pattern: '-은/는',
+          meaning: '主题助词（是/提及……）',
+          formula: '名词 + 은/는',
+          exp: '这是韩语中最核心的助词之一。放在名词后面，表示这个名词是句子的主题，相当于"关于……"、"……是"。有收音的名词用"은"，无收音的名词用"는"。功能包括：①引出话题 ②对比 ③强调。',
+          examples: [
+            { kr: '저는 김민수입니다.', cn: '我是金敏秀。（引入自己这个话题）' },
+            { kr: '한국어는 재미있습니다.', cn: '韩语很有意思。（谈论韩语这个话题）' },
+            { kr: '이것은 책이고, 저것은 공책입니다.', cn: '这是书，那是笔记本。（对比）' },
+          ],
+          notes: '은/는和이/가的区别是韩语学习的第一个难点。简单说：은/는强调"是什么"，이/가强调"谁/什么"做了动作。'
+        },
+        {
+          pattern: '-이/가 있다/없다',
+          meaning: '有/没有',
+          formula: '名词 + 이/가 있다/없다',
+          exp: '表示"有"或"没有"。有收音的名词用"이 있다/없다"，无收音用"가 있다/없다"。注意韩语的"有"和中文不同——中文说"我有书"，韩语说"我에게 책이 있다（在我处有书）"。不过初级水平常用"은/는 + 이/가 있다"结构。',
+          examples: [
+            { kr: '시간이 있습니다.', cn: '有时间。' },
+            { kr: '돈이 없습니다.', cn: '没有钱。' },
+            { kr: '한국어 책이 있습니다.', cn: '有韩语书。' },
+          ],
+          notes: '있다/없다既是形容词也是动词。"계시다"是"있다"的敬语，用于人。'
+        },
+      ],
+      2: [
+        {
+          pattern: '여기/거기/저기',
+          meaning: '这里/那里/那边（地点指示）',
+          formula: '여기（这里）거기（那里）저기（那边）',
+          exp: '这是韩语中指代地点的三个词。여기指说话人所在的地方（这里）；거기指听话人所在的地方或刚才提到的地方（那里）；저기指离说话人和听话人都远的地方（那边）。与中文的"这里/那里/那边"基本对应。',
+          examples: [
+            { kr: '여기가 학교입니다.', cn: '这里是学校。' },
+            { kr: '거기에 무엇이 있습니까?', cn: '那里有什么？' },
+            { kr: '저기는 도서관입니다.', cn: '那边是图书馆。' },
+          ],
+          notes: '与此对应，指代物品的是"이것/그것/저것"（这个/那个/那个），指代人的是"이분/그분/저분"（这位/那位/那位）。'
+        },
+        {
+          pattern: '에 있다/없다',
+          meaning: '在/不在某处',
+          formula: '场所 + 에 + 物品/人 + 이/가 + 있다/없다',
+          exp: '表示某物或某人在/不在某个地方。语序是：场所에 主体가 있다。中文说"书在桌子上"，韩语语序是"桌子上书在"。注意："에"是地点助词，表示事物存在的位置。',
+          examples: [
+            { kr: '책이 책상 위에 있습니다.', cn: '书在桌子上。' },
+            { kr: '고양이가 방 안에 있습니다.', cn: '猫在房间里。' },
+            { kr: '친구가 도서관에 없습니다.', cn: '朋友不在图书馆。' },
+          ],
+          notes: '问位置时用"어디에 있다"（在哪里？）。注意"에 있다"只表示存在的位置，不表示动作发生的地方（动作发生的地方要用"에서"）。'
+        },
+        {
+          pattern: 'N1과/와 N2',
+          meaning: '……和……（并列助词）',
+          formula: '名词1 + 과/와 + 名词2',
+          exp: '连接两个名词，相当于中文的"和"、"与"。有收音的名词用"과"，无收音的名词用"와"。这是书面语和正式口语的用法。日常对话中更常用"하고"或"(이)랑"。',
+          examples: [
+            { kr: '책과 공책이 있습니다.', cn: '有书和笔记本。' },
+            { kr: '친구와 영화를 봅니다.', cn: '和朋友看电影。' },
+            { kr: '한국과 중국은 가깝습니다.', cn: '韩国和中国很近。' },
+          ],
+          notes: '口语中"하고"更自然。"과/와"主要用于写作和正式场合。表示"和……一起做"时用"와/과 함께"。'
+        },
+        {
+          pattern: '위/아래/앞/뒤/옆/안/밖',
+          meaning: '位置名词（上/下/前/后/旁/内/外）',
+          formula: '参照物 + 의 + 位置名词',
+          exp: '这些是表示相对位置的名词，使用时前面需要加"의"（的）来表示参照物。例如"책상 위"（桌子上方），严格说应该是"책상의 위"（桌子的上面）。日常中常省略"의"。',
+          examples: [
+            { kr: '고양이가 의자 아래에 있습니다.', cn: '猫在椅子下面。' },
+            { kr: '은행이 학교 앞에 있습니다.', cn: '银行在学校前面。' },
+            { kr: '친구가 저의 옆에 앉았습니다.', cn: '朋友坐在我旁边。' },
+            { kr: '가방이 책상 안에 있습니다.', cn: '包在桌子里面。' },
+          ],
+          notes: '注意与中文语序的区别：中文说"桌子上"，韩语说"桌子위에"。"에"是位置助词，必须加在位置名词后面。'
+        },
+      ],
+      3: [
+        {
+          pattern: '-의',
+          meaning: '……的（所属格助词）',
+          formula: '名词1 + 의 + 名词2',
+          exp: '表示所属关系，相当于中文的"的"。名词1属于名词2，即"名词2是名词1的"。注意韩语的"의"发音比较特别，在实际口语中常发成"에"的音，有时甚至省略。在口语中，表示"我的"时"저의"常缩略为"제"。',
+          examples: [
+            { kr: '제 친구의 이름은 민수입니다.', cn: '我朋友的名字是敏秀。' },
+            { kr: '이것은 누구의 가방입니까?', cn: '这是谁的包？' },
+            { kr: '저는 한국어 선생님의 학생입니다.', cn: '我是韩语老师的学生。' },
+          ],
+          notes: '"의"的位置和中文"的"一样。口语中"나의"→"내"，"저의"→"제"，"너의"→"네"。'
+        },
+        {
+          pattern: '-도',
+          meaning: '也（补助词）',
+          formula: '名词 + 도',
+          exp: '表示"也"，非常常用。直接加在名词后面，代替主格助词이/가和宾格助词을/를。也就是说，如果一个名词本来要加이/가或을/를，变成"也"的意思时，就用"도"代替它们。注意：否定句中"도"可以和否定呼应表示"也（不）"。',
+          examples: [
+            { kr: '저도 학생입니다.', cn: '我也是学生。' },
+            { kr: '김치도 맛있습니다.', cn: '泡菜也好吃。' },
+            { kr: '한국어도 재미있습니다.', cn: '韩语也有意思。' },
+            { kr: '사과도 있고 바나나도 있습니다.', cn: '也有苹果也有香蕉。' },
+          ],
+          notes: '"도"放在이/가、을/를的位置，不能同时使用。例如："저도"不是"저는도"。"도"也有"甚至"的意思。'
+        },
+        {
+          pattern: '-하고',
+          meaning: '和……（一起）',
+          formula: '名词 + 하고 + 名词',
+          exp: '表示"和"、"跟"，是"-과/와"的口语版本。连接两个名词，比"-과/와"更自然随意。同时"하고"也可以作为助词附在名词后，表示"和……一起做"。',
+          examples: [
+            { kr: '친구하고 영화를 봅니다.', cn: '和朋友看电影。' },
+            { kr: '가족하고 밥을 먹습니다.', cn: '和家人吃饭。' },
+            { kr: '누구하고 갑니까?', cn: '和谁去？' },
+          ],
+          notes: '还有更口语的"(이)랑"。"하고"比"과/와"口语化，比"(이)랑"稍微正式一点。'
+        },
+        {
+          pattern: '-을/를 좋아하다',
+          meaning: '喜欢……',
+          formula: '名词 + 을/를 좋아하다',
+          exp: '表示"喜欢某事物"。有收音的名词用"을 좋아하다"，无收音用"를 좋아하다"。注意韩语中"좋아하다"是动词（他动词），前面需要宾语助词을/를。而"좋다"是形容词，用主格助词이/가（이것이 좋다 = 这个好）。',
+          examples: [
+            { kr: '저는 한국 음식을 좋아합니다.', cn: '我喜欢韩国料理。' },
+            { kr: '무슨 운동을 좋아합니까?', cn: '喜欢什么运动？' },
+            { kr: '저는 영화 보는 것을 좋아합니다.', cn: '我喜欢看电影。' },
+          ],
+          notes: '"좋아하다"和"좋다"的区别："나는 네가 좋다"=我喜欢你（字面：我你好的那种感觉）。而"나는 너를 좋아한다"=我喜欢你（更主动）。'
+        },
+        {
+          pattern: '敬语体系: -시-',
+          meaning: '敬语词尾',
+          formula: '动词/形容词词干 + (으)시 + 语尾',
+          exp: '韩语有严格的敬语体系。当谈论长辈、上级或不熟悉的人时，要在动词/形容词词干后插入"-(으)시"。有收音用"으시"，无收音用"시"。此外，一些动词有专门的敬语形式：있다→계시다（在），먹다→드시다/잡수시다（吃），자다→주무시다（睡），말하다→말씀하시다（说）。',
+          examples: [
+            { kr: '선생님께서 교실에 계십니다.', cn: '老师在教室里。' },
+            { kr: '진지 잡수셨어요?', cn: '您吃饭了吗？' },
+            { kr: '할머니께서 편히 주무십니다.', cn: '奶奶在安睡。' },
+          ],
+          notes: '对长辈说话时，不仅动词要用敬语，名词也有敬语形式：밥→진지、나이→연세、집→댁。韩国人对敬语非常敏感，用错了会很不礼貌。'
+        },
+      ],
+      4: [
+        {
+          pattern: '-을/를',
+          meaning: '宾格助词（动作对象）',
+          formula: '名词 + 을/를',
+          exp: '表示动作所作用的对象，相当于中文的"把"或直接宾语。有收音的名词用"을"，无收音的名词用"를"。这是韩语最基本的格助词之一，用于标记动词的宾语。注意韩语语序是 SOV（主语-宾语-动词）。',
+          examples: [
+            { kr: '김치를 먹습니다.', cn: '吃泡菜。' },
+            { kr: '한국어를 공부합니다.', cn: '学韩语。' },
+            { kr: '책을 읽습니다.', cn: '读书。' },
+            { kr: '편지를 씁니다.', cn: '写信。' },
+          ],
+          notes: '口语中"-를"常缩略为"-ㄹ"："밥을"→"밥"。"을/를"在口语中有时会省略，但书面语必须写。'
+        },
+        {
+          pattern: '-에서',
+          meaning: '在某处做某事',
+          formula: '场所名词 + 에서',
+          exp: '表示动作进行的场所。和"에 있다"不同，"에 있다"表示存在的位置（在某处），而"에서"表示动作发生的地点（在某处做某事）。例如："学校에 있어요"=在学校（存在），"学校에서 공부해요"=在学校学习（动作）。',
+          examples: [
+            { kr: '학교에서 공부합니다.', cn: '在学校学习。' },
+            { kr: '도서관에서 책을 읽습니다.', cn: '在图书馆读书。' },
+            { kr: '식당에서 밥을 먹습니다.', cn: '在食堂吃饭。' },
+          ],
+          notes: '주의："에서"后面不能接"있다/없다"。想说"在某处"时只能用"에 있다"。即：～에 있다（O），～에서 있다（X）。'
+        },
+        {
+          pattern: '주다',
+          meaning: '给',
+          formula: '名词1 + 은/는 + 名词2 + 에게 + 名词3 + 을/를 + 주다',
+          exp: '表示给予。"주다"前需要三个要素：给的人（主语，用은/는）、接收的人（间接宾语，用에게）、给的物品（直接宾语，用을/를）。语序是：主语는 接收者에게 物品을 주다。(에게只用于人，不用于动物或物体)。',
+          examples: [
+            { kr: '친구에게 선물을 줍니다.', cn: '给朋友礼物。' },
+            { kr: '선생님께 꽃을 드립니다.', cn: '给老师送花。（드리다是주다的敬语）' },
+            { kr: '누가 돈을 줬어요?', cn: '谁给了钱？' },
+          ],
+          notes: '"주다"的敬语是"드리다"。对长辈或上级不能用"주다"，必须用"드리다"。反过来，长辈对晚辈可以用"주다"。'
+        },
+        {
+          pattern: '-이/가 되다',
+          meaning: '成为……',
+          formula: '名词 + 이/가 되다',
+          exp: '表示"成为"、"变成"某种身份或状态。有收音用"이 되다"，无收音用"가 되다"。注意"되다"是非常常用的动词，还有很多其他用法（如"된다"=OK/可以）。初级先掌握"成为"的意思。',
+          examples: [
+            { kr: '저는 의사가 되고 싶습니다.', cn: '我想成为医生。' },
+            { kr: '내일부터 겨울이 됩니다.', cn: '明天开始就是冬天了。' },
+            { kr: '벌써 10시가 되었습니다.', cn: '已经10点了。' },
+          ],
+          notes: '"-이/가 되다"后面加"고 싶다"表示"想成为……"，是表达梦想的常用句型。'
+        },
+      ],
+      5: [
+        {
+          pattern: '时间助词: -에',
+          meaning: '在……（时间点）',
+          formula: '时间名词 + 에',
+          exp: '表示动作发生的时间点。加在时间名词后面，相当于中文的"在……（时）"。注意：只有具体的时间点才能用"에"（如：7시에、월요일에、12월에）。像"언제"（何时）、"어제"（昨天）、"오늘"（今天）、"내일"（明天）这些词后面不能加"에"。',
+          examples: [
+            { kr: '아침 7시에 일어납니다.', cn: '早上7点起床。' },
+            { kr: '월요일에 학교에 갑니다.', cn: '星期一去学校。' },
+            { kr: '12월에 한국에 갑니다.', cn: '12月去韩国。' },
+          ],
+          notes: '언제(O)、어제(O)、오늘(O) → 这些后面不加"에"。要说"언제 가요?"（什么时候去？），不是"언제에 가요?"。'
+        },
+        {
+          pattern: '-부터 -까지',
+          meaning: '从……到……',
+          formula: '时间/场所 + 부터 + 时间/场所 + 까지',
+          exp: '表示时间或空间的起点和终点。用于时间：从几点到几点。用于地点：从某地到某地。"부터"是起点，"까지"是终点。也可以单独使用：「부터」表示"从……起"，「까지」表示"到……为止"。',
+          examples: [
+            { kr: '아침 9시부터 저녁 6시까지 일합니다.', cn: '从早上9点到晚上6点工作。' },
+            { kr: '월요일부터 금요일까지 학교에 갑니다.', cn: '从星期一到星期五去学校。' },
+            { kr: '집에서 학교까지 30분 걸립니다.', cn: '从家到学校需要30分钟。' },
+          ],
+          notes: '问时间范围时用"몇 시부터 몇 시까지"（从几点到几点）。「까지」还有"连……都"的意思，但初级先掌握"到……为止"。'
+        },
+        {
+          pattern: '-고',
+          meaning: '……然后……（连接助词）',
+          formula: '动词1 + 고 + 动词2',
+          exp: '连接两个动作或状态。有两种用法：①表示先后顺序：做A然后做B。②表示并列：做A而且做B。注意：连接的两个动词共用主语。如果主语不同，需要用其他语法。',
+          examples: [
+            { kr: '아침을 먹고 학교에 갑니다.', cn: '吃完早饭去学校。（先后）' },
+            { kr: '노래를 부르고 춤을 춥니다.', cn: '唱歌和跳舞。（并列）' },
+            { kr: '키가 크고 예쁩니다.', cn: '个子高而且漂亮。（并列）' },
+          ],
+          notes: '「-고」连接的是两个独立的动作。「-아/어서」也表示先后顺序，但「-고」更强调顺序，「-아/어서」更强调因果关系。'
+        },
+        {
+          pattern: '固有数词与量词',
+          meaning: '固有数词+量词（变形规则）',
+          formula: '하나→한, 둘→두, 셋→세, 넷→네, 스물→스무',
+          exp: '韩语数词有两套：汉字数词（일、이、삼……）和固有数词（하나、둘、셋……）。固有数词与量词连用时，前面的4个数词要变形：하나+개→한개（一个）、둘+명→두명（两个）、셋+명→세명（三个）、넷+명→네명（四个）、스물+살→스무살（二十岁）。特别注意："시간"（小时）用固有数词（한시、두시……），"분"（分钟）用汉字数词（일분、이분……）。',
+          examples: [
+            { kr: '사과가 세 개 있습니다.', cn: '有三个苹果。' },
+            { kr: '친구가 두 명 있습니다.', cn: '有两个朋友。' },
+            { kr: '지금 한 시입니다.', cn: '现在1点。' },
+          ],
+          notes: '常见的量词搭配：개（个）、명（位人）、분（位敬语人）、장（张纸、照片）、권（本书）、병（瓶）、잔（杯）。'
+        },
+        {
+          pattern: '日期表达法',
+          meaning: '年/月/日/星期表达',
+          formula: '년（年）+ 월（月）+ 일（日）+ 요일（星期）',
+          exp: '韩语日期使用汉字数词。月：일월~십이월（一月~十二月）。日：일일~삼십일（一日~三十一日）。星期：월요일~일요일（周一~周日）。顺序是：년 월 일 요일。问日期时用"며칠"（几日？注意：不是"몇 일"）。',
+          examples: [
+            { kr: '오늘은 2024년 7월 17일입니다.', cn: '今天是2024年7月17日。' },
+            { kr: '내일은 수요일입니다.', cn: '明天是星期三。' },
+            { kr: '생일이 몇 월 며칠입니까?', cn: '生日是几月几日？' },
+          ],
+          notes: '"며칠"（几天/几号）是固定写法，不是"몇 일"。注意：일（日）和일（工作）是同音异义词。'
+        },
+      ],
+      6: [
+        {
+          pattern: '-아/어요',
+          meaning: '非格式体终结词尾（口语体）',
+          formula: '词干 + 아요/어요/해요',
+          exp: '这是韩语口语中最最常用的终结词尾，语气柔和、亲切、自然。适用于日常对话、非正式场合。变形规则：①词干最后一个元音是ㅏ或ㅗ → 加"아요"（如：가다→가요、보다→봐요）②其他元音 → 加"어요"（如：먹다→먹어요、읽다→읽어요）③하다 → 해요（如：공부하다→공부해요）。注意：「-아/어요」不能用于长辈或正式场合，那时要用「-습니다/ㅂ니다」。',
+          examples: [
+            { kr: '맛있어요.', cn: '好吃。' },
+            { kr: '뭐 해요?', cn: '在做什么？' },
+            { kr: '학교에 가요.', cn: '去学校。' },
+          ],
+          notes: '这是整个韩语中最常用的语法点。如果只想学一个语法，就学这个。几乎所有动词形容词都可以用这个形式结尾。'
+        },
+        {
+          pattern: '-으로/로',
+          meaning: '用/往/以（方向/工具/方式）',
+          formula: '名词 + 으로/로',
+          exp: '多功能助词，主要有三种用法：①方向：往某方向（오른쪽으로→往右）②工具：用某工具（버스로→坐公交）③方式：以某种方式（한국어로→用韩语）。变形：有收音（ㄹ除外）用"으로"，无收音或ㄹ收音用"로"。',
+          examples: [
+            { kr: '버스로 학교에 갑니다.', cn: '坐公交车去学校。（工具）' },
+            { kr: '오른쪽으로 가세요.', cn: '请往右走。（方向）' },
+            { kr: '한국어로 말해 주세요.', cn: '请用韩语说。（方式）' },
+          ],
+          notes: '注意"로"和"에서"的区别："～로 가다"=用某种方式去，"～에서 가다"=从某地去。'
+        },
+        {
+          pattern: '颜色表达',
+          meaning: '颜色词汇',
+          formula: '颜色词根 + 색',
+          exp: '韩语颜色词由"颜色形容词词根+색（色）"构成。常用颜色：빨간색（红色）、파란색（蓝色）、노란색（黄色）、하얀색（白色）、검은색（黑色）、초록색（绿色）、주황색（橙色）、보라색（紫色）、분홍색（粉色）、갈색（棕色）。注意颜色形容词本身可以修饰名词：빨간 가방（红色的包）。',
+          examples: [
+            { kr: '빨간색 치마가 예쁩니다.', cn: '红色裙子很漂亮。' },
+            { kr: '파란색 하늘이 아름답습니다.', cn: '蓝色的天空很美。' },
+            { kr: '무슨 색을 좋아해요?', cn: '喜欢什么颜色？' },
+          ],
+          notes: '口语中常省略"색"：빨간 원피스（红色连衣裙）。颜色词前加"진한"（深）和"연한"（浅）可以表示深浅。'
+        },
+        {
+          pattern: '比较: -보다',
+          meaning: '比……更……',
+          formula: '名词1 + 가 + 名词2 + 보다 + 形容词',
+          exp: '表示比较。A가 B보다 + 形容词 = A比B更……。"보다"相当于"比"，放在被比较的对象后面。如果想表达"更"的程度，可以用"더"（更）强调。"훨씬"（得多）也可以用来加强语气。',
+          examples: [
+            { kr: '지하철이 버스보다 빠릅니다.', cn: '地铁比公交车快。' },
+            { kr: '한국어가 영어보다 어렵습니다.', cn: '韩语比英语难。' },
+            { kr: '이 가방이 저 가방보다 더 비쌉니다.', cn: '这个包比那个包更贵。' },
+          ],
+          notes: '问"哪个更……"用"어느 쪽이 더 ...?"。"더"可以省略，意思不变。'
+        },
+      ],
+      7: [
+        {
+          pattern: '-(으)러 가다/오다',
+          meaning: '为了做……而去/来',
+          formula: '动词 + (으)러 가다/오다',
+          exp: '表示去/来某地的目的。相当于"为了做某事而去/来……"。有收音用"으러"，无收音用"러"。注意：这个语法只用于"가다/오다/다니다"等移动动词。动词用基本形（다去掉），不能加时态。',
+          examples: [
+            { kr: '도서관에 책을 빌리러 갑니다.', cn: '去图书馆借书。' },
+            { kr: '한국에 한국어를 공부하러 왔습니다.', cn: '来韩国学韩语。' },
+            { kr: '친구를 만나러 커피숍에 갑니다.', cn: '去见朋友去咖啡店。' },
+          ],
+          notes: '跟"-기 위하여"的区别：前者口语常用，后者更正式书面。跟"-려고"的区别：两者都表示目的，但"-(으)려고"不能和가다/오다以外的动词连用表示目的。'
+        },
+        {
+          pattern: '场所: -에서 -까지',
+          meaning: '从某地到某地（空间范围）',
+          formula: '场所1 + 에서 + 场所2 + 까지',
+          exp: '表示空间的起点和终点。与"-부터 -까지"的区别：前者用于时间时不用"에서"，后者时间空间都用。表示空间时固定用"에서……까지"（从……到……）。问距离或时间用"얼마나 걸리다"（花多少时间）。',
+          examples: [
+            { kr: '집에서 학교까지 30분 걸립니다.', cn: '从家到学校需要30分钟。' },
+            { kr: '서울에서 부산까지 기차로 2시간 반 걸립니다.', cn: '从首尔到釜山坐火车需要2个半小时。' },
+            { kr: '여기에서 저기까지 걸어서 10분입니다.', cn: '从这里到那里走路10分钟。' },
+          ],
+          notes: '问路程："여기에서 XX까지 얼마나 걸립니까?"。回答时可以用"걸어서（走路）"、"버스로（坐公交）"等。'
+        },
+        {
+          pattern: '-(으)면',
+          meaning: '如果……的话',
+          formula: '动词/形容词 + (으)면',
+          exp: '表示假设条件，相当于"如果……的话"。有收音用"으면"，无收音用"면"。这是一个连接词尾，后面需要接主句。主句可以是请求、命令、推测、愿望等。初级常用搭配："-(으)면 좋겠다"（要是……就好了）表示愿望。',
+          examples: [
+            { kr: '왼쪽으로 가면 은행이 있습니다.', cn: '往左走的话有银行。' },
+            { kr: '시간이 있으면 같이 갑시다.', cn: '如果有时间的话一起去吧。' },
+            { kr: '날씨가 좋으면 공원에 갑시다.', cn: '天气好的话去公园吧。' },
+          ],
+          notes: '"-(으)면"和"-(으)니까"的区别：前者表示"如果"（条件），后者表示"因为"（原因）。注意句尾时态变化。'
+        },
+        {
+          pattern: '-(으)세요',
+          meaning: '请……（命令句敬语）',
+          formula: '动词 + (으)세요',
+          exp: '敬语命令句结尾，表示"请做某事"。这是最常用的请求/命令表达方式。有收音用"으세요"，无收音用"세요"。注意："주세요"是"주다（给）+ 세요"的特殊形式，表示"请给我"。否定命令用"-지 마세요"（请不要……）。',
+          examples: [
+            { kr: '여기에 앉으세요.', cn: '请坐在这里。' },
+            { kr: '천천히 말씀하세요.', cn: '请慢慢说。' },
+            { kr: '물 좀 주세요.', cn: '请给我点水。' },
+            { kr: '여기에서 사진을 찍지 마세요.', cn: '请不要在这里拍照。' },
+          ],
+          notes: '对亲近的人可以用更随意的"-아/어"（앉아、먹어）。对长辈用"(으)시어요"更恭敬，但"(으)세요"已经足够礼貌。'
+        },
+      ],
+      8: [
+        {
+          pattern: '-(으)ㄹ 거예요',
+          meaning: '将要/打算做……（将来时）',
+          formula: '动词 + (으)ㄹ 거예요',
+          exp: '表示将来的计划、打算或推测。有收音用"을 거예요"，无收音用"ㄹ 거예요"。这是口语中最常用的将来时表达。注意：这个词尾由"-(으)ㄹ 것（将来的事）+ 이에요"构成，"것"缩略为"거"。疑问句时语气上扬即可。',
+          examples: [
+            { kr: '내일 친구를 만날 거예요.', cn: '明天要见朋友。（计划）' },
+            { kr: '올여름에 한국에 갈 거예요.', cn: '今年夏天要去韩国。（打算）' },
+            { kr: '아마 비가 올 거예요.', cn: '可能会下雨。（推测）' },
+          ],
+          notes: '计划用"-(으)ㄹ 거예요"，即将发生的动作用"-(으)려고 하다"。推测时用"아마……(으)ㄹ 거예요"更自然（아마表示"大概"）。'
+        },
+        {
+          pattern: '-아/어야 되다/하다',
+          meaning: '必须/应该做……',
+          formula: '动词 + 아/어야 되다/하다',
+          exp: '表示义务或必要性。"-아/어야 되다"和"-아/어야 하다"意思相同，前者更口语化、更常用。表示"必须做某事"或"应该做某事"。否定形式는"안 -아/어도 되다"（不做也可以）。注意：「-으면 안 되다」表示"不能/不可以"。',
+          examples: [
+            { kr: '지금 가야 됩니다.', cn: '现在必须走了。' },
+            { kr: '내일까지 숙제를 해야 해요.', cn: '明天之前必须做完作业。' },
+            { kr: '여기에서 사진을 찍으면 안 됩니다.', cn: '这里不可以拍照。' },
+          ],
+          notes: '"-아도 되다"（可以做）和"-으면 안 되다"（不可以做）是一对。否定疑问："안 가도 돼요?"（不去也可以吗？）'
+        },
+        {
+          pattern: '-는데',
+          meaning: '……而且/不过（背景说明）',
+          formula: '句尾 + 는데',
+          exp: '这是韩语中最常用的连接词尾之一，功能非常多。主要用法：①提供背景说明（相当于"……，而且/……"）②转折（相当于"……，但是"）③引出下文的铺垫（相当于"……，所以想问……"）。用在句末还可以表示"委婉地提出请求"。注意：动词现在时用"는데"，形容词和过去时用"은/는데"。',
+          examples: [
+            { kr: '전화했는데 안 받았어요.', cn: '打电话了但没接。（转折）' },
+            { kr: '길을 찾고 있는데 좀 도와주시겠어요?', cn: '我在找路，能帮我一下吗？（铺垫）' },
+            { kr: '날씨가 좋은데 산책할까요?', cn: '天气很好，散散步吗？（背景）' },
+          ],
+          notes: '"는데"用法很多，初级先掌握"背景说明"和"转折"两个用法。句末用"-는데요"表示委婉语气。'
+        },
+        {
+          pattern: '打电话常用语',
+          meaning: '电话中的基本表达',
+          formula: '여보세요 / 잠깐만요 / 잘못 걸었습니다',
+          exp: '韩语打电话有固定用语：여보세요（喂）— 接电话时的第一句。잠깐만요（稍等）/ 잠시만 기다려 주세요（请稍等）。잘못 걸었습니다（打错了）。또 전화할게요（我再打）。메시지를 남기다（留言）。통화 중이다（正在通话中）。',
+          examples: [
+            { kr: '여보세요, 김민수 씨 계세요?', cn: '喂，金敏秀先生在吗？' },
+            { kr: '잠깐만요, 바꿔 드릴게요.', cn: '稍等，我帮您转接。' },
+            { kr: '잘못 걸었습니다. 죄송합니다.', cn: '打错了，对不起。' },
+          ],
+          notes: '手机通话时问"谁"用"누구세요?"（哪位？），回答"是我"用"저예요"。注意：여보세요只用于打电话，见面打招呼不用。'
+        },
+      ],
+      9: [
+        {
+          pattern: '-기로 하다',
+          meaning: '决定做……',
+          formula: '动词 + 기로 하다',
+          exp: '表示"决定做某事"。将动词变成"-기"形式（名词化），然后加"로 하다"（定下来）。强调经过考虑后做出的决定。日常对话中常以"-(기)로 했어요"或"-(기)로 할게요"的形式出现。注意与"-(으)려고 하다"（打算做）的区别：前者是决定好了，后者是意图。',
+          examples: [
+            { kr: '한국어를 공부하기로 했습니다.', cn: '决定学韩语。' },
+            { kr: '내일부터 운동하기로 했어요.', cn: '决定从明天开始运动。' },
+            { kr: '친구와 영화를 보기로 했어요.', cn: '和朋友约好去看电影。' },
+          ],
+          notes: '口语中也常用"-(기)로 약속하다"（约定……）、"-(기)로 결정하다"（决定……）。"하기로 하다"也可以说"할게요"表示自发的决定。'
+        },
+        {
+          pattern: '-(으)ㄹ게요',
+          meaning: '我会做……的（意志/承诺）',
+          formula: '动词 + (으)ㄹ게요',
+          exp: '表示说话人的意志或承诺，只用于第一人称（我）。意思是"我会做……的"。听起来比"-(으)ㄹ 거예요"更柔和、更体贴。常用于对话中对对方做出承诺或回应。注意：不能用于疑问句，也不能用于第三人称。',
+          examples: [
+            { kr: '제가 할게요.', cn: '我来做吧。' },
+            { kr: '내일 다시 전화할게요.', cn: '明天再打电话。' },
+            { kr: '약속을 꼭 지킬게요.', cn: '我一定遵守约定。' },
+          ],
+          notes: '"-(으)ㄹ게요"和"-(으)ㄹ 거예요"的区别：前者是当场做出的承诺（更温柔），后者是事先计划好的（更确定）。'
+        },
+        {
+          pattern: '-잖아요',
+          meaning: '不是……嘛（反问/强调）',
+          formula: '句尾 + 잖아요',
+          exp: '表示"不是……嘛"，用于：①提醒对方已知的事实 ②强调理所当然的事 ③委婉地反驳。语气是"你明明知道的呀"。使用时要注意语气不要显得在责怪对方。动词现在时用"잖아요"，形容词和过去时用"었/았잖아요"。',
+          examples: [
+            { kr: '약속이 있었잖아요.', cn: '不是有约定嘛。' },
+            { kr: '제가 말했잖아요.', cn: '我不是说过了嘛。' },
+            { kr: '한국어가 재미있잖아요.', cn: '韩语不是很有意思嘛。' },
+          ],
+          notes: '这个语法容易让对方感觉被指责，使用时注意语气。亲近的人之间常用。更委婉的形式是"-잖아"。'
+        },
+        {
+          pattern: '约定相关表达',
+          meaning: '守约/违约/改时间',
+          formula: '약속을 지키다/어기다/바꾸다',
+          exp: '与约定(약속)相关的常用搭配：약속을 하다（做约定）、약속을 지키다（守约）、약속을 어기다（违背约定/放鸽子）、약속을 바꾸다（更改约定）、약속 시간을 정하다（定约定时间）、약속 장소（约定地点）。注意：「약속」后面加하다变成动词「약속하다」（约定）。',
+          examples: [
+            { kr: '약속 시간을 바꿔도 될까요?', cn: '可以改约定时间吗？' },
+            { kr: '약속을 꼭 지키세요.', cn: '请一定要守约。' },
+            { kr: '약속을 어겨서 미안합니다.', cn: '对不起，我失约了。' },
+          ],
+          notes: '약속(约束)是汉字词，和中文的"约束"意思相近但不同。韩语의 약속更接近"约定/约会"。'
+        },
+      ],
+      10: [
+        {
+          pattern: '-아/어 보다',
+          meaning: '试着做……/做过……',
+          formula: '动词 + 아/어 보다',
+          exp: '有两种用法：①尝试做某事（"试着做……"）②经历/体验（"做过……"）。过去时"-아/어 봤다"表示有过某种经历。否定形式"-아/어 보지 않다"或"안 -아/어 보다"（没做过）。这是日常对话中极其常用的表达。',
+          examples: [
+            { kr: '한국 음식을 먹어 봤어요?', cn: '吃过韩国料理吗？（经历）' },
+            { kr: '한 번 입어 보세요.', cn: '请试穿一下。（尝试）' },
+            { kr: '아직 한국에 가 보지 못했습니다.', cn: '还没去过韩国。' },
+          ],
+          notes: '"-(으)ㄴ 적이 있다/없다"也表示经历，但更强调"有过/没有过某种经历"，而"-아/어 보다"更强调"尝试"的动作。'
+        },
+        {
+          pattern: '-(으)ㄴ 적이 있다/없다',
+          meaning: '有过/没有过……的经历',
+          formula: '动词 + (으)ㄴ 적이 있다/없다',
+          exp: '表示过去有没有经历过某事。有收音用"은 적이 있다/없다"，无收音用"ㄴ 적이 있다/없다"。「적」是"时候/时机"的意思，这里表示"经历"。常用于问对方有没有做过某事。比"-아/어 보다"更正式，更强调"经历"本身。',
+          examples: [
+            { kr: '한국에 가 본 적이 있어요?', cn: '去过韩国吗？' },
+            { kr: '김치를 먹어 본 적이 없어요.', cn: '没吃过泡菜。' },
+            { kr: '스키를 타 본 적이 있습니다.', cn: '滑过雪。' },
+          ],
+          notes: '口语中常常和"-아/어 보다"一起用："가 본 적이 있다"（去过）= 가 + 아 보 + ㄴ 적이 있다。注意본是보다的变形，不是"看"的意思。'
+        },
+        {
+          pattern: '-네요',
+          meaning: '真是……啊（感叹/新发现）',
+          formula: '词干 + 네요',
+          exp: '表示对新发现的事实的感叹，相当于"……啊/呀"。使用场景：①发现不知道的事实时：와, 예쁘네요!（哇，真漂亮啊！）②对听到的消息表示感叹：그래요? 좋네요!（是吗？真好！）。注意：「네요」只用于现在时，不能用于过去或将来。语气比「-군요」更柔和。',
+          examples: [
+            { kr: '날씨가 좋네요.', cn: '天气真好呀。（看着好天气说）' },
+            { kr: '한국어를 잘하시네요!', cn: '韩语说得真好啊！（刚发现）' },
+            { kr: '여기가 아주 예쁘네요.', cn: '这里真漂亮呀。' },
+          ],
+          notes: '"네요"和"군요"的区别：两者都表示感叹，"네요"更口语更常用，"군요"稍微正式一些。对很亲近的人可以用"네"。'
+        },
+        {
+          pattern: '-(으)면 좋겠다',
+          meaning: '要是……就好了（愿望）',
+          formula: '动词/形容词 + (으)면 좋겠다',
+          exp: '表示强烈的愿望，相当于"要是……就好了"。由条件连接词尾"-(으)면"（如果）和"좋겠다"（就好了）组成。通常用于难以实现或不太确定的愿望。对长辈说时用"-(으)면 좋겠어요"。对亲近的人说"-(으)면 좋겠어"。',
+          examples: [
+            { kr: '방학이 빨리 왔으면 좋겠어요.', cn: '要是假期快点来就好了。' },
+            { kr: '한국어를 잘했으면 좋겠습니다.', cn: '要是韩语能说好就好了。' },
+            { kr: '다음 주에도 날씨가 좋으면 좋겠어요.', cn: '下周天气也好就好了。' },
+          ],
+          notes: '比"-(으)ㄹ 거예요"更委婉地表达愿望。也可以简单地说"좋겠다"表示羡慕或希望。'
+        },
+      ],
+    }
+
+    const LESSONS = [
+      { num: 1, title: '소개', kr: '自我介绍' },
+      { num: 2, title: '학교와 집', kr: '学校和家' },
+      { num: 3, title: '가족', kr: '家人' },
+      { num: 4, title: '음식', kr: '饮食' },
+      { num: 5, title: '하루 생활', kr: '一天的生活' },
+      { num: 6, title: '물건 사기', kr: '购物' },
+      { num: 7, title: '교통', kr: '交通' },
+      { num: 8, title: '전화', kr: '电话' },
+      { num: 9, title: '약속', kr: '约定' },
+      { num: 10, title: '휴일', kr: '假日' },
+    ]
+
+    /* ═══════════════════════════════════════════
+       渲染函数
+       ═══════════════════════════════════════════ */
+
+    function renderStars(n) {
+      var s = ''; for (var i = 0; i < 5; i++) { s += i < n ? '★' : '☆' }; return s
+    }
+    function renderStarsHTML(n) {
+      var s = ''; for (var i = 0; i < 5; i++) { s += i < n ? '<span class="star-on">★</span>' : '<span class="star-off">☆</span>' }; return s
+    }
+
+    // 渲染课程列表
+    function renderLessons() {
+      var l, w, total, done, pct, div, d
+      // 课程列表页
+      var list = document.getElementById('lesson-list')
+      if (list) {
+        list.innerHTML = ''
+        LESSONS.forEach(function(l) {
+          w = VOCAB[l.num] || []
+          total = w.length
+          done = w.filter(function(x) { var d = srs[wk(x, l.num)]; return d && d.lv >= 4 }).length
+          pct = total > 0 ? Math.round((done / total) * 100) : 0
+          d = document.createElement('div')
+          d.className = 'lesson-item'
+          d.onclick = function() { openLesson(l.num) }
+          d.innerHTML = '<span class="num">제' + l.num + '과</span><div class="info"><div class="title">' + l.title + '</div><div class="meta">' + l.kr + ' · ' + total + '个词 · 掌握' + done + '个</div></div><div class="stats"><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="count">' + done + '/' + total + '</span></div>'
+          list.appendChild(d)
+        })
+      }
+      // 首页课程列表
+      var homeList = document.getElementById('home-course-list')
+      if (homeList) {
+        homeList.innerHTML = ''
+        LESSONS.forEach(function(l) {
+          w = VOCAB[l.num] || []
+          total = w.length
+          done = w.filter(function(x) { var d = srs[wk(x, l.num)]; return d && d.lv >= 4 }).length
+          pct = total > 0 ? Math.round((done / total) * 100) : 0
+          d = document.createElement('div')
+          d.className = 'course-item'
+          d.onclick = function() { openLesson(l.num) }
+          d.innerHTML = '<div><div class="name">제' + l.num + '과 · ' + l.title + '</div><div class="sub">' + l.kr + ' · ' + total + '词 · 已掌握 ' + done + ' 词</div></div><div class="right"><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="pct">' + pct + '%</span><div class="arrow"><svg viewBox="0 0 24 24" class="icon-chevron" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg></div></div>'
+          homeList.appendChild(d)
+        })
+      }
+    }
+
+    let currentLessonNum = 1
+
+    // 打开单词列表
+    function openLesson(num, tab) {
+      currentLessonNum = num
+      const words = VOCAB[num] || []
+      document.getElementById('words-title').textContent = `제${num}과 - ${LESSONS[num-1].title}`
+      document.getElementById('words-count').textContent = `共 ${words.length} 个词汇`
+
+      // 渲染单词
+      const list = document.getElementById('word-list')
+      list.innerHTML = ''
+      words.forEach((w, idx) => {
+        const div = document.createElement('div')
+        div.className = 'word-item'
+        div.style.cursor = 'pointer'
+        div.title = '点击展开例句 / 再次点击收起'
+        div.onclick = function() {
+          // 如果已经展开，收起
+          const existing = div.querySelector('.word-detail')
+          if (existing) {
+            existing.remove()
+            div.classList.remove('expanded')
+            return
+          }
+          // 关闭其他已展开的
+          list.querySelectorAll('.word-detail').forEach(d => { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
+          list.querySelectorAll('.word-item.expanded').forEach(function(it) { it.classList.remove('expanded') })
+          div.classList.add('expanded')
+          // 生成例句
+          var exList2 = generateExample(w)
+          var exBlock = exList2 && exList2.length > 0 ? renderExamplesHTML(exList2) : '<div style="color:var(--text-dim);font-size:13px;">暂无例句</div>'
+          var detail = document.createElement('div')
+          detail.className = 'word-detail'
+          detail.style.cssText = 'margin-top:12px;padding:12px 14px;background:var(--bg);border-radius:8px;border-top:1px solid var(--border);'
+          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + '</span><button onclick="event.stopPropagation();startStudy(' + num + ',' + idx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
+          div.appendChild(detail)
+        }
+        div.innerHTML = `
+          <div class="left-col">
+            <div class="kr">${w.kr}</div>
+            <div><span class="pos">${w.pos}</span></div>
+            <div class="cn">${w.cn}</div>
+          </div>
+          <div class="right-col">
+            <div class="stars">${renderStars(w.stars)}</div>
+          </div>
+        `
+        list.appendChild(div)
+      })
+
+      // 渲染语法
+      renderGrammar(num)
+
+      // 切换到指定标签，默认单词
+      switchLessonTab(tab === 'grammar' ? 'grammar' : 'vocab')
+      showPage('page-words')
+    }
+
+    // 渲染语法
+    function renderGrammar(num) {
+      const list = document.getElementById('grammar-list')
+      list.innerHTML = ''
+      const gs = GRAMMAR[num] || []
+      if (gs.length === 0) {
+        list.innerHTML = '<p style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">暂无语法数据</p>'
+        return
+      }
+      gs.forEach((g, idx) => {
+        const gkey = `${num}-${idx}`
+        const div = document.createElement('div')
+        div.className = 'grammar-card'
+        div.id = `grammar-${num}-${idx}`
+        div.style.cursor = 'pointer'
+        div.title = '点击查看详情'
+
+        // 例句HTML
+        var exHtml = ''
+        if (g.examples) {
+          exHtml += '<div class="grammar-examples"><div class="ex-title">📝 例句</div>'
+          g.examples.forEach(function(ex) {
+            exHtml += renderGrammarExampleRow(ex)
+          })
+          exHtml += '</div>'
+        }
+
+        // 注意说明
+        let notesHtml = ''
+        if (g.notes) {
+          notesHtml = `<div class="grammar-notes"><span class="notes-icon">💡</span> ${g.notes}</div>`
+        }
+
+        const isStarred = grammarStarred.has(gkey)
+        const isGMastered = grammarMastered.has(gkey)
+        div.innerHTML = `
+          <div class="pattern-row">
+            <span class="pattern">${g.pattern}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="grammar-master-btn" data-gkey="${gkey}" style="font-size:13px;padding:2px 8px;border-radius:6px;cursor:pointer;color:${isGMastered?'var(--primary)':'var(--text-subtle)'};background:${isGMastered?'var(--primary-light)':'transparent'};border:1px solid ${isGMastered?'var(--primary)':'var(--border)'};transition:all 0.2s;">${isGMastered ? '✓ 已掌握' : '标记掌握'}</span>
+              <span class="grammar-star" data-gkey="${gkey}">${isStarred ? '★' : '☆'}</span>
+            </div>
+          </div>
+          <div class="meaning">${g.meaning}</div>
+          <div class="formula">${g.formula}</div>
+          <div class="explanation">${g.exp}</div>
+          ${exHtml}
+          ${notesHtml}
+        `
+
+        // 收藏点击
+        div.querySelector('.grammar-star').onclick = function(e) {
+          e.stopPropagation()
+          const k = this.dataset.gkey
+          if (grammarStarred.has(k)) grammarStarred.delete(k)
+          else grammarStarred.add(k)
+          this.textContent = grammarStarred.has(k) ? '★' : '☆'
+          saveUserData()
+        }
+
+        // 语法掌握切换
+        div.querySelector('.grammar-master-btn').onclick = function(e) {
+          e.stopPropagation()
+          const k = this.dataset.gkey
+          if (grammarMastered.has(k)) grammarMastered.delete(k)
+          else grammarMastered.add(k)
+          saveUserData()
+          // 刷新此卡片显示
+          const isM = grammarMastered.has(k)
+          this.textContent = isM ? '✓ 已掌握' : '标记掌握'
+          this.style.color = isM ? 'var(--primary)' : 'var(--text-subtle)'
+          this.style.background = isM ? 'var(--primary-light)' : 'transparent'
+          this.style.borderColor = isM ? 'var(--primary)' : 'var(--border)'
+        }
+
+        // 整张卡片点击 → 滚动到此语法并高亮
+        div.onclick = function(e) {
+          // 如果点的是星星，不处理（上面已处理）
+          if (e.target.closest('.grammar-star')) return
+          // 确保在语法 Tab
+          switchLessonTab('grammar')
+          // 滚动到这张卡片
+          div.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // 高亮闪烁
+          div.style.transition = 'box-shadow 0.3s'
+          div.style.boxShadow = '0 0 0 3px var(--primary)'
+          setTimeout(() => { div.style.boxShadow = '' }, 1500)
+        }
+
+        list.appendChild(div)
+      })
+    }
+
+    // 单词/语法标签切换
+    function switchLessonTab(tab) {
+      document.getElementById('tab-vocab').classList.toggle('active', tab === 'vocab')
+      document.getElementById('tab-grammar').classList.toggle('active', tab === 'grammar')
+      document.getElementById('lesson-vocab').style.display = tab === 'vocab' ? 'block' : 'none'
+      document.getElementById('lesson-grammar').style.display = tab === 'grammar' ? 'block' : 'none'
+    }
+
+    // 更新首页统计
+    function updateHomeStats() {
+      var totalWords = 0, dueCount = 0, learningCount = 0, masteredCount = 0, starredCount = 0
+      var now = Date.now()
+      LESSONS.forEach(function(l) {
+        var words = VOCAB[l.num] || []
+        words.forEach(function(w) {
+          totalWords++
+          var key = wk(w, l.num)
+          var d = srs[key]
+          if (starred.has(key)) starredCount++
+          if (d) {
+            if (d.lv >= 5) masteredCount++
+            else if (d.lv > 0) learningCount++
+            if (d.due <= now) dueCount++
+          } else {
+            dueCount++  // 新词也算待复习
+          }
+        })
+      })
+      var pct = totalWords > 0 ? Math.round((masteredCount / totalWords) * 100) : 0
+
+      // 更新首页元素
+      var el
+      el = document.getElementById('home-total'); if (el) el.textContent = totalWords
+      el = document.getElementById('home-mastered'); if (el) el.textContent = dueCount
+      el = document.getElementById('home-remaining'); if (el) el.textContent = learningCount
+      el = document.getElementById('home-starred'); if (el) el.textContent = starredCount
+      el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
+      el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
+
+      // 更新卡片标签文字
+      el = document.getElementById('stat-mastered-label'); if (el) el.textContent = '待复习'
+      el = document.getElementById('stat-remaining-label'); if (el) el.textContent = '学习中'
+
+      // 兼容旧版元素
+      el = document.getElementById('home-course-bar'); if (el) el.style.width = pct + '%'
+      el = document.getElementById('home-course-pct'); if (el) el.textContent = pct + '%'
+      var ring = document.getElementById('home-ring')
+      if (ring) {
+        var circ = 2 * Math.PI * 46
+        ring.style.strokeDashoffset = circ * (1 - pct / 100)
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       页面切换
+       ═══════════════════════════════════════════ */
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+      document.getElementById(id).classList.add('active')
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+      document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // 回到首页时刷新统计数据 + 随机 emoji
+      if (id === 'page-home') {
+        var homeEmojis = ['🫶','🧸','🌸','🐻','🐰','🍀','🩷','💝','🫧','🎀','🐣','☁️','🩵','🐱','🐶','🐥','🐼','🦊','🐨','🐸','🍰','🐾','⭐','🌈','💐']
+        var he = document.getElementById('home-emoji')
+        if (he) he.textContent = homeEmojis[Math.floor(Math.random() * homeEmojis.length)]
+        updateHomeStats()
+        renderLessons()
+      }
+      // 进入课程页时更新统计
+      if (id === 'page-course') {
+        var tWords = 0; LESSONS.forEach(function(l) { (VOCAB[l.num]||[]).forEach(function() { tWords++ }) })
+        var el1 = document.getElementById('course-count'); if (el1) el1.textContent = LESSONS.length
+        var el2 = document.getElementById('course-words'); if (el2) el2.textContent = tWords
+      }
+    }
+
+    /* ═══════════ 时段问候 ═══════════ */
+    var _now = new Date()
+    var hour = _now.getHours()
+    var gt = document.getElementById('greeting-text')
+    var gs = document.getElementById('greeting-sub')
+    var gd = document.getElementById('greeting-date')
+
+    var greetings = [
+      '每天进步一点点，积累就是奇迹 🐣',
+      '今天也是努力学习的一天，真棒 🩷',
+      '你已经比昨天的自己更厉害了 🐰',
+      '每一个坚持的日子，都在闪闪发光 🎀',
+      '慢慢来，比较快 🐢💨',
+      '不怕慢，就怕站，今天又前进了一步 🐾',
+      '学习是给自己的礼物，拆开就是惊喜 🎁',
+      '今天的付出，明天都会开花 🌸',
+      '你认真学韩语的样子，真的很可爱 ૮₍˶ᵔ ᵕ ᵔ˶₎ა',
+      '每次翻一张卡片，离流利又近了一点 🃏',
+      '完成比完美更重要，打开就是胜利 🏆',
+      '한 걸음씩 천천히～一步一步，慢慢地 🐌',
+      '学习不是赛跑，是和自己和解的旅程 🧸',
+      '能坚持到现在，你已经赢了一半 🌷',
+      '每次点开这个页面，就是一次自律的胜利 🎯',
+      '不跟别人比，只跟昨天的自己比 🎈',
+      '学习很苦，但坚持很可爱 ૮ ˙Ⱉ˙ ა',
+      '今天的努力是明天的底气 📚',
+      '没有什么比坚持更让人佩服 🌻',
+      '每天学一点点，时间会给你答案 ⭐',
+      '한국어 공부 재미있어요! 韩语其实很有趣 🐻',
+      '总有一天，看韩剧不用字幕 📺',
+      '想象一下，在首尔街头用韩语点餐的样子 🍜',
+      '김치, 불고기, 비빔밥…学韩语才能吃得更香 🍚',
+      '每一个韩语单词，都是一扇了解韩国的窗 🪟',
+      'K-pop 听懂了，才知道歌词写得多美 🎶',
+      '说不定哪天在韩国咖啡店就派上用场了 🧋',
+      '韩语学会了，看韩综笑点翻倍 😆',
+      '한글은 정말 아름다워요～韩文真的很美 🫧',
+      '语言是桥，韩语是通往新世界的桥 🌈',
+      '会韩语的人，看世界的角度都不一样 👀',
+      '延世韩国语1学完，首尔自由行毫无压力 🐥',
+      '韩国朋友会惊讶你韩语说得这么好 (*≧ω≦)',
+      '每一课学完，就是打开一个新世界 🗺️',
+      '韩语是离我们最近的外语，学起来事半功倍 🎓',
+      '오늘도 파이팅! 🔥',
+      '힘내세요～加油呀 💙',
+      '잘하고 있어요! 你做得很好 🩵',
+      '자신 있게! 自信一点！🍀',
+      '괜찮아요, 천천히～没关系，慢慢来 🫶',
+      '할 수 있어요! 你可以的！🐶',
+      '한 번 더! 再来一次！🔄',
+      '조금만 더! 再坚持一下！⚡',
+      '포기하지 마세요～不要放弃 🤗',
+      '내일도 같이 공부해요! 明天也一起学习吧 🫧',
+      '지금이 제일 좋은 시간! 现在就是最好的时间 ⏳',
+      '행복한 하루 보내세요～度过幸福的一天 💝',
+      '오늘도 수고했어요! 今天也辛苦了 🫶',
+      '작은 성공이 큰 변화를 만듭니다 小成功造大改变 🦋',
+      '시작이 반이다! 开始就成功了一半！🚀',
+      '雨天适合窝在房间背单词 ☔📖',
+      '阳光正好，心情正好，学习正好 ☀️',
+      '耳机里放着韩语歌，手里翻着单词卡 🎧',
+      '今天喝什么？커피? 차? 边喝边学 🥤',
+      '周末也要保持手感，哪怕只翻 5 张卡 📅',
+      '通勤路上，排队等待，碎片时间就是黄金时间 ⏱️',
+      '一个人的自习时光，安静而美好 📔',
+      '书桌收拾干净，心也跟着静下来 🕯️',
+      '学习累了就站起来走走，回来继续 🐾',
+      '每一天都是一个新的开始 🌅'
+    ]
+
+    var pick = greetings[Math.floor(Math.random() * greetings.length)]
+    if (hour < 12) { gt.textContent = '좋은 아침' }
+    else if (hour < 18) { gt.textContent = '좋은 오후' }
+    else { gt.textContent = '좋은 저녁' }
+    gs.textContent = pick
+
+    if (gd) {
+      var days = ['日','一','二','三','四','五','六']
+      gd.textContent = _now.getFullYear() + '年' + (_now.getMonth()+1) + '月' + _now.getDate() + '日 · 星期' + days[_now.getDay()]
+    }
+
+    /* ═══════════ 启动 ═══════════ */
+
+    let studyWords = []
+    let studyIndex = 0
+    let isFlipped = false
+    let starred = new Set()
+    let srs = {}  // SRS数据: { key: { lv, due, ease, n } }
+    let grammarStarred = new Set()
+    let grammarMastered = new Set()
+    let cardDirection = lsGet('ys-carddir', 'kr-first')
+
+    /* ═══════════ SRS 间隔重复系统 ═══════════ */
+    function srsInterval(lv) {
+      // lv 0: 10分钟(首次), lv 1: 1天, lv 2: 3天, lv 3: 7天, lv 4: 21天, lv 5: 60天, lv 6: 120天
+      var intervals = [10*60*1000, 86400000, 3*86400000, 7*86400000, 21*86400000, 60*86400000, 120*86400000]
+      return intervals[Math.min(lv, intervals.length - 1)]
+    }
+
+    function srsStatus(key) {
+      var d = srs[key]
+      if (!d || d.lv === 0) return { text: '新词', lv: 0, due: false }
+      var now = Date.now()
+      if (d.due <= now) return { text: 'Lv.' + d.lv + ' · 待复习', lv: d.lv, due: true }
+      var diff = d.due - now
+      var days = Math.ceil(diff / 86400000)
+      var hours = Math.ceil(diff / 3600000)
+      if (days >= 2) return { text: 'Lv.' + d.lv + ' · ' + days + '天后复习', lv: d.lv, due: false }
+      if (hours >= 1) return { text: 'Lv.' + d.lv + ' · ' + hours + '小时后复习', lv: d.lv, due: false }
+      return { text: 'Lv.' + d.lv + ' · 即将复习', lv: d.lv, due: false }
+    }
+
+    function srsRate(quality) {
+      // quality: 0=忘记, 1=困难, 2=一般, 3=简单
+      var w = studyWords[studyIndex]
+      if (!w) return
+      var key = wk(w, w.lessonNum)
+      var d = srs[key] || { lv: 0, due: 0, ease: 2.5, n: 0 }
+      var now = Date.now()
+      d.n = (d.n || 0) + 1
+      d.last = now
+
+      if (quality === 0) {
+        // 忘记了：重置
+        d.lv = 0
+        d.ease = Math.max(1.3, (d.ease || 2.5) - 0.2)
+        d.due = now + 10*60*1000  // 10分钟后
+      } else if (quality === 1) {
+        // 困难：保持等级，延长间隔
+        d.ease = Math.max(1.3, (d.ease || 2.5) - 0.15)
+        d.due = now + Math.round(srsInterval(d.lv) * 1.2)
+      } else if (quality === 2) {
+        // 一般：升级
+        d.lv = Math.min(d.lv + 1, 6)
+        d.due = now + Math.round(srsInterval(d.lv) * (d.ease || 2.5))
+      } else if (quality === 3) {
+        // 简单：跳级
+        d.lv = Math.min(d.lv + 2, 6)
+        d.ease = Math.min(3.0, (d.ease || 2.5) + 0.15)
+        d.due = now + Math.round(srsInterval(d.lv) * (d.ease || 2.5) * 1.3)
+      }
+
+      srs[key] = d
+      updateSrsStatus()
+      updateHomeStats()
+      renderLessons()
+      saveUserData()
+      // 评分后自动翻到下一张
+      setTimeout(function() { nextCard() }, 400)
+    }
+
+    function updateSrsStatus() {
+      var btn = document.getElementById('ctrl-check')
+      var w = studyWords[studyIndex]
+      if (!btn || !w) return
+      var key = wk(w, w.lessonNum)
+      var st = srsStatus(key)
+      var label = btn.querySelector('.ctrl-label')
+      if (label) label.textContent = st.text
+      if (st.lv >= 5) btn.classList.add('active')
+      else btn.classList.remove('active')
+    }
+
+    function srsDueCount() {
+      var now = Date.now(), count = 0
+      LESSONS.forEach(function(l) {
+        var words = VOCAB[l.num] || []
+        words.forEach(function(w) {
+          var key = wk(w, l.num)
+          var d = srs[key]
+          if (!d || d.due <= now) count++
+        })
+      })
+      return count
+    }
+
+    // 先加载用户数据，再渲染页面
+    var _homeEmojis = ['🫶','🧸','🌸','🐻','🐰','🍀','🩷','💝','🫧','🎀','🐣','☁️','🩵','🐱','🐶','🐥','🐼','🦊','🐨','🐸','🍰','🐾','⭐','🌈','💐']
+    var _he = document.getElementById('home-emoji')
+    if (_he) _he.textContent = _homeEmojis[Math.floor(Math.random() * _homeEmojis.length)]
+    try {
+      loadUserData()
+      renderLessons()
+      updateHomeStats()
+    } catch(e) {
+      if (window._showError) window._showError('初始化失败: ' + (e.message || e))
+    }
+
+    /* ═══════════════════════════════════════════
+       学习模式
+       ═══════════════════════════════════════════ */
+
+    // 从单词列表进入学习
+    function hideNav() {
+      document.querySelector('.bottom-nav').style.display = 'none'
+    }
+    function showNav() {
+      document.querySelector('.bottom-nav').style.display = 'flex'
+    }
+
+    // 根据单词生成例句
+    // ─── 韩语助词 & 词尾变化辅助函数 ───
+    function hasBatchim(str) {
+      if (!str || str.length === 0) return false
+      const c = str.charCodeAt(str.length - 1)
+      if (c < 0xAC00 || c > 0xD7A3) return false
+      return (c - 0xAC00) % 28 !== 0
+    }
+    function attach(word, p) {
+      const [a, b] = p.split('/')
+      return hasBatchim(word) ? word + a : word + (b || a)
+    }
+    function stem(v) { return v.endsWith('다') ? v.slice(0, -1) : v }
+    function lastVowelIdx(str) {
+      const c = str.charCodeAt(str.length - 1)
+      if (c < 0xAC00 || c > 0xD7A3) return -1
+      return Math.floor(((c - 0xAC00) % 588) / 28)
+    }
+    function lastFinalIdx(str) {
+      const c = str.charCodeAt(str.length - 1)
+      if (c < 0xAC00 || c > 0xD7A3) return -1
+      return (c - 0xAC00) % 28
+    }
+    function presentForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '합니다'
+      return hasBatchim(s) ? s + '습니다' : s + 'ㅂ니다'
+    }
+    function wantForm(v) { return stem(v) + '고 싶습니다' }
+    function negForm(v) { return stem(v) + '지 않습니다' }
+    function ingForm(v) { return stem(v) + '고 있습니다' }
+    function gerundForm(v) { return stem(v) + '기' }
+    function nounForm(adj) {
+      const s = stem(adj)
+      if (s.endsWith('하')) return s.slice(0, -1) + '한'
+      if (s.endsWith('있')) return s + '는'
+      if (hasBatchim(s)) return s + '은'
+      return s + '는'
+    }
+
+    // 过去式（处理常见不规则变化）
+    const PAST_IRREG = {
+      '듣':'들었','걷':'걸었','깨닫':'깨달았',
+      '돕':'도왔','곱':'고왔','이르':'이르렀',
+      '부르':'불렀','모르':'몰랐','고르':'골랐',
+      '기쁘':'기뻤','나쁘':'나빴','바쁘':'바빴',
+      '슬프':'슬펐','아프':'아팠','예쁘':'예뻤',
+    }
+    function pastForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '했습니다'
+      if (PAST_IRREG[s]) return PAST_IRREG[s] + '습니다'
+      // ㅂ irregular: 맵다 → 매웠, 덥다 → 더웠
+      if (lastFinalIdx(s) === 17) {
+        const code = s.charCodeAt(s.length - 1) - 0xAC00
+        const init = Math.floor(code / 588), vow = Math.floor((code % 588) / 28)
+        const clean = String.fromCharCode(0xAC00 + init * 588 + vow * 28)
+        return s.slice(0, -1) + clean + '웠습니다'
+      }
+      if (!hasBatchim(s)) {
+        const vi = lastVowelIdx(s), code = s.charCodeAt(s.length - 1) - 0xAC00
+        const init = Math.floor(code / 588)
+        const make = (vow, fin=5) => String.fromCharCode(0xAC00 + init * 588 + vow * 28 + fin)
+        if (vi === 0 || vi === 1) return s.slice(0,-1) + make(vi) + '습니다'
+        if (vi === 4 || vi === 5) return s.slice(0,-1) + make(vi) + '습니다'
+        if (vi === 8) return s.slice(0,-1) + make(9) + '습니다'
+        if (vi === 12) return s.slice(0,-1) + make(14) + '습니다'
+        if (vi === 18) return s.slice(0,-1) + make(4) + '습니다'
+        if (vi === 20) return s.slice(0,-1) + make(6) + '습니다'
+        return s + '었습니다'
+      }
+      return s + '었습니다'
+    }
+
+    // ─── 更多活用辅助函数 ───
+    function stemVowel(v) {
+      const s = stem(v)
+      const code = s.charCodeAt(s.length - 1)
+      if (code < 0xAC00 || code > 0xD7A3) return -1
+      return Math.floor(((code - 0xAC00) % 588) / 28)
+    }
+    function canForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '할 수 있습니다'
+      return hasBatchim(s) ? s + '을 수 있습니다' : s + 'ㄹ 수 있습니다'
+    }
+    function canFormQ(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '할 수 있습니까?'
+      return hasBatchim(s) ? s + '을 수 있습니까?' : s + 'ㄹ 수 있습니까?'
+    }
+    function cantForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '할 수 없습니다'
+      return hasBatchim(s) ? s + '을 수 없습니다' : s + 'ㄹ 수 없습니다'
+    }
+    function letsForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '합시다'
+      return hasBatchim(s) ? s + '읍시다' : s + 'ㅂ시다'
+    }
+    function pleaseForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '하세요'
+      return hasBatchim(s) ? s + '으세요' : s + '세요'
+    }
+    function futureForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '할 겁니다'
+      return hasBatchim(s) ? s + '을 겁니다' : s + 'ㄹ 겁니다'
+    }
+    function condForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '하면'
+      return hasBatchim(s) ? s + '으면' : s + '면'
+    }
+    // -아/어서 连接
+    function aSeoForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '해서'
+      const vi = stemVowel(v)
+      if (!hasBatchim(s)) {
+        if (vi === 0 || vi === 1) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + vi*28) + '서'
+        if (vi === 4 || vi === 5) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + vi*28) + '서'
+        if (vi === 8) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 9*28) + '서'
+        if (vi === 12) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 14*28) + '서'
+        if (vi === 18) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 4*28) + '서'
+        if (vi === 20) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 6*28) + '서'
+      }
+      return s + '어서'
+    }
+    // -지만 (但是)
+    function jimanForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '하지만'
+      return s + '지만'
+    }
+    // 过去否定
+    function pastNegForm(v) {
+      const s = stem(v)
+      if (s.endsWith('하')) return s.slice(0, -1) + '하지 않았습니다'
+      return s + '지 않았습니다'
+    }
+
+    // ─── 从数组中随机取 N 个 ───
+    function pickRandom(arr, n) {
+      const copy = [...arr]
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]]
+      }
+      return copy.slice(0, Math.min(n, copy.length))
+    }
+
+    function generateExample(w) {
+      const p = w.pos, kr = w.kr
+      const cn = w.cn.replace(/[（(].*?[）)]/g, '').trim()
+
+      // 如果有手写例句，直接使用
+      if (w.ex && w.ex.length > 0) {
+        return w.ex.slice(0, 5).map(e => ({ kr: e.kr, cn: e.cn }))
+      }
+
+      const list = []
+      function add(a, b) { list.push({ kr: a, cn: b }) }
+
+      // --- 问候语 ---
+      if (p === '问候语') {
+        if (kr === '안녕하세요') {
+          add('안녕하세요, 만나서 반갑습니다.', '你好，很高兴见到你。')
+          add('안녕하세요, 처음 뵙겠습니다.', '你好，初次见面。')
+          add('안녕하세요, 오랜만이에요.', '你好，好久不见。')
+          add('안녕하세요, 잘 지내셨어요?', '您好，最近过得好吗？')
+          add('선생님, 안녕하세요!', '老师，您好！')
+        } else if (kr === '감사합니다') {
+          add('도와주셔서 정말 감사합니다.', '非常感谢您的帮助。')
+          add('선물을 주셔서 감사합니다.', '谢谢您送我礼物。')
+          add('초대해 주셔서 감사합니다.', '谢谢您的邀请。')
+          add('항상 감사합니다, 선생님.', '一直很感谢您，老师。')
+          add('진심으로 감사합니다.', '真心感谢。')
+        } else if (kr === '실례합니다') {
+          add('실례합니다, 길을 좀 물어보겠습니다.', '打扰一下，我想问路。')
+          add('실례합니다, 여기 앉아도 됩니까?', '打扰一下，可以坐这里吗？')
+          add('실례합니다, 지금 몇 시예요?', '不好意思，现在几点？')
+          add('실례합니다, 잠깐만요.', '失礼了，请稍等。')
+          add('실례합니다, 먼저 가겠습니다.', '失陪了，我先走了。')
+        }
+        return list
+      }
+
+      // --- 感叹词 ---
+      if (p === '感叹词') {
+        if (kr === '네') {
+          add('네, 맞습니다.', '是的，没错。')
+          add('네, 알겠습니다.', '好的，我知道了。')
+          add('네, 그렇게 하겠습니다.', '好的，我会那样做。')
+          add('네, 좋습니다!', '好的，太好了！')
+          add('네, 바로 그거예요.', '对，就是那个。')
+        } else if (kr === '아니요') {
+          add('아니요, 아닙니다.', '不，不是的。')
+          add('아니요, 괜찮습니다.', '不，没关系。')
+          add('아니요, 아직 안 했어요.', '不，还没做。')
+          add('아니요, 제 것이 아닙니다.', '不，不是我的。')
+          add('아니요, 처음 왔습니다.', '不，我是第一次来。')
+        }
+        return list
+      }
+
+      // --- 代词 ---
+      if (p === '代词') {
+        if (kr === '저') {
+          add('저는 한국어를 공부합니다.', '我学韩语。')
+          add('저는 중국에서 왔습니다.', '我来自中国。')
+          add('저는 대학생입니다.', '我是大学生。')
+          add('저는 내일 한국에 갑니다.', '我明天去韩国。')
+          add('저는 매일 운동을 합니다.', '我每天运动。')
+          return list
+        }
+        if (kr === '제') {
+          add('제 이름은 민수입니다.', '我的名字是敏秀。')
+          add('이것은 제 가방이 아닙니다.', '这不是我的包。')
+          add('제 꿈은 의사가 되는 것입니다.', '我的梦想是成为医生。')
+          add('제가 도와 드리겠습니다.', '我来帮您。')
+          add('제 생각에는 좋은 것 같아요.', '我觉得挺好的。')
+          return list
+        }
+        if (kr === '누구') {
+          add('저분은 누구세요?', '那位是谁？')
+          add('누구를 기다리고 있어요?', '你在等谁？')
+          add('이거 누구 거예요?', '这是谁的？')
+          add('누구랑 같이 왔어요?', '和谁一起来的？')
+          add('아까 전화한 분이 누구예요?', '刚才打电话的是谁？')
+          return list
+        }
+        if (kr === '무엇') {
+          add('이것은 무엇입니까?', '这是什么？')
+          add('오늘 저녁에 무엇을 먹을까요?', '今天晚上吃什么？')
+          add('지금 무엇을 하고 있어요?', '现在在做什么？')
+          add('무엇이 가장 필요해요?', '最需要什么？')
+          add('무엇 때문에 왔어요?', '为什么而来？')
+          return list
+        }
+        if (kr === '어디') {
+          add('지금 어디에 가요?', '现在去哪里？')
+          add('화장실이 어디예요?', '洗手间在哪里？')
+          add('어디에서 만날까요?', '在哪里见面呢？')
+          add('이 버스가 어디까지 가요?', '这趟公交车到哪里？')
+          add('어디가 아프세요?', '哪里不舒服？')
+          return list
+        }
+        if (kr === '여기' || kr === '거기' || kr === '저기') {
+          add(kr + '가 정말 예쁘네요.', cn + '真漂亮啊。')
+          add(kr + '에 앉으세요.', '请坐在' + cn + '。')
+          add(kr + '에서 기다릴게요.', '我在' + cn + '等你。')
+          add(kr + '에 뭐가 있어요?', cn + '有什么？')
+          add(kr + '로 오세요!', '来' + cn + '吧！')
+          return list
+        }
+        if (kr === '이것' || kr === '그것' || kr === '저것') {
+          add(attach(kr, '은/는') + ' 얼마예요?', cn + '多少钱？')
+          add(attach(kr, '은/는') + ' 정말 예뻐요.', cn + '真漂亮。')
+          add(attach(kr, '이/가') + ' 마음에 들어요.', '我喜欢' + cn + '。')
+          add(attach(kr, '을/를') + ' 한번 입어 보세요.', '请试穿一下' + cn + '。')
+          add(attach(kr, '을/를') + ' 어디에서 샀어요?', cn + '在哪里买的？')
+          return list
+        }
+        if (kr === '이쪽' || kr === '그쪽' || kr === '저쪽') {
+          add(kr + '으로 가세요.', '请往' + cn + '走。')
+          add(kr + '에 앉으세요.', '请坐在' + cn + '。')
+          add(kr + '이 더 조용해요.', cn + '更安静。')
+          add(kr + '에서 뵙겠습니다.', '在' + cn + '见。')
+          add(kr + '은 어떤가요?', cn + '怎么样？')
+          return list
+        }
+        add(attach(kr, '은/는') + ' 무엇입니까?', cn + '是什么？')
+        add(attach(kr, '이/가') + ' 궁금합니다.', '对' + cn + '很好奇。')
+        add(attach(kr, '을/를') + ' 알고 싶습니다.', '想知道' + cn + '。')
+        add(attach(kr, '에') + ' 대해서 이야기합시다.', '谈谈关于' + cn + '吧。')
+        add(attach(kr, '이/가') + ' 중요합니다.', cn + '很重要。')
+        return list
+      }
+
+      // --- 动词（按语境维度选模板）---
+      if (p === '动词' || p === '自动词' || p === '他动词') {
+        const groups = [
+          [ [`저는 매일 ${presentForm(kr)}.`, `我每天${cn}。`], [`보통 아침에 ${presentForm(kr)}.`, `通常早上${cn}。`], [`주말마다 ${presentForm(kr)}.`, `每个周末${cn}。`], [`한국 사람들은 자주 ${presentForm(kr)}.`, `韩国人经常${cn}。`] ],
+          [ [`어제 ${pastForm(kr)}.`, `昨天${cn}了。`], [`지난 주말에 친구와 ${pastForm(kr)}.`, `上周末和朋友${cn}了。`], [`방금 ${pastForm(kr)}.`, `刚刚${cn}了。`], [`처음 ${pastForm(kr)} 때 힘들었어요.`, `第一次${cn}的时候很辛苦。`] ],
+          [ [`정말 ${wantForm(kr)}.`, `真的很想${cn}。`], [`내일은 꼭 ${futureForm(kr)}.`, `明天一定要${cn}。`], [`다음 주에 ${futureForm(kr)}.`, `下周要${cn}。`], [`기회가 되면 ${wantForm(kr)}.`, `有机会的话想${cn}。`] ],
+          [ [`아직 ${negForm(kr)}.`, `还没${cn}。`], [`너무 피곤해서 ${cantForm(kr)}.`, `太累了没法${cn}。`], [`왜 ${negForm(kr)}?`, `为什么不${cn}？`], [`혼자서 ${canFormQ(kr)}`, `一个人能${cn}吗？`] ],
+          [ [`지금 ${ingForm(kr)}.`, `现在正在${cn}。`], [`같이 ${letsForm(kr)}!`, `一起${cn}吧！`], [`천천히 ${pleaseForm(kr)}.`, `请慢慢${cn}。`], [`시간이 ${condForm(kr)} 연락 주세요.`, `${cn}的话请联系我。`], [`${jimanForm(kr)} 재미있어요.`, `虽然${cn}但有意思。`] ],
+        ]
+        groups.forEach(g => { const t = g[Math.floor(Math.random() * g.length)]; add(t[0], t[1]) })
+        return list
+      }
+
+      // --- 形容词 ---
+      if (p === '形容词') {
+        const groups = [
+          [ [`오늘 정말 ${presentForm(kr)}.`, `今天真的很${cn}。`], [`이것은 ${presentForm(kr)}.`, `这个很${cn}。`], [`요즘 날씨가 ${presentForm(kr)}.`, `最近天气很${cn}。`], [`여기 분위기가 ${presentForm(kr)}.`, `这里气氛很${cn}。`] ],
+          [ [`어제는 정말 ${pastForm(kr)}.`, `昨天真的很${cn}。`], [`처음에는 ${pastNegForm(kr)}.`, `一开始不${cn}。`], [`예전보다 훨씬 ${presentForm(kr)}.`, `比以前${cn}多了。`] ],
+          [ [`점점 더 ${presentForm(kr)}.`, `越来越${cn}了。`], [`내일은 더 ${futureForm(kr)}.`, `明天会更${cn}。`], [`${condForm(kr)} 정말 좋겠어요.`, `要是${cn}就好了。`] ],
+          [ [`별로 ${negForm(kr)}.`, `不太${cn}。`], [`이것보다 저것이 더 ${presentForm(kr)}.`, `比起这个那个更${cn}。`], [`뭐가 제일 ${presentForm(kr)}?`, `什么最${cn}？`], [`생각보다 ${presentForm(kr)}.`, `比想象中${cn}。`] ],
+          [ [`와, 진짜 ${presentForm(kr)}!`, `哇，真是太${cn}了！`], [`${jimanForm(kr)} 마음에 들어요.`, `虽然${cn}但我喜欢。`], [`처음 봤을 때 너무 ${pastForm(kr)}.`, `第一次见的时候太${cn}了。`] ],
+        ]
+        groups.forEach(g => { const t = g[Math.floor(Math.random() * g.length)]; add(t[0], t[1]) })
+        return list
+      }
+
+      // --- 名词（按语义子类分池）---
+      if (p === '名词') {
+        const placeSet = new Set(['학교','집','병원','도서관','시장','은행','공원','식당','카페','회사','교실','사무실','화장실','영화관','서점','극장','버스','지하철','택시','길','한국','중국','일본','미국','영국','독일','러시아','인도','호주','캐나다','프랑스','태국','대사관','기숙사','운동장','주차장','약국','미용실','편의점','백화점','슈퍼','정류장','역','공항','앞','뒤','옆','위','아래','안','밖','근처','호텔','미술관','도시','마을','동네','바다','산','강','터미널','빵집','꽃집','문구점','옷 가게','레스토랑','커피숍'])
+        const personSet = new Set(['의사','선생','학생','회사원','경찰','간호사','변호사','기자','교수','비서','은행원','가수','대학생','군인','소방관','요리사','운전사','배우','사장','직원','주인','친구','사람','아이','어른','남자','여자','아가씨','아주머니','아저씨','부모님','아버지','어머니','가족','할아버지','할머니','외할아버지','외할머니','아들','딸','형','오빠','누나','언니','남동생','여동생','선생님'])
+        const foodSet = new Set(['밥','물','음식','과일','고기','야채','김치','불고기','비빔밥','떡볶이','라면','빵','커피','차','주스','맥주','소주','와인','우유','요구르트','국','찌개','반찬','간식','식사','아침','점심','저녁','된장찌개','냉면','삼겹살','갈비','케이크','바나나','포도','귤','사과'])
+
+        let ntype = 'object'
+        if (placeSet.has(kr) || cn.match(/地方|国家|学校|医院|店|园|馆|场|室|所|局|站|厅/)) ntype = 'place'
+        else if (personSet.has(kr) || cn.match(/师|生$|员|者|亲|奶|爷|爸妈|哥姐|弟兄|妹/)) ntype = 'person'
+        else if (foodSet.has(kr) || cn.match(/吃|喝|饭|菜|汤|肉|果|饮料|酒|奶|茶/)) ntype = 'food'
+
+        if (ntype === 'place') {
+          const g = [
+            [ [kr + '에 가 봤어요?', '去过' + cn + '吗？'], [kr + '에 어떻게 가요?', '怎么去' + cn + '？'], ['주말에 ' + kr + '에 갈 거예요.', '周末要去' + cn + '。'] ],
+            [ ['지난주에 ' + kr + '에 다녀왔어요.', '上周去了' + cn + '。'], ['예전에 ' + kr + ' 근처에 살았어요.', '以前住' + cn + '附近。'] ],
+            [ [kr + '에서 친구를 만날 거예요.', '要在' + cn + '见朋友。'], [kr + ' 근처에 맛집이 많아요.', cn + '附近好吃的很多。'] ],
+            [ [kr + '까지 얼마나 걸려요?', '到' + cn + '要多长时间？'], ['여기서 ' + kr + '까지 가까워요?', '这里到' + cn + '近吗？'] ],
+            [ [attach(kr, '이/가') + ' 정말 예뻐요.', cn + '真漂亮。'], [kr + '에 사람이 진짜 많아요.', cn + '人真的好多。'] ],
+          ]
+          g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
+        } else if (ntype === 'person') {
+          const g = [
+            [ [attach(kr, '이/가') + ' 되고 싶어요.', '想成为' + cn + '。'], [kr + '는 제 꿈이에요.', cn + '是我的梦想。'] ],
+            [ ['어제 ' + kr + '를 만났어요.', '昨天见了' + cn + '。'], [kr + '가 도와줬어요.', cn + '帮了我。'] ],
+            [ [kr + '가 보고 싶어요.', '想念' + cn + '。'], [kr + '에게 선물을 줬어요.', '给' + cn + '送了礼物。'] ],
+            [ [kr + '는 어디에 계세요?', cn + '在哪里？'], ['제 ' + kr + '는 중국에 있어요.', '我的' + cn + '在中国。'] ],
+            [ [kr + '랑 같이 살아요.', '和' + cn + '一起住。'], [kr + '께 안부 전해 주세요.', '代我向' + cn + '问好。'] ],
+          ]
+          g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
+        } else if (ntype === 'food') {
+          const g = [
+            [ [attach(kr, '이/가') + ' 정말 맛있어요.', cn + '真的很好吃。'], ['저는 ' + attach(kr, '을/를') + ' 진짜 좋아해요.', '我很喜欢' + cn + '。'] ],
+            [ ['어제 처음 ' + attach(kr, '을/를') + ' 먹어 봤어요.', '昨天第一次吃' + cn + '。'], ['한국에서 ' + attach(kr, '을/를') + ' 먹어 봤어요.', '在韩国吃过' + cn + '。'] ],
+            [ [attach(kr, '을/를') + ' 만들어 볼 거예요.', '打算做' + cn + '。'], ['내일 ' + attach(kr, '을/를') + ' 먹으러 갈래요?', '明天去吃' + cn + '吗？'] ],
+            [ [attach(kr, '이/가') + ' 조금 매워요.', cn + '有点辣。'], [kr + '는 무슨 맛이에요?', cn + '是什么味道？'] ],
+            [ [kr + ' 한 그릇 더 주세요!', '再来一碗' + cn + '！'], ['이 집 ' + kr + '가 제일 유명해요.', '这家的' + cn + '最有名。'] ],
+          ]
+          g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
+        } else {
+          const g = [
+            [ [attach(kr, '이/가') + ' 있어요?', '有' + cn + '吗？'], ['새 ' + attach(kr, '을/를') + ' 샀어요.', '买了新的' + cn + '。'] ],
+            [ ['어제 ' + attach(kr, '을/를') + ' 잃어버렸어요.', '昨天把' + cn + '弄丢了。'], [kr + '를 찾았어요!', '找到' + cn + '了！'] ],
+            [ [attach(kr, '이/가') + ' 필요해요.', '需要' + cn + '。'], [attach(kr, '을/를') + ' 빌릴 수 있을까요?', '能借一下' + cn + '吗？'] ],
+            [ [attach(kr, '이/가') + ' 너무 비싸요.', cn + '太贵了。'], ['이 ' + attach(kr, '은/는') + ' 얼마예요?', '这个' + cn + '多少钱？'] ],
+            [ [attach(kr, '을/를') + ' 선물로 받았어요.', cn + '是收到的礼物。'], [attach(kr, '을/를') + ' 어떻게 사용해요?', cn + '怎么用？'] ],
+          ]
+          g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
+        }
+        return list
+      }
+
+      // --- 依存名词 ---
+      if (p === '依存名词') {
+        if (kr === '씨') {
+          add('김민수 씨, 안녕하세요?', '金敏秀先生，您好。')
+          add('박 씨는 어디에 가셨어요?', '朴先生去哪里了？')
+          add('저기 최 씨가 와요.', '那边崔女士来了。')
+          add('이 씨, 내일 뵐게요.', '李先生，明天见。')
+          add('김 씨한테 물어보세요.', '问问金先生吧。')
+          return list
+        }
+        if (kr === '시' || kr === '분' || kr === '초') {
+          add('지금 몇 시예요?', '现在几点？')
+          add('세 시에 약속이 있어요.', '三点有约会。')
+          add('1시 30분에 만나요.', '1点30分见。')
+          add('몇 시에 출발할까요?', '几点出发？')
+          add('두 시까지 와 주세요.', '请两点之前来。')
+          return list
+        }
+        if (kr === '년' || kr === '월' || kr === '일') {
+          add('2024년 7월 17일입니다.', '是2024年7月17日。')
+          add('생일이 몇 월 며칠이에요?', '生日是几月几号？')
+          add('12월 25일에 만나요.', '12月25日见面。')
+          return list
+        }
+        if (kr === '층') {
+          add('3층으로 올라가세요.', '请上三楼。')
+          add('이 건물은 몇 층이에요?', '这栋楼有几层？')
+          add('1층에 커피숍이 있어요.', '一楼有咖啡店。')
+          return list
+        }
+        if (kr === '호선') {
+          add('2호선으로 갈아타세요.', '请换乘2号线。')
+          add('몇 호선을 타야 해요?', '应该坐几号线？')
+          return list
+        }
+        if (kr === '호') {
+          add('101호실이 어디예요?', '101号室在哪里？')
+          return list
+        }
+        add(attach(kr, '이/가') + ' 많습니다.', cn + '很多。')
+        add(attach(kr, '을/를') + ' 모릅니다.', '不知道' + cn + '。')
+        add(attach(kr, '은/는') + ' 몇 개 있습니까?', '有几个' + cn + '？')
+        add(attach(kr, '이/가') + ' 필요합니다.', '需要' + cn + '。')
+        add(attach(kr, '에') + ' 따라 다릅니다.', '根据' + cn + '而不同。')
+        return list
+      }
+
+      // --- 副词 ---
+      if (p === '副词') {
+        const g = [
+          [ [kr + ' 한국어를 공부해요.', cn + '学韩语。'], [kr + ' 운동을 해요.', cn + '运动。'], [kr + ' 친구를 만나요.', cn + '见朋友。'], [kr + ' 책을 읽어요.', cn + '读书。'] ],
+          [ ['예전에는 ' + kr + ' 갔어요.', '以前' + cn + '去。'], ['어제는 ' + kr + ' 쉬었어요.', '昨天' + cn + '休息了。'] ],
+          [ [kr + ' 연습하면 잘할 거예요.', cn + '练习就能做好。'], ['앞으로 ' + kr + ' 할 거예요.', '以后要' + cn + '做。'] ],
+          [ ['왜 ' + kr + ' 안 와요?', '为什么不' + cn + '来？'], [kr + ' 안 해도 돼요?', '不' + cn + '也行吗？'] ],
+          [ ['우리 ' + kr + ' 갑시다!', '我们' + cn + '去吧！'], [kr + ' 한 번 해 보세요.', '请' + cn + '试一次。'] ],
+        ]
+        g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
+        return list
+      }
+
+      // --- 冠词 ---
+      if (p === '冠词') {
+        if (kr === '무슨') {
+          add('무슨 음식을 좋아해요?', '喜欢什么食物？')
+          add('무슨 영화를 보고 싶어요?', '想看什么电影？')
+          add('무슨 일로 오셨어요?', '您有什么事？')
+          add('무슨 책을 읽고 있어요?', '在读什么书？')
+          add('무슨 색이 가장 좋아요?', '最喜欢什么颜色？')
+        } else if (kr === '어느') {
+          add('어느 나라에서 오셨어요?', '从哪个国家来的？')
+          add('어느 학교에 다녀요?', '上哪个学校？')
+          add('어느 쪽이 더 좋아요?', '哪个更好？')
+          add('어느 계절을 좋아해요?', '喜欢哪个季节？')
+          add('어느 정도 할 수 있어요?', '能做到什么程度？')
+        }
+        return list
+      }
+
+      // --- 量词 ---
+      if (p === '量词') {
+        add('한 ' + kr + ' 주세요.', '请给一' + cn + '。')
+        add('두 ' + kr + ' 있어요.', '有两' + cn + '。')
+        add('세 ' + kr + ' 필요해요.', '需要三' + cn + '。')
+        add('몇 ' + kr + ' 드릴까요?', '给您几' + cn + '？')
+        add('한 ' + kr + ' 더 있어요?', '还有一' + cn + '吗？')
+        return list
+      }
+
+      // --- 词组 ---
+      if (p === '词组') {
+        add(attach(kr, '을/를') + ' 자주 합니다.', '经常' + cn + '。')
+        add(attach(kr, '을/를') + ' 좋아합니다.', '喜欢' + cn + '。')
+        add(attach(kr, '을/를') + ' 배우고 싶습니다.', '想学' + cn + '。')
+        add(attach(kr, '을/를') + ' 열심히 했습니다.', '努力' + cn + '了。')
+        add('어제 처음으로 ' + attach(kr, '을/를') + ' 했습니다.', '昨天第一次' + cn + '了。')
+        return list
+      }
+
+      return list
+    }
+
+    function startStudy(lessonNum, startIndex) {
+      studyWords = (VOCAB[lessonNum] || []).map(function(w) {
+        return Object.assign({ lessonNum: lessonNum }, w)
+      })
+      if (studyWords.length === 0) return
+      studyIndex = (typeof startIndex === 'number' && startIndex >= 0 && startIndex < studyWords.length) ? startIndex : 0
+      isFlipped = false
+      studyFromPage = 'page-words'
+      document.getElementById('study-title').textContent = `제${lessonNum}과`
+      hideNav()
+      showCard()
+      showPage('page-study')
+    }
+
+    // 显示当前卡片
+    function showCard(dir) {
+      const w = studyWords[studyIndex]
+      if (!w) return
+
+      // 切换动画
+      const card = document.getElementById('flashcard')
+      card.classList.remove('slide-right', 'slide-left')
+      if (dir === 'right') card.classList.add('slide-right')
+      else if (dir === 'left') card.classList.add('slide-left')
+
+      document.getElementById('study-progress').textContent = `${studyIndex + 1}/${studyWords.length}`
+
+      // 卡片方向：正面显示什么语言
+      if (cardDirection === 'cn-first') {
+        document.getElementById('card-kr').textContent = w.cn
+        document.getElementById('card-cn').textContent = w.kr
+      } else {
+        document.getElementById('card-kr').textContent = w.kr
+        document.getElementById('card-cn').textContent = w.cn
+      }
+      document.getElementById('card-stars').innerHTML = renderStarsHTML(w.stars)
+      document.getElementById('card-pos').textContent = w.pos
+
+      // 例句
+      var exDiv = document.getElementById('card-examples')
+      var exList = generateExample(w)
+      if (exList && exList.length > 0) {
+        exDiv.style.display = 'block'
+        exDiv.innerHTML = renderExamplesHTML(exList)
+      } else {
+        exDiv.style.display = 'none'
+      }
+
+      // 重置翻转状态
+      document.getElementById('card-inner').classList.remove('flipped')
+      isFlipped = false
+
+      // 随机换一个萌 emoji
+      var emojis = ['🐻','🐰','🐣','🐱','🐶','🐥','🐼','🦊','🐨','🐸','🐙','🌸','🍀','🫧','🎀','🩷','💝','🧸','🍰','☁️','🩵','🐾','🫶','⭐','🌈','💐','🍓','🍑']
+      document.getElementById('card-emoji').textContent = emojis[Math.floor(Math.random() * emojis.length)]
+
+      // 更新收藏/掌握按钮状态
+      updateStarBtn()
+      updateSrsStatus()
+
+      // 隐藏评分按钮
+      var srsBar = document.getElementById('srs-rate-bar')
+      if (srsBar) srsBar.classList.remove('show')
+    }
+
+    // 翻转卡片
+    function flipCard(e) {
+      // 点了喇叭就不翻
+      if (e && e.target && e.target.closest && e.target.closest('.ex-clickable')) return
+      isFlipped = !isFlipped
+      document.getElementById('card-inner').classList.toggle('flipped', isFlipped)
+      // 翻转后显示/隐藏评分按钮
+      var srsBar = document.getElementById('srs-rate-bar')
+      if (srsBar) {
+        if (isFlipped) srsBar.classList.add('show')
+        else srsBar.classList.remove('show')
+      }
+    }
+
+    // 上一张
+    function prevCard() {
+      if (studyIndex > 0) {
+        studyIndex--
+        showCard('left')
+      }
+    }
+
+    // 下一张
+    function nextCard() {
+      if (studyIndex < studyWords.length - 1) {
+        studyIndex++
+        showCard('right')
+      }
+    }
+
+    // 发音
+    // 发音：Google TTS Audio，夸克可用
+    function speakWord() {
+      var w = studyWords[studyIndex]
+      if (!w) return
+      var text = cardDirection === 'cn-first' ? w.cn : w.kr
+      var lang = cardDirection === 'cn-first' ? 'zh-CN' : 'ko'
+      speak(text, lang)
+    }
+
+    // 通用发音函数：speak('안녕하세요', 'ko')
+    var _playingAudio = null
+
+    function speak(text, lang) {
+      if (!text) return
+      if (_playingAudio) { _playingAudio.pause(); _playingAudio = null }
+      // 停止任何残留的原生语音合成
+      if (window.speechSynthesis) { try { window.speechSynthesis.cancel() } catch(e) {} }
+      var l = lang || 'ko'
+
+      // 方案1：Google TTS Audio（夸克桌面模式最可靠）
+      var url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + l + '&q=' + encodeURIComponent(text)
+      var a = new Audio(url)
+      a.playbackRate = parseFloat(lsGet('ys-tts-rate', '0.85'))
+      _playingAudio = a
+      a.play().then(function() {
+        // 播起来了，不用降级
+      }).catch(function() {
+        // 方案2：Google TTS 不通，降级原生
+        _playingAudio = null
+        if (window.speechSynthesis) {
+          try {
+            window.speechSynthesis.cancel()
+            var u = new SpeechSynthesisUtterance(text)
+            u.lang = l === 'ko' ? 'ko-KR' : 'zh-CN'
+            u.rate = parseFloat(lsGet('ys-tts-rate', '0.85'))
+            window.speechSynthesis.speak(u)
+          } catch(e2) {}
+        }
+      })
+    }
+
+    // 生成例句 HTML，整行可点读
+    function renderExamplesHTML(exList) {
+      if (!exList || exList.length === 0) return ''
+      var html = '<div class="ex-section-title">예문 例句</div>'
+      exList.forEach(function(e) {
+        html += '<div class="example-pair ex-clickable" data-speak="' + e.kr.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '">'
+        html += '<div class="example-item">' + e.kr + ' 🔊</div>'
+        html += '<div class="example-item-cn">' + e.cn + '</div>'
+        html += '</div>'
+      })
+      return html
+    }
+
+    // 事件委托：点例句整行 → 播放，点卡片不翻面
+    document.addEventListener('click', function(e) {
+      var row = e.target.closest ? e.target.closest('.ex-clickable') : null
+      if (!row) return
+      var text = row.getAttribute('data-speak')
+      if (text) { e.stopPropagation(); speak(text, 'ko') }
+    })
+
+    // 生成语法例句 HTML，整行可点读
+    function renderGrammarExampleRow(ex) {
+      var safe = ex.kr.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      var safeCN = ex.cn.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      return '<div class="ex-item ex-clickable" data-speak="' + safe + '"><div class="kr">' + safe + ' 🔊</div><div class="cn">' + safeCN + '</div></div>'
+    }
+
+    // 收藏切换
+    function toggleStar() {
+      const w = studyWords[studyIndex]
+      if (!w) return
+      const key = wk(w, w.lessonNum)
+      if (starred.has(key)) starred.delete(key)
+      else starred.add(key)
+      updateStarBtn()
+      saveUserData()
+    }
+
+    function updateStarBtn() {
+      const btn = document.getElementById('ctrl-star')
+      const w = studyWords[studyIndex]
+      if (!btn) return
+      if (w && starred.has(wk(w, w.lessonNum))) btn.classList.add('active')
+      else btn.classList.remove('active')
+    }
+
+    // SRS 评分（旧 toggleMastered 已替换）
+    function toggleMastered() {
+      // 兼容旧调用：点击"已掌握"按钮 → 默认按"一般"评分
+      srsRate(2)
+    }
+
+    // updateMasterBtn 已不再需要，由 updateSrsStatus 替代
+    function updateMasterBtn() {
+      updateSrsStatus()
+    }
+
+    // 退出学习
+    var studyFromPage = 'page-home'
+
+    function exitStudy() {
+      window.speechSynthesis && window.speechSynthesis.cancel()
+      showNav()
+      showPage(studyFromPage)
+    }
+
+    // 显示收藏列表
+    function showStarred() {
+      showPage('page-starred')
+
+      const count = document.getElementById('starred-count')
+      const empty = document.getElementById('starred-empty')
+      const vlist = document.getElementById('starred-list')
+      const glist = document.getElementById('starred-glist')
+
+      // 收集收藏的词（按课分组）
+      const wordGroups = {} // { lessonNum: [words] }
+      LESSONS.forEach(lesson => {
+        const ws = VOCAB[lesson.num] || []
+        ws.forEach((w, idx) => {
+          if (starred.has(wk(w, lesson.num))) {
+            if (!wordGroups[lesson.num]) wordGroups[lesson.num] = []
+            wordGroups[lesson.num].push({ ...w, lessonNum: lesson.num, wordIdx: idx })
+          }
+        })
+      })
+      // 排序
+      const sortedLessonNums = Object.keys(wordGroups).map(Number).sort((a,b)=>a-b)
+      let totalWordCount = 0
+      sortedLessonNums.forEach(n => { totalWordCount += wordGroups[n].length })
+
+      // 收集收藏的语法（按课分组）
+      const gramGroups = {}
+      LESSONS.forEach(lesson => {
+        const gs = GRAMMAR[lesson.num] || []
+        gs.forEach((g, idx) => {
+          if (grammarStarred.has(`${lesson.num}-${idx}`)) {
+            if (!gramGroups[lesson.num]) gramGroups[lesson.num] = []
+            gramGroups[lesson.num].push({ ...g, lessonNum: lesson.num, grammarIdx: idx })
+          }
+        })
+      })
+      const sortedGramNums = Object.keys(gramGroups).map(Number).sort((a,b)=>a-b)
+      let totalGramCount = 0
+      sortedGramNums.forEach(n => { totalGramCount += gramGroups[n].length })
+
+      const total = totalWordCount + totalGramCount
+      count.textContent = `共 ${total} 项`
+
+      // 渲染单词（按课分组，带标题）
+      vlist.innerHTML = ''
+      if (totalWordCount === 0) {
+        vlist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的单词</div>'
+      } else {
+        sortedLessonNums.forEach(lessonNum => {
+          const ws = wordGroups[lessonNum]
+          const lesson = LESSONS[lessonNum - 1]
+          // 分组标题
+          const header = document.createElement('div')
+          header.style.cssText = 'font-size:13px;font-weight:500;color:var(--primary);margin:16px 0 8px 4px;'
+          header.textContent = `제${lessonNum}과 · ${lesson.title} (${ws.length}个)`
+          vlist.appendChild(header)
+          ws.forEach(w => {
+            const div = document.createElement('div')
+            div.className = 'word-item'
+            div.style.cursor = 'pointer'
+            div.title = '点击开始学习此单词'
+            div.onclick = () => startStudy(w.lessonNum, w.wordIdx)
+            div.innerHTML = `
+              <div class="left-col">
+                <div class="kr">${w.kr}</div>
+                <div class="cn">${w.cn}</div>
+              </div>
+              <div class="right-col"><div class="stars">${renderStars(w.stars)}</div></div>
+            `
+            vlist.appendChild(div)
+          })
+        })
+      }
+
+      // 渲染语法（按课分组，带标题）
+      glist.innerHTML = ''
+      if (totalGramCount === 0) {
+        glist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的语法</div>'
+      } else {
+        sortedGramNums.forEach(lessonNum => {
+          const gs = gramGroups[lessonNum]
+          const lesson = LESSONS[lessonNum - 1]
+          const header = document.createElement('div')
+          header.style.cssText = 'font-size:13px;font-weight:500;color:var(--primary);margin:16px 0 8px 4px;'
+          header.textContent = `제${lessonNum}과 · ${lesson.title} (${gs.length}个)`
+          glist.appendChild(header)
+          gs.forEach(g => {
+            const div = document.createElement('div')
+            div.className = 'grammar-card'
+            div.style.cursor = 'pointer'
+            div.title = '点击展开/收起'
+
+        // 构建完整内容
+        var exHtml2 = ''
+        if (g.examples) {
+          exHtml2 += '<div class="grammar-examples"><div class="ex-title">📝 例句</div>'
+          g.examples.forEach(function(ex) {
+            exHtml2 += renderGrammarExampleRow(ex)
+          })
+          exHtml2 += '</div>'
+        }
+        var notesHtml = ''
+        if (g.notes) {
+          notesHtml = `<div class="grammar-notes"><span class="notes-icon">💡</span> ${g.notes}</div>`
+        }
+
+        div.innerHTML = `
+          <div class="pattern-row">
+            <span class="pattern" style="font-size:16px;">${g.pattern}</span>
+            <span class="grammar-star" style="font-size:20px;color:var(--star);">★</span>
+          </div>
+          <div class="meaning">${g.meaning}</div>
+          <div class="formula">${g.formula}</div>
+          <div class="starred-grammar-body" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <div class="explanation" style="font-size:14px;line-height:1.8;">${g.exp}</div>
+            ${exHtml2}
+            ${notesHtml}
+          </div>
+        `
+
+        // 星星收藏点击
+        div.querySelector('.grammar-star').onclick = function(e) {
+          e.stopPropagation()
+          const k = `${g.lessonNum}-${g.grammarIdx}`
+          if (grammarStarred.has(k)) grammarStarred.delete(k)
+          else grammarStarred.add(k)
+          saveUserData()
+          showStarred() // 刷新收藏列表
+        }
+
+        // 整张卡片点击 → 展开/收起
+        div.onclick = function(e) {
+          if (e.target.closest('.grammar-star')) return
+          const body = div.querySelector('.starred-grammar-body')
+          const isOpen = body.style.display !== 'none'
+          body.style.display = isOpen ? 'none' : 'block'
+          // 平滑滚动让内容可见
+          if (!isOpen) {
+            setTimeout(() => div.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
+          }
+        }
+
+        glist.appendChild(div)
+          })
+        })
+      }
+
+      // 显示/隐藏空状态
+      empty.style.display = total === 0 ? 'block' : 'none'
+
+      // 默认显示单词标签
+      switchStarTab('vocab')
+    }
+
+    let starTabData = { words: [], grammars: [] }
+
+    function switchStarTab(tab) {
+      document.getElementById('stab-vocab').classList.toggle('active', tab === 'vocab')
+      document.getElementById('stab-grammar').classList.toggle('active', tab === 'grammar')
+      document.getElementById('starred-vocab').style.display = tab === 'vocab' ? 'block' : 'none'
+      document.getElementById('starred-grammar').style.display = tab === 'grammar' ? 'block' : 'none'
+    }
+
+    // 搜索功能
+    let searchTimer = null
+
+    function showSearch() {
+      showPage('page-search')
+      setTimeout(() => document.getElementById('search-input').focus(), 200)
+    }
+
+    function doSearch() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase()
+      const results = document.getElementById('search-results')
+      const empty = document.getElementById('search-empty')
+      const emptyText = document.getElementById('search-empty-text')
+
+      if (!q) {
+        results.innerHTML = ''
+        empty.style.display = 'none'
+        return
+      }
+
+      // 搜索所有词汇
+      const hits = []
+      LESSONS.forEach(lesson => {
+        const words = VOCAB[lesson.num] || []
+        words.forEach(w => {
+          if (w.kr.includes(q) || w.cn.toLowerCase().includes(q)) {
+            hits.push({ ...w, lessonNum: lesson.num, lessonTitle: lesson.title })
+          }
+        })
+      })
+
+      if (hits.length === 0) {
+        results.innerHTML = ''
+        empty.style.display = 'block'
+        emptyText.textContent = `没有找到包含"${q}"的结果`
+        return
+      }
+
+      empty.style.display = 'none'
+      results.innerHTML = ''
+      hits.forEach(w => {
+        const div = document.createElement('div')
+        div.className = 'word-item search-result-item'
+        div.onclick = () => openLesson(w.lessonNum)
+        div.innerHTML = `
+          <div class="left-col">
+            <div class="kr">${w.kr}</div>
+            <div class="cn">${w.cn}</div>
+            <span class="lesson-tag">제${w.lessonNum}과</span>
+          </div>
+          <div class="right-col">
+            <div class="stars">${renderStars(w.stars)}</div>
+          </div>
+        `
+        results.appendChild(div)
+      })
+    }
+
+    // 输入框防抖
+    document.addEventListener('DOMContentLoaded', function() {
+      const input = document.getElementById('search-input')
+      if (input) {
+        input.addEventListener('input', function() {
+          clearTimeout(searchTimer)
+          searchTimer = setTimeout(doSearch, 200)
+        })
+      }
+    })
+
+    /* ═══════════════════════════════════════════
+       复习模式（新版：按单元分组 + 自选范围）
+       ═══════════════════════════════════════════ */
+
+    let reviewType = 'due'
+    let selectedLessons = new Set()
+
+    function switchReviewTab(type) {
+      reviewType = type
+      document.querySelectorAll('#page-review .tab-btn').forEach(b => b.classList.remove('active'))
+      document.getElementById('rtab-' + type).classList.add('active')
+      selectedLessons.clear()
+      renderReviewLessons()
+    }
+
+    function reviewQuick(type) {
+      reviewType = type
+      document.querySelectorAll('#page-review .tab-btn').forEach(b => b.classList.remove('active'))
+      document.getElementById('rtab-' + type).classList.add('active')
+      // 快速模式：直接打乱全部符合条件的词开始
+      let pool = buildReviewPool(type, LESSONS.map(l => l.num))
+      if (pool.length === 0) { alert('没有符合条件的词汇'); return }
+      startStudyPool(pool, type)
+    }
+
+    function _isDue(w, num) {
+      var d = srs[wk(w, num)]
+      if (!d) return true  // 新词 = 待复习
+      return d.due <= Date.now()
+    }
+    function _isUnmastered(w, num) {
+      var d = srs[wk(w, num)]
+      if (!d) return true  // 新词 = 未掌握
+      return d.lv < 4
+    }
+    function buildReviewPool(type, lessonNums) {
+      const pool = []
+      lessonNums.forEach(num => {
+        const words = VOCAB[num] || []
+        words.forEach(w => {
+          const item = { ...w, lessonNum: num }
+          if (type === 'all') pool.push(item)
+          else if (type === 'due' && _isDue(w, num)) pool.push(item)
+          else if (type === 'unmastered' && _isUnmastered(w, num)) pool.push(item)
+          else if (type === 'starred' && starred.has(wk(w, num))) pool.push(item)
+        })
+      })
+      return pool
+    }
+
+    function startStudyPool(pool, label) {
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]]
+      }
+      studyWords = pool
+      studyIndex = 0
+      isFlipped = false
+      studyFromPage = 'page-review'
+      document.getElementById('study-title').textContent = '复习 · ' + label
+      hideNav()
+      showCard()
+      showPage('page-study')
+    }
+
+    function toggleReviewLesson(num) {
+      if (selectedLessons.has(num)) selectedLessons.delete(num)
+      else selectedLessons.add(num)
+      renderReviewLessons()
+    }
+
+    function doReview() {
+      const selKeys = setKeys(selectedLessons)
+      const nums = selKeys.length > 0 ? selKeys : LESSONS.map(l => l.num)
+      const pool = buildReviewPool(reviewType, nums)
+      if (pool.length === 0) { alert('所选单元没有符合 ' + reviewType + ' 条件的词汇'); return }
+      const label = selKeys.length > 0
+        ? `第${selKeys.sort((a,b)=>a-b).join('、')}课`
+        : '全部'
+      startStudyPool(pool, label)
+    }
+
+    function renderReviewLessons() {
+      const list = document.getElementById('review-lesson-list')
+      const empty = document.getElementById('review-empty')
+      const emptyText = document.getElementById('review-empty-text')
+      const footer = document.getElementById('review-footer')
+      const info = document.getElementById('review-selected-info')
+
+      list.innerHTML = ''
+      let totalCount = 0
+      let anySelected = selectedLessons.size > 0
+
+      LESSONS.forEach(lesson => {
+        const words = VOCAB[lesson.num] || []
+        let count = 0
+        words.forEach(w => {
+          if (reviewType === 'all') count++
+          else if (reviewType === 'due' && _isDue(w, lesson.num)) count++
+          else if (reviewType === 'unmastered' && _isUnmastered(w, lesson.num)) count++
+          else if (reviewType === 'starred' && starred.has(wk(w, lesson.num))) count++
+        })
+        if (count === 0) return
+        totalCount += count
+
+        const sel = selectedLessons.has(lesson.num)
+        const div = document.createElement('div')
+        div.className = 'review-option'
+        div.style.cssText = sel ? 'border-color:var(--primary);background:var(--primary-light);' : ''
+        div.onclick = () => toggleReviewLesson(lesson.num)
+        div.innerHTML = `
+          <div class="ro-icon" style="font-size:20px;">${sel ? '☑️' : '☐'}</div>
+          <div>
+            <div class="ro-title">제${lesson.num}과 · ${lesson.title}</div>
+            <div class="ro-desc">${lesson.kr}</div>
+          </div>
+          <span class="ro-count" style="color:${sel?'var(--primary)':'var(--primary)'}">${count}词</span>
+        `
+        list.appendChild(div)
+      })
+
+      if (totalCount === 0) {
+        empty.style.display = 'block'
+        emptyText.textContent = reviewType === 'due' ? '全部复习完啦 🎉' : reviewType === 'unmastered' ? '全部掌握啦 🎉' : reviewType === 'starred' ? '还没有收藏的词' : '暂无词汇'
+        footer.style.display = 'none'
+      } else {
+        empty.style.display = 'none'
+        footer.style.display = 'block'
+        if (anySelected) {
+          let selTotal = 0
+          selectedLessons.forEach(n => {
+            const ws = VOCAB[n] || []
+            ws.forEach(w => {
+              if (reviewType === 'all') selTotal++
+              else if (reviewType === 'due' && _isDue(w, n)) selTotal++
+              else if (reviewType === 'unmastered' && _isUnmastered(w, n)) selTotal++
+              else if (reviewType === 'starred' && starred.has(wk(w, n))) selTotal++
+            })
+          })
+          info.textContent = `已选 ${selectedLessons.size} 个单元，共 ${selTotal} 词`
+        } else {
+          info.textContent = `未选单元则默认全部 · 共 ${totalCount} 词`
+        }
+      }
+    }
+
+    function showReviewSetup() {
+      reviewType = 'due'
+      selectedLessons.clear()
+      document.querySelectorAll('#page-review .tab-btn').forEach(b => b.classList.remove('active'))
+      var dueTab = document.getElementById('rtab-due')
+      if (dueTab) dueTab.classList.add('active')
+      renderReviewLessons()
+      showPage('page-review')
+    }
+
+    function startReview(type) {
+      // 兼容旧调用
+      const pool = buildReviewPool(type, LESSONS.map(l => l.num))
+      if (pool.length === 0) { alert('没有符合条件的词汇'); return }
+      startStudyPool(pool, type)
+    }
+
+    // 键盘支持
+    document.addEventListener('keydown', function(e) {
+      const studyPage = document.getElementById('page-study')
+      if (!studyPage.classList.contains('active')) return
+
+      if (e.key === 'ArrowLeft') prevCard()
+      else if (e.key === 'ArrowRight') nextCard()
+      else if (e.key === ' ' || e.key === 'Enter') { flipCard(); e.preventDefault() }
+    })
+
+    /* ═══════════════════════════════════════════
+       LocalStorage 保存
+       ═══════════════════════════════════════════ */
+
+    function saveUserData() {
+      const data = {
+        starred: setKeys(starred),
+        srs: srs,
+        grammarStarred: setKeys(grammarStarred),
+        grammarMastered: setKeys(grammarMastered),
+      }
+      try {
+        lsSet('yonsei-study-data', JSON.stringify(data))
+      } catch(e) {}
+    }
+
+    function loadUserData() {
+      try {
+        const raw = lsGet('yonsei-study-data', null)
+        if (raw) {
+          const data = JSON.parse(raw)
+          starred = new Set(data.starred || [])
+          grammarStarred = new Set(data.grammarStarred || [])
+          grammarMastered = new Set(data.grammarMastered || [])
+
+          // SRS 数据迁移：如果有 srs 直接用，否则从旧 mastered 迁移
+          if (data.srs && typeof data.srs === 'object') {
+            srs = data.srs
+          } else if (data.mastered && Array.isArray(data.mastered)) {
+            // 旧版 mastered → SRS 迁移
+            var now = Date.now()
+            srs = {}
+            data.mastered.forEach(function(key) {
+              srs[key] = { lv: 3, due: now, ease: 2.5, n: 3 }
+            })
+          } else {
+            srs = {}
+          }
+        }
+      } catch(e) {}
+    }
+
+    // 在单词列表加"开始学习"按钮
+    const origOpenLesson = openLesson
+    openLesson = function(num) {
+      origOpenLesson(num)
+      // 在单词列表顶部加学习按钮
+      const header = document.querySelector('#page-words .page-header')
+      const existing = document.getElementById('study-btn-area')
+      if (existing) existing.remove()
+
+      const btnArea = document.createElement('div')
+      btnArea.id = 'study-btn-area'
+      btnArea.style.cssText = 'margin-bottom:16px;'
+      const btn = document.createElement('button')
+      btn.textContent = '开始学习'
+      btn.style.cssText = `
+        width:100%; padding:14px; border:none; border-radius:12px;
+        background:var(--primary); color:white;
+        font-family:var(--font-display); font-size:16px; font-weight:500;
+        cursor:pointer; transition:opacity 0.2s;
+      `
+      btn.onmouseover = () => btn.style.opacity = '0.9'
+      btn.onmouseout = () => btn.style.opacity = '1'
+      btn.onclick = () => startStudy(num)
+      btnArea.appendChild(btn)
+      header.after(btnArea)
+    }
+
+    /* ═══════════════════════════════════════════
+       设置功能
+       ═══════════════════════════════════════════ */
+
+    // ─── 卡片方向 ───
+    function setCardDir(dir) {
+      cardDirection = dir
+      lsSet('ys-carddir', dir)
+      document.getElementById('carddir-kr').style.background = dir === 'kr-first' ? 'var(--primary-light)' : 'transparent'
+      document.getElementById('carddir-kr').style.color = dir === 'kr-first' ? 'var(--primary)' : 'var(--text)'
+      document.getElementById('carddir-cn').style.background = dir === 'cn-first' ? 'var(--primary-light)' : 'transparent'
+      document.getElementById('carddir-cn').style.color = dir === 'cn-first' ? 'var(--primary)' : 'var(--text)'
+    }
+
+    // ─── TTS 语速 ───
+    function updateTtsRate(val) {
+      lsSet('ys-tts-rate', val)
+      const labels = { '0.5':'很慢', '0.65':'慢', '0.75':'较慢', '0.85':'正常', '0.95':'较快', '1.05':'快', '1.2':'很快' }
+      const label = labels[val] || val
+      document.getElementById('tts-rate-label').textContent = label + ' (' + val + ')'
+    }
+
+    // ─── 数据导出/导入/清除 ───
+    function exportData() {
+      var data = {
+        starred: setKeys(starred),
+        srs: srs,
+        grammarStarred: setKeys(grammarStarred),
+        grammarMastered: setKeys(grammarMastered),
+        cardDirection: cardDirection,
+        exportedAt: new Date().toISOString(),
+      }
+      var jsonStr = JSON.stringify(data, null, 2)
+      var blob = new Blob([jsonStr], { type: 'application/json' })
+      var url = URL.createObjectURL(blob)
+      var a = document.createElement('a')
+      a.href = url
+      a.download = '每日韩语-备份-' + new Date().toISOString().slice(0, 10) + '.json'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(function() { URL.revokeObjectURL(url) }, 1000)
+      showToast('📤 下载中...')
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('ys-toast')
+      if (!t) { t = document.createElement('div'); t.id = 'ys-toast'; t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:14px;z-index:99999;pointer-events:none;transition:opacity 0.3s;'; document.body.appendChild(t) }
+      t.textContent = msg; t.style.opacity = '1'
+      clearTimeout(t._timer); t._timer = setTimeout(function() { t.style.opacity = '0' }, 2000)
+    }
+
+    function importData() {
+      var input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      input.onchange = function() {
+        var file = input.files[0]
+        if (!file) return
+        var reader = new FileReader()
+        reader.onload = function(e) {
+          try {
+            var data = JSON.parse(e.target.result)
+            if (data.starred) starred = new Set(data.starred)
+            if (data.grammarStarred) grammarStarred = new Set(data.grammarStarred)
+            if (data.grammarMastered) grammarMastered = new Set(data.grammarMastered)
+            if (data.cardDirection) cardDirection = data.cardDirection
+            // SRS: 新格式直接用，旧mastered格式迁移
+            if (data.srs && typeof data.srs === 'object') {
+              srs = data.srs
+            } else if (data.mastered && Array.isArray(data.mastered)) {
+              var now = new Date().getTime()
+              srs = {}
+              data.mastered.forEach(function(key) {
+                srs[key] = { lv: 3, due: now, ease: 2.5, n: 3 }
+              })
+            }
+            saveUserData()
+            if (data.cardDirection) lsSet('ys-carddir', data.cardDirection)
+            updateHomeStats()
+            renderLessons()
+            showToast('✅ 导入成功！')
+          } catch (err) {
+            alert('导入失败：数据格式不对')
+          }
+        }
+        reader.readAsText(file)
+      }
+      // 加到页面里再触发，防止移动浏览器拦截
+      document.body.appendChild(input)
+      input.click()
+      document.body.removeChild(input)
+    }
+
+    function resetAllData() {
+      if (!confirm('确定要清除所有学习记录吗？\n\n包括：收藏、SRS进度、语法进度\n\n此操作无法撤销。')) return
+      starred.clear()
+      srs = {}
+      grammarStarred.clear()
+      grammarMastered.clear()
+      try { localStorage.removeItem('yonsei-study-data') } catch(e) {}
+      lsSet('yonsei-study-data', '')
+      saveUserData()
+      updateHomeStats()
+      renderLessons()
+      alert('所有记录已清除。')
+    }
+
+    // ─── 显示设置 ───
+    function showSettings() {
+      var rate = lsGet('ys-tts-rate', '0.85')
+      updateTtsRate(rate)
+      document.getElementById('tts-rate').value = rate
+      setCardDir(cardDirection)
+      // 关于统计
+      let total = 0, mCount = 0
+      LESSONS.forEach(l => {
+        const ws = VOCAB[l.num] || []
+        ws.forEach(w => { total++; var d = srs[wk(w, l.num)]; if (d && d.lv >= 5) mCount++ })
+      })
+      document.getElementById('settings-word-count').textContent = total + ' 词'
+      document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
+      showPage('page-settings')
+    }
+    // PWA
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}) }
+  </script>
+</body>
+</html>
