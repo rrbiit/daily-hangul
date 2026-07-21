@@ -577,7 +577,7 @@
         <!-- 统计卡片 -->
         <div class="stat-cards">
           <div class="stat-card sc-mastered">
-            <div class="sc-icon">⏰</div>
+            <div class="sc-icon">✅</div>
             <div class="sc-num" id="home-mastered">0</div>
             <div class="sc-label" id="stat-mastered-label">待复习</div>
           </div>
@@ -2553,27 +2553,29 @@
           var d = srs[key]
           if (starred.has(key)) starredCount++
           if (d) {
-            if (d.lv >= 5) masteredCount++
-            else if (d.lv > 0) learningCount++
+            if (d.lv >= 4) masteredCount++
+            else if (d.lv >= 1) learningCount++
             if (d.due <= now) dueCount++
           } else {
             dueCount++  // 新词也算待复习
           }
         })
       })
-      var pct = totalWords > 0 ? Math.round((masteredCount / totalWords) * 100) : 0
+      // 进度条：复习过的词都算进度
+      var reviewed = masteredCount + learningCount
+      var pct = totalWords > 0 ? Math.round((reviewed / totalWords) * 100) : 0
 
       // 更新首页元素
       var el
       el = document.getElementById('home-total'); if (el) el.textContent = totalWords
-      el = document.getElementById('home-mastered'); if (el) el.textContent = dueCount
+      el = document.getElementById('home-mastered'); if (el) el.textContent = masteredCount
       el = document.getElementById('home-remaining'); if (el) el.textContent = learningCount
       el = document.getElementById('home-starred'); if (el) el.textContent = starredCount
       el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
 
-      // 更新卡片标签文字
-      el = document.getElementById('stat-mastered-label'); if (el) el.textContent = '待复习'
+      // 更新卡片标签
+      el = document.getElementById('stat-mastered-label'); if (el) el.textContent = '已掌握'
       el = document.getElementById('stat-remaining-label'); if (el) el.textContent = '学习中'
 
       // 兼容旧版元素
@@ -2714,6 +2716,7 @@
     function srsStatus(key) {
       var d = srs[key]
       if (!d || d.lv === 0) return { text: '新词', lv: 0, due: false }
+      if (d.lv >= 4) return { text: '已掌握 ✓', lv: d.lv, due: false }
       var now = Date.now()
       if (d.due <= now) return { text: 'Lv.' + d.lv + ' · 待复习', lv: d.lv, due: true }
       var diff = d.due - now
@@ -2771,7 +2774,7 @@
       var st = srsStatus(key)
       var label = btn.querySelector('.ctrl-label')
       if (label) label.textContent = st.text
-      if (st.lv >= 5) btn.classList.add('active')
+      if (st.lv >= 4) btn.classList.add('active')
       else btn.classList.remove('active')
     }
 
