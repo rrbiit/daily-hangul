@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -143,16 +143,7 @@
       .card-kr { color: #d5cbd8; }
       .card-hint { color: #7a6e78; }
       .card-stars .star-off { color: #4a3e48; }
-      .study-controls { background: rgba(26,26,46,0.88); }
-      .srs-rate-btn { background: #1e1e2e; color: #ccc; border-color: #3a3a5a; }
-      .srs-rate-btn.rate-again { border-color: #c62828; color: #ef9a9a; }
-      .srs-rate-btn.rate-again:hover { background: #2a1a1a; }
-      .srs-rate-btn.rate-hard { border-color: #e65100; color: #ffcc80; }
-      .srs-rate-btn.rate-hard:hover { background: #2a2018; }
-      .srs-rate-btn.rate-good { border-color: #2e7d32; color: #a5d6a7; }
-      .srs-rate-btn.rate-good:hover { background: #1a2a1a; }
-      .srs-rate-btn.rate-easy { border-color: #1565c0; color: #90caf9; }
-      .srs-rate-btn.rate-easy:hover { background: #1a2230; }
+      .study-controls { background: var(--surface); }
     }
     .nav-inner { max-width: 640px; width: 100%; display: flex; justify-content: space-around; padding: 0 16px; }
     .nav-item {
@@ -405,7 +396,7 @@
     .card-stars .star-on { color: #f6a973; }
     .card-stars .star-off { color: #dfd8e0; }
     .card-hint {
-      position: absolute; bottom: 28px;
+      position: absolute; bottom: 95px;
       font-size: 11px; color: #c4b0ba;
       letter-spacing: 0.02em;
     }
@@ -451,8 +442,7 @@
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: flex-start; justify-content: center;
       gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 8px));
-      background: rgba(248,250,252,0.85);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: var(--surface);
       border-top: 1px solid var(--border);
     }
     .study-controls > div {
@@ -485,34 +475,29 @@
       font-size: 10px; color: var(--text-dim); white-space: nowrap;
     }
 
-    /* ─── SRS 评分按钮 ─── */
-    .srs-rate-bar {
-      display: none;
-      flex-wrap: wrap; justify-content: center; gap: 8px;
-      padding: 12px 16px; margin-top: 12px;
+    /* ─── SRS 评分按钮（卡片正面，独立定位不挤单词） ─── */
+    .srs-rate-on-card {
+      position: absolute; bottom: 25px; left: 20px; right: 20px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      z-index: 3;
     }
-    .srs-rate-bar.show { display: flex; }
-    .srs-rate-btn {
-      flex: 1; min-width: 60px; max-width: 90px;
-      padding: 10px 6px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: white;
-      cursor: pointer;
-      font-family: var(--font-body); font-size: 13px; font-weight: 500;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      transition: all 0.2s; box-shadow: var(--shadow);
+    .srs-rate-sm {
+      padding: 5px 2px; border: none; border-radius: 8px;
+      cursor: pointer; font-family: var(--font-body);
+      font-size: 11px; font-weight: 500; text-align: center;
+      transition: all 0.15s;
     }
-    .srs-rate-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-    .srs-rate-btn .rate-emoji { font-size: 20px; }
-    .srs-rate-btn.rate-again { border-color: #ef9a9a; color: #c62828; }
-    .srs-rate-btn.rate-again:hover { background: #ffebee; }
-    .srs-rate-btn.rate-hard { border-color: #ffcc80; color: #e65100; }
-    .srs-rate-btn.rate-hard:hover { background: #fff3e0; }
-    .srs-rate-btn.rate-good { border-color: #a5d6a7; color: #2e7d32; }
-    .srs-rate-btn.rate-good:hover { background: #e8f5e9; }
-    .srs-rate-btn.rate-easy { border-color: #90caf9; color: #1565c0; }
-    .srs-rate-btn.rate-easy:hover { background: #e3f2fd; }
+    .srs-rate-sm:hover { transform: scale(1.06); }
+    .srs-rate-sm.rate-again-sm { background: #fce4ec; color: #c62828; }
+    .srs-rate-sm.rate-hard-sm { background: #fff3e0; color: #e65100; }
+    .srs-rate-sm.rate-good-sm { background: #e8f5e9; color: #2e7d32; }
+    .srs-rate-sm.rate-easy-sm { background: #e3f2fd; color: #1565c0; }
+    @media (prefers-color-scheme: dark) {
+      .srs-rate-sm.rate-again-sm { background: #3e1a22; color: #ef9a9a; }
+      .srs-rate-sm.rate-hard-sm { background: #3e2418; color: #ffcc80; }
+      .srs-rate-sm.rate-good-sm { background: #1a2e1a; color: #a5d6a7; }
+      .srs-rate-sm.rate-easy-sm { background: #1a2638; color: #90caf9; }
+    }
 
     /* ─── 搜索页 ─── */
     .search-box {
@@ -548,6 +533,60 @@
       font-size: 11px; color: var(--accent-purple);
       background: var(--accent-purple-light); padding: 1px 8px;
       border-radius: 4px; display: inline-block; margin-top: 2px;
+    }
+
+    /* ─── 掌握徽标 ─── */
+    .word-mastery-badge {
+      font-size: 10px; padding: 1px 6px; border-radius: 10px;
+      cursor: pointer; font-weight: 500; z-index: 2;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .word-mastery-badge.unmastered {
+      color: var(--accent-coral); background: var(--accent-coral-light);
+      border: 1px solid var(--accent-coral);
+    }
+    .word-mastery-badge.mastered {
+      color: var(--accent-green); background: var(--accent-green-light);
+      border: 1px solid var(--accent-green);
+    }
+    .word-mastery-badge:hover { transform: scale(1.08); }
+
+    /* ─── 发音小按钮 ─── */
+    .word-speak-btn {
+      font-size: 12px; cursor: pointer; z-index: 2;
+      padding: 2px 4px; opacity: 0.65; transition: opacity 0.15s;
+      line-height: 1; user-select: none;
+    }
+    .word-speak-btn:hover { opacity: 1; }
+
+    /* ─── 可点击星标 ─── */
+    .word-stars-clickable { cursor: pointer; z-index: 2; position: relative; user-select: none; }
+
+    /* ─── 过滤栏 ─── */
+    #word-filter-bar { margin-top: 4px; margin-bottom: 12px; }
+
+    /* ─── 搜索高亮 ─── */
+    .search-highlight { background: var(--accent-yellow-light); border-radius: 2px;
+      padding: 0 1px; font-weight: 500; }
+
+    /* ─── 标记全部掌握按钮 ─── */
+    #mark-all-mastered-btn {
+      margin-top: 8px; width: 100%; padding: 10px;
+      border: 1px solid var(--accent-green); border-radius: 10px;
+      background: var(--accent-green-light); color: var(--accent-green);
+      cursor: pointer; font-family: var(--font-display); font-size: 14px;
+      transition: all 0.2s;
+    }
+    #mark-all-mastered-btn:hover { opacity: 0.85; }
+
+    /* ─── 薄弱词快捷入口 ─── */
+    .qa-weak .qa-icon { background: var(--accent-pink-light); }
+
+    /* ─── 单词项操作区域（星星下方） ─── */
+    .word-actions-under-stars {
+      position: absolute; top: 28px; right: 4px;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+      z-index: 2;
     }
 
     /* SVG 图标 */
@@ -634,6 +673,13 @@
               <div class="qa-desc">重点回顾</div>
             </div>
           </div>
+          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWords()">
+            <div class="qa-icon">⚠️</div>
+            <div>
+              <div class="qa-title">易错本 · <span id="home-weak" style="color:var(--accent-pink);">0</span></div>
+              <div class="qa-desc">重点攻克薄弱词</div>
+            </div>
+          </div>
         </div>
 
         <!-- 课程列表 -->
@@ -679,6 +725,13 @@
           <button class="tab-btn" id="tab-grammar" onclick="switchLessonTab('grammar')">语法</button>
         </div>
 
+        <!-- 掌握状态过滤栏 -->
+        <div class="tab-bar" id="word-filter-bar" style="margin-bottom:12px;">
+          <button class="tab-btn active" data-filter="all" onclick="setWordFilter('all')">全部</button>
+          <button class="tab-btn" data-filter="unmastered" onclick="setWordFilter('unmastered')">未掌握</button>
+          <button class="tab-btn" data-filter="mastered" onclick="setWordFilter('mastered')">已掌握</button>
+        </div>
+
         <!-- 单词列表 -->
         <div id="lesson-vocab">
           <div class="word-list" id="word-list"></div>
@@ -710,6 +763,12 @@
               <div class="card-kr" id="card-kr">안녕하세요</div>
               <div class="card-stars" id="card-stars">★★★★★</div>
               <div class="card-hint">탭! 轻点翻面 🫶</div>
+              <div class="srs-rate-on-card" id="srs-rate-on-card">
+                <button class="srs-rate-sm rate-again-sm" onclick="event.stopPropagation();srsRate(0)">忘记了</button>
+                <button class="srs-rate-sm rate-hard-sm" onclick="event.stopPropagation();srsRate(1)">困难</button>
+                <button class="srs-rate-sm rate-good-sm" onclick="event.stopPropagation();srsRate(2)">一般</button>
+                <button class="srs-rate-sm rate-easy-sm" onclick="event.stopPropagation();srsRate(3)">简单</button>
+              </div>
             </div>
             <!-- 背面 -->
             <div class="card-back">
@@ -725,21 +784,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="srs-rate-bar" id="srs-rate-bar">
-        <button class="srs-rate-btn rate-again" onclick="srsRate(0)">
-          <span class="rate-emoji">🔴</span>忘记了
-        </button>
-        <button class="srs-rate-btn rate-hard" onclick="srsRate(1)">
-          <span class="rate-emoji">🟠</span>困难
-        </button>
-        <button class="srs-rate-btn rate-good" onclick="srsRate(2)">
-          <span class="rate-emoji">🟢</span>一般
-        </button>
-        <button class="srs-rate-btn rate-easy" onclick="srsRate(3)">
-          <span class="rate-emoji">🔵</span>简单
-        </button>
       </div>
 
       <div class="study-controls">
@@ -815,6 +859,39 @@
       </div>
     </div>
 
+    <!-- ═══════════ 易错本页 ═══════════ -->
+    <div id="page-weak" class="page">
+      <div class="container">
+        <div class="page-header">
+          <div class="title-area">
+            <h1>⚠️ 易错本</h1>
+            <p class="word-count" id="weak-words-count">加载中...</p>
+          </div>
+        </div>
+
+        <!-- 开始复习按钮 -->
+        <div id="weak-study-btn-area" style="margin-bottom:16px;">
+          <button onclick="startStudyWeak()" style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--primary);color:white;font-family:var(--font-display);font-size:16px;font-weight:500;cursor:pointer;">▶ 开始复习薄弱词</button>
+        </div>
+
+        <!-- 过滤栏 -->
+        <div class="tab-bar" id="weak-filter-bar" style="margin-bottom:12px;">
+          <button class="tab-btn active" data-filter="all" onclick="setWeakFilter('all')">全部</button>
+          <button class="tab-btn" data-filter="unmastered" onclick="setWeakFilter('unmastered')">未掌握</button>
+          <button class="tab-btn" data-filter="mastered" onclick="setWeakFilter('mastered')">已掌握</button>
+        </div>
+
+        <!-- 单词列表 -->
+        <div id="weak-word-list" class="word-list"></div>
+
+        <div id="weak-empty" style="display:none;text-align:center;padding:80px 0;color:var(--text-dim);">
+          <p style="font-size:48px;margin-bottom:16px;">💪</p>
+          <p>没有薄弱词</p>
+          <p style="font-size:14px;margin-top:4px;">继续加油！</p>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══════════ 搜索页 ═══════════ -->
     <div id="page-search" class="page">
       <div class="container">
@@ -847,6 +924,7 @@
           <button class="tab-btn active" id="rtab-due" onclick="switchReviewTab('due')">待复习</button>
           <button class="tab-btn" id="rtab-unmastered" onclick="switchReviewTab('unmastered')">未掌握</button>
           <button class="tab-btn" id="rtab-starred" onclick="switchReviewTab('starred')">收藏</button>
+          <button class="tab-btn" id="rtab-weak" onclick="switchReviewTab('weak')">薄弱词</button>
           <button class="tab-btn" id="rtab-all" onclick="switchReviewTab('all')">全部</button>
         </div>
 
@@ -955,9 +1033,9 @@
           </svg>
           <span>收藏</span>
         </button>
-        <button class="nav-item" data-page="page-search" onclick="showSearch()">
-          <svg viewBox="0 0 24 24" class="icon-search" width="22" height="22"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.3-4.3" /></svg>
-          <span>搜索</span>
+        <button class="nav-item" data-page="page-weak" onclick="showWeakWords()">
+          <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          <span>易错本</span>
         </button>
         <button class="nav-item" data-page="page-settings" onclick="showSettings()">
           <svg viewBox="0 0 24 24" class="icon-settings"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
@@ -1006,6 +1084,21 @@
     function setKeys(s) { var a = []; s.forEach(function(v) { a.push(v) }); return a }
     // 单词唯一标识：课号|韩语（同词跨课不冲突）
     function wk(w, num) { return num + '|' + w.kr }
+
+    // 判断单词是否已掌握（SRS lv >= 4）
+    function isMastered(w, num) {
+      var d = srs[wk(w, num)]
+      return !!(d && d.lv >= 4)
+    }
+    // 某课已掌握单词数
+    function masteryCount(num) {
+      return (VOCAB[num] || []).filter(function(w) { return isMastered(w, num) }).length
+    }
+    // 判断是否是薄弱词（累计失败 >= 3 次且未掌握）
+    function isWeak(key) {
+      var d = srs[key]
+      return !!(d && (d.badCount || 0) >= 1 && d.lv < 4)
+    }
 
     // localStorage 安全包装
     function lsGet(key, fallback) {
@@ -2383,59 +2476,105 @@
 
     let currentLessonNum = 1
 
+    // 单词列表过滤
+    function setWordFilter(f) {
+      wordFilter = f
+      document.querySelectorAll('#word-filter-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-filter') === f)
+      })
+      openLesson(currentLessonNum)
+    }
+
     // 打开单词列表
     function openLesson(num, tab) {
       currentLessonNum = num
-      const words = VOCAB[num] || []
+      const rawWords = VOCAB[num] || []
+
+      // 排序：未掌握在前，已掌握在后
+      const words = rawWords.slice()
+      words.sort(function(a, b) {
+        var aM = isMastered(a, num), bM = isMastered(b, num)
+        if (aM && !bM) return 1
+        if (!aM && bM) return -1
+        return 0
+      })
+
+      // 过滤
+      var filtered = words
+      if (wordFilter === 'unmastered') {
+        filtered = words.filter(function(w) { return !isMastered(w, num) })
+      } else if (wordFilter === 'mastered') {
+        filtered = words.filter(function(w) { return isMastered(w, num) })
+      }
+
+      // 标题 + 进度
       document.getElementById('words-title').textContent = `제${num}과 - ${LESSONS[num-1].title}`
-      document.getElementById('words-count').textContent = `共 ${words.length} 个词汇`
+      var mc = masteryCount(num)
+      document.getElementById('words-count').textContent = `共 ${rawWords.length} 个词汇 · 已掌握 ${mc}/${rawWords.length}`
 
       // 渲染单词
       const list = document.getElementById('word-list')
       list.innerHTML = ''
-      words.forEach((w, idx) => {
-        const div = document.createElement('div')
+      filtered.forEach(function(w) {
+        var key = wk(w, num)
+        var mastered = isMastered(w, num)
+        var isStar = starred.has(key)
+        var origIdx = rawWords.indexOf(w)
+        var safeKr = w.kr.replace(/"/g, '&quot;')
+
+        var div = document.createElement('div')
         div.className = 'word-item'
-        div.style.cursor = 'pointer'
-        div.title = '点击展开例句 / 再次点击收起'
-        div.onclick = function() {
-          // 如果已经展开，收起
-          const existing = div.querySelector('.word-detail')
+        div.setAttribute('data-key', key)
+        div.setAttribute('data-lesson', String(num))
+
+        div.onclick = function(e) {
+          // 点了操作按钮不展开
+          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable'))) return
+          var existing = div.querySelector('.word-detail')
           if (existing) {
             existing.remove()
             div.classList.remove('expanded')
             return
           }
-          // 关闭其他已展开的
-          list.querySelectorAll('.word-detail').forEach(d => { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
+          list.querySelectorAll('.word-detail').forEach(function(d) { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
           list.querySelectorAll('.word-item.expanded').forEach(function(it) { it.classList.remove('expanded') })
           div.classList.add('expanded')
-          // 生成例句
           var exList2 = generateExample(w)
           var exBlock = exList2 && exList2.length > 0 ? renderExamplesHTML(exList2) : '<div style="color:var(--text-dim);font-size:13px;">暂无例句</div>'
           var detail = document.createElement('div')
           detail.className = 'word-detail'
           detail.style.cssText = 'margin-top:12px;padding:12px 14px;background:var(--bg);border-radius:8px;border-top:1px solid var(--border);'
-          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + '</span><button onclick="event.stopPropagation();startStudy(' + num + ',' + idx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
+          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + '</span><button onclick="event.stopPropagation();startStudy(' + num + ',' + origIdx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
           div.appendChild(detail)
         }
-        div.innerHTML = `
-          <div class="left-col">
-            <div class="kr">${w.kr}</div>
-            <div><span class="pos">${w.pos}</span></div>
-            <div class="cn">${w.cn}</div>
-          </div>
-          <div class="right-col">
-            <div class="stars">${renderStars(w.stars)}</div>
-          </div>
-        `
+
+        var starsText = isStar ? renderStars(5) : renderStars(w.stars)
+        var starsStyle = isStar ? 'color:var(--star);' : ''
+        div.innerHTML =
+          '<div class="left-col">' +
+            '<div class="kr">' + w.kr + '</div>' +
+            '<div><span class="pos">' + w.pos + '</span></div>' +
+            '<div class="cn">' + w.cn + '</div>' +
+          '</div>' +
+          '<div class="right-col">' +
+            '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
+              '<span class="stars">' + starsText + '</span>' +
+            '</span>' +
+          '</div>' +
+          '<div class="word-actions-under-stars">' +
+            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+              (mastered ? '✓' : '○') +
+            '</span>' +
+          '</div>'
+
         list.appendChild(div)
       })
 
       // 渲染语法
       renderGrammar(num)
 
-      // 切换到指定标签，默认单词
+      // 切换到指定标签
       switchLessonTab(tab === 'grammar' ? 'grammar' : 'vocab')
       showPage('page-words')
     }
@@ -2543,7 +2682,7 @@
 
     // 更新首页统计
     function updateHomeStats() {
-      var totalWords = 0, dueCount = 0, learningCount = 0, masteredCount = 0, starredCount = 0
+      var totalWords = 0, dueCount = 0, learningCount = 0, masteredCount = 0, starredCount = 0, weakCount = 0
       var now = Date.now()
       LESSONS.forEach(function(l) {
         var words = VOCAB[l.num] || []
@@ -2559,6 +2698,7 @@
           } else {
             dueCount++  // 新词也算待复习
           }
+          if (isWeak(key)) weakCount++
         })
       })
       // 进度条：复习过的词都算进度
@@ -2571,6 +2711,8 @@
       el = document.getElementById('home-mastered'); if (el) el.textContent = masteredCount
       el = document.getElementById('home-remaining'); if (el) el.textContent = learningCount
       el = document.getElementById('home-starred'); if (el) el.textContent = starredCount
+      el = document.getElementById('home-weak'); if (el) el.textContent = weakCount
+      el = document.getElementById('qa-weak'); if (el) el.style.display = weakCount > 0 ? '' : 'none'
       el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
 
@@ -2705,6 +2847,7 @@
     let grammarStarred = new Set()
     let grammarMastered = new Set()
     let cardDirection = lsGet('ys-carddir', 'kr-first')
+    let wordFilter = 'all'  // 单词列表过滤: 'all' | 'unmastered' | 'mastered'
 
     /* ═══════════ SRS 间隔重复系统 ═══════════ */
     function srsInterval(lv) {
@@ -2736,6 +2879,11 @@
       var now = Date.now()
       d.n = (d.n || 0) + 1
       d.last = now
+
+      // 记录差评次数（薄弱词追踪）
+      if (quality === 0 || quality === 1) {
+        d.badCount = (d.badCount || 0) + 1
+      }
 
       if (quality === 0) {
         // 忘记了：重置
@@ -3286,6 +3434,23 @@
         studyWords.push(w)
       }
       if (studyWords.length === 0) return
+
+      // 智能排序：未掌握的排前面
+      studyWords.sort(function(a, b) {
+        var aM = isMastered(a, lessonNum), bM = isMastered(b, lessonNum)
+        if (aM && !bM) return 1
+        if (!aM && bM) return -1
+        return 0
+      })
+
+      // 若未指定起始位置，自动跳到第一个未掌握词
+      if (typeof startIndex !== 'number') {
+        for (var j = 0; j < studyWords.length; j++) {
+          if (!isMastered(studyWords[j], lessonNum)) { startIndex = j; break }
+        }
+        if (typeof startIndex !== 'number') startIndex = 0
+      }
+
       studyIndex = (typeof startIndex === 'number' && startIndex >= 0 && startIndex < studyWords.length) ? startIndex : 0
       isFlipped = false
       studyFromPage = 'page-words'
@@ -3340,24 +3505,14 @@
       // 更新收藏/掌握按钮状态
       updateStarBtn()
       updateSrsStatus()
-
-      // 隐藏评分按钮
-      var srsBar = document.getElementById('srs-rate-bar')
-      if (srsBar) srsBar.classList.remove('show')
     }
 
     // 翻转卡片
     function flipCard(e) {
-      // 点了喇叭就不翻
-      if (e && e.target && e.target.closest && e.target.closest('.ex-clickable')) return
+      // 点了喇叭或评分按钮不翻
+      if (e && e.target && e.target.closest && (e.target.closest('.ex-clickable') || e.target.closest('.srs-rate-sm'))) return
       isFlipped = !isFlipped
       document.getElementById('card-inner').classList.toggle('flipped', isFlipped)
-      // 翻转后显示/隐藏评分按钮
-      var srsBar = document.getElementById('srs-rate-bar')
-      if (srsBar) {
-        if (isFlipped) srsBar.classList.add('show')
-        else srsBar.classList.remove('show')
-      }
     }
 
     // 上一张
@@ -3433,10 +3588,82 @@
 
     // 事件委托：点例句整行 → 播放，点卡片不翻面
     document.addEventListener('click', function(e) {
+      // 例句朗读
       var row = e.target.closest ? e.target.closest('.ex-clickable') : null
-      if (!row) return
-      var text = row.getAttribute('data-speak')
-      if (text) { e.stopPropagation(); speak(text, 'ko') }
+      if (row) {
+        var text = row.getAttribute('data-speak')
+        if (text) { e.stopPropagation(); speak(text, 'ko') }
+        return
+      }
+
+      // 单词卡片：发音按钮
+      var speakEl = e.target.closest ? e.target.closest('.word-speak-btn') : null
+      if (speakEl) {
+        e.stopPropagation()
+        var spkText = speakEl.getAttribute('data-speak')
+        if (spkText) speak(spkText, 'ko')
+        return
+      }
+
+      // 单词卡片：掌握/未掌握切换
+      var badgeEl = e.target.closest ? e.target.closest('.word-mastery-badge') : null
+      if (badgeEl) {
+        e.stopPropagation()
+        var badgeKey = badgeEl.getAttribute('data-key')
+        if (badgeKey) {
+          var parts = badgeKey.split('|')
+          var ln = parseInt(parts[0])
+          var d = srs[badgeKey]
+          var now = Date.now()
+          if (d && d.lv >= 4) {
+            delete srs[badgeKey]
+          } else {
+            srs[badgeKey] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1) }
+          }
+          saveUserData()
+          updateHomeStats()
+          renderLessons()
+          // 根据当前页面刷新列表
+          if (document.getElementById('page-weak').classList.contains('active')) {
+            renderWeakWords()
+          } else {
+            openLesson(currentLessonNum)
+          }
+        }
+        return
+      }
+
+      // 单词卡片：收藏星标切换
+      var starEl = e.target.closest ? e.target.closest('.word-stars-clickable') : null
+      if (starEl) {
+        e.stopPropagation()
+        var starKey = starEl.getAttribute('data-key')
+        if (starKey) {
+          if (starred.has(starKey)) starred.delete(starKey)
+          else starred.add(starKey)
+          saveUserData()
+          // 局部刷新该卡片
+          var wItem = starEl.closest('.word-item')
+          if (wItem) {
+            var isStar = starred.has(starKey)
+            var starsSpan = wItem.querySelector('.word-stars-clickable')
+            if (starsSpan) {
+              var origLesson = parseInt(wItem.getAttribute('data-lesson'))
+              var origWords = VOCAB[origLesson] || []
+              // 找到原始词数据
+              var foundW = null
+              for (var wi = 0; wi < origWords.length; wi++) {
+                if (wk(origWords[wi], origLesson) === starKey) { foundW = origWords[wi]; break }
+              }
+              var starCount = foundW ? foundW.stars : 5
+              starsSpan.querySelector('.stars').innerHTML = isStar ? renderStars(5) : renderStars(starCount)
+              starsSpan.style.color = isStar ? 'var(--star)' : ''
+            }
+          }
+          updateHomeStats()
+        }
+        return
+      }
     })
 
     // 生成语法例句 HTML，整行可点读
@@ -3556,18 +3783,31 @@
           header.textContent = `제${lessonNum}과 · ${lesson.title} (${ws.length}个)`
           vlist.appendChild(header)
           ws.forEach(w => {
+            var key2 = wk(w, w.lessonNum)
+            var mastered2 = isMastered(w, w.lessonNum)
+            var safeKr2 = w.kr.replace(/"/g, '&quot;')
+
             const div = document.createElement('div')
             div.className = 'word-item'
-            div.style.cursor = 'pointer'
-            div.title = '点击开始学习此单词'
+            div.setAttribute('data-key', key2)
+            div.setAttribute('data-lesson', String(w.lessonNum))
             div.onclick = () => startStudy(w.lessonNum, w.wordIdx)
-            div.innerHTML = `
-              <div class="left-col">
-                <div class="kr">${w.kr}</div>
-                <div class="cn">${w.cn}</div>
-              </div>
-              <div class="right-col"><div class="stars">${renderStars(w.stars)}</div></div>
-            `
+            div.innerHTML =
+              '<div class="left-col">' +
+                '<div class="kr">' + w.kr + '</div>' +
+                '<div class="cn">' + w.cn + '</div>' +
+              '</div>' +
+              '<div class="right-col">' +
+                '<span class="word-stars-clickable" data-key="' + key2 + '" title="点击切换收藏" style="color:var(--star);">' +
+                  '<span class="stars">' + renderStars(5) + '</span>' +
+                '</span>' +
+              '</div>' +
+              '<div class="word-actions-under-stars">' +
+                '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+                '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
+                  (mastered2 ? '✓' : '○') +
+                '</span>' +
+              '</div>'
             vlist.appendChild(div)
           })
         })
@@ -3670,6 +3910,14 @@
       setTimeout(() => document.getElementById('search-input').focus(), 200)
     }
 
+    // 搜索高亮
+    function highlightText(text, query) {
+      if (!query) return text
+      var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      var re = new RegExp('(' + escaped + ')', 'gi')
+      return text.replace(re, '<mark class="search-highlight">$1</mark>')
+    }
+
     function doSearch() {
       const q = document.getElementById('search-input').value.trim().toLowerCase()
       const results = document.getElementById('search-results')
@@ -3682,13 +3930,13 @@
         return
       }
 
-      // 搜索所有词汇
+      // 搜索所有词汇（韩语 + 中文 + 词性）
       const hits = []
-      LESSONS.forEach(lesson => {
+      LESSONS.forEach(function(lesson) {
         const words = VOCAB[lesson.num] || []
-        words.forEach(w => {
-          if (w.kr.includes(q) || w.cn.toLowerCase().includes(q)) {
-            hits.push({ ...w, lessonNum: lesson.num, lessonTitle: lesson.title })
+        words.forEach(function(w) {
+          if (w.kr.includes(q) || w.cn.toLowerCase().includes(q) || w.pos.toLowerCase().includes(q)) {
+            hits.push({ kr: w.kr, cn: w.cn, pos: w.pos, stars: w.stars, lessonNum: lesson.num, lessonTitle: lesson.title })
           }
         })
       })
@@ -3696,26 +3944,52 @@
       if (hits.length === 0) {
         results.innerHTML = ''
         empty.style.display = 'block'
-        emptyText.textContent = `没有找到包含"${q}"的结果`
+        emptyText.textContent = '没有找到包含"' + q + '"的结果'
         return
       }
 
       empty.style.display = 'none'
       results.innerHTML = ''
-      hits.forEach(w => {
-        const div = document.createElement('div')
+
+      // 结果计数
+      var countDiv = document.createElement('div')
+      countDiv.style.cssText = 'font-size:12px;color:var(--text-dim);margin-bottom:8px;grid-column:1/-1;'
+      countDiv.textContent = '找到 ' + hits.length + ' 个结果'
+      results.appendChild(countDiv)
+
+      hits.forEach(function(w) {
+        var key = wk(w, w.lessonNum)
+        var mastered = isMastered(w, w.lessonNum)
+        var isStar = starred.has(key)
+
+        var div = document.createElement('div')
         div.className = 'word-item search-result-item'
-        div.onclick = () => openLesson(w.lessonNum)
-        div.innerHTML = `
-          <div class="left-col">
-            <div class="kr">${w.kr}</div>
-            <div class="cn">${w.cn}</div>
-            <span class="lesson-tag">제${w.lessonNum}과</span>
-          </div>
-          <div class="right-col">
-            <div class="stars">${renderStars(w.stars)}</div>
-          </div>
-        `
+        div.setAttribute('data-key', key)
+        div.setAttribute('data-lesson', String(w.lessonNum))
+        div.onclick = function() { openLesson(w.lessonNum) }
+
+        var krHtml = highlightText(w.kr, q)
+        var cnHtml = highlightText(w.cn, q)
+        var starsText = isStar ? renderStars(5) : renderStars(w.stars)
+        var starsStyle = isStar ? 'color:var(--star);' : ''
+
+        div.innerHTML =
+          '<div class="left-col">' +
+            '<div class="kr">' + krHtml + '</div>' +
+            '<div class="cn">' + cnHtml + '</div>' +
+            '<span class="lesson-tag">제' + w.lessonNum + '과</span>' +
+          '</div>' +
+          '<div class="right-col">' +
+            '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
+              '<span class="stars">' + starsText + '</span>' +
+            '</span>' +
+          '</div>' +
+          '<div class="word-actions-under-stars">' +
+            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+              (mastered ? '✓' : '○') +
+            '</span>' +
+          '</div>'
+
         results.appendChild(div)
       })
     }
@@ -3778,9 +4052,142 @@
           else if (type === 'due' && _isDue(w, num)) pool.push(item)
           else if (type === 'unmastered' && _isUnmastered(w, num)) pool.push(item)
           else if (type === 'starred' && starred.has(wk(w, num))) pool.push(item)
+          else if (type === 'weak' && isWeak(wk(w, num))) pool.push(item)
         })
       })
       return pool
+    }
+
+    // 易错本过滤
+    let weakFilter = 'all'
+    function setWeakFilter(f) {
+      weakFilter = f
+      document.querySelectorAll('#weak-filter-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-filter') === f)
+      })
+      renderWeakWords()
+    }
+
+    // 打开易错本列表页
+    function showWeakWords() {
+      weakFilter = 'all'
+      document.querySelectorAll('#weak-filter-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-filter') === 'all')
+      })
+      showPage('page-weak')
+      renderWeakWords()
+    }
+
+    function renderWeakWords() {
+      // 收集所有薄弱词
+      var items = []
+      LESSONS.forEach(function(l) {
+        var ws = VOCAB[l.num] || []
+        for (var i = 0; i < ws.length; i++) {
+          var w = ws[i]
+          var key = wk(w, l.num)
+          if (isWeak(key)) {
+            items.push({ kr: w.kr, cn: w.cn, pos: w.pos, stars: w.stars, lessonNum: l.num, key: key, origIdx: i })
+          }
+        }
+      })
+
+      // 排序：未掌握在前
+      items.sort(function(a, b) {
+        var aM = isMastered(a, a.lessonNum), bM = isMastered(b, b.lessonNum)
+        if (aM && !bM) return 1
+        if (!aM && bM) return -1
+        return 0
+      })
+
+      // 过滤
+      var filtered = items
+      if (weakFilter === 'unmastered') {
+        filtered = items.filter(function(x) { return !isMastered(x, x.lessonNum) })
+      } else if (weakFilter === 'mastered') {
+        filtered = items.filter(function(x) { return isMastered(x, x.lessonNum) })
+      }
+
+      // 更新计数
+      document.getElementById('weak-words-count').textContent = '共 ' + items.length + ' 个薄弱词'
+
+      // 空状态
+      var emptyEl = document.getElementById('weak-empty')
+      var list = document.getElementById('weak-word-list')
+      if (items.length === 0) {
+        emptyEl.style.display = 'block'
+        list.innerHTML = ''
+        document.getElementById('weak-study-btn-area').style.display = 'none'
+        return
+      }
+      emptyEl.style.display = 'none'
+      document.getElementById('weak-study-btn-area').style.display = ''
+
+      // 渲染
+      list.innerHTML = ''
+      filtered.forEach(function(w) {
+        var key = w.key
+        var num = w.lessonNum
+        var mastered = isMastered(w, num)
+        var isStar = starred.has(key)
+        var safeKr = w.kr.replace(/"/g, '&quot;')
+
+        var div = document.createElement('div')
+        div.className = 'word-item'
+        div.setAttribute('data-key', key)
+        div.setAttribute('data-lesson', String(num))
+
+        div.onclick = function(e) {
+          // 点了操作按钮不展开
+          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable'))) return
+          var existing = div.querySelector('.word-detail')
+          if (existing) {
+            existing.remove()
+            div.classList.remove('expanded')
+            return
+          }
+          list.querySelectorAll('.word-detail').forEach(function(d) { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
+          list.querySelectorAll('.word-item.expanded').forEach(function(it) { it.classList.remove('expanded') })
+          div.classList.add('expanded')
+          var exList2 = generateExample(w)
+          var exBlock = exList2 && exList2.length > 0 ? renderExamplesHTML(exList2) : '<div style="color:var(--text-dim);font-size:13px;">暂无例句</div>'
+          var detail = document.createElement('div')
+          detail.className = 'word-detail'
+          detail.style.cssText = 'margin-top:12px;padding:12px 14px;background:var(--bg);border-radius:8px;border-top:1px solid var(--border);'
+          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + ' · 제' + num + '과</span><button onclick="event.stopPropagation();startStudy(' + num + ', ' + w.origIdx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
+          div.appendChild(detail)
+        }
+
+        var starsText = isStar ? renderStars(5) : renderStars(w.stars)
+        var starsStyle = isStar ? 'color:var(--star);' : ''
+
+        div.innerHTML =
+          '<div class="left-col">' +
+            '<div class="kr">' + w.kr + '</div>' +
+            '<div><span class="pos">' + w.pos + '</span></div>' +
+            '<div class="cn">' + w.cn + '</div>' +
+          '</div>' +
+          '<div class="right-col">' +
+            '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
+              '<span class="stars">' + starsText + '</span>' +
+            '</span>' +
+          '</div>' +
+          '<div class="word-actions-under-stars">' +
+            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+              (mastered ? '✓' : '○') +
+            '</span>' +
+          '</div>'
+
+        list.appendChild(div)
+      })
+    }
+
+    // 易错本进入复习
+    function startStudyWeak() {
+      var pool = buildReviewPool('weak', LESSONS.map(function(l) { return l.num }))
+      if (pool.length === 0) { alert('还没有薄弱词！'); return }
+      startStudyPool(pool, '薄弱词·易错本')
     }
 
     function startStudyPool(pool, label) {
@@ -3834,6 +4241,7 @@
           else if (reviewType === 'due' && _isDue(w, lesson.num)) count++
           else if (reviewType === 'unmastered' && _isUnmastered(w, lesson.num)) count++
           else if (reviewType === 'starred' && starred.has(wk(w, lesson.num))) count++
+          else if (reviewType === 'weak' && isWeak(wk(w, lesson.num))) count++
         })
         if (count === 0) return
         totalCount += count
@@ -3856,7 +4264,7 @@
 
       if (totalCount === 0) {
         empty.style.display = 'block'
-        emptyText.textContent = reviewType === 'due' ? '全部复习完啦 🎉' : reviewType === 'unmastered' ? '全部掌握啦 🎉' : reviewType === 'starred' ? '还没有收藏的词' : '暂无词汇'
+        emptyText.textContent = reviewType === 'due' ? '全部复习完啦 🎉' : reviewType === 'unmastered' ? '全部掌握啦 🎉' : reviewType === 'starred' ? '还没有收藏的词' : reviewType === 'weak' ? '没有薄弱词，继续加油 💪' : '暂无词汇'
         footer.style.display = 'none'
       } else {
         empty.style.display = 'none'
@@ -3870,6 +4278,7 @@
               else if (reviewType === 'due' && _isDue(w, n)) selTotal++
               else if (reviewType === 'unmastered' && _isUnmastered(w, n)) selTotal++
               else if (reviewType === 'starred' && starred.has(wk(w, n))) selTotal++
+              else if (reviewType === 'weak' && isWeak(wk(w, n))) selTotal++
             })
           })
           info.textContent = `已选 ${selectedLessons.size} 个单元，共 ${selTotal} 词`
@@ -3904,6 +4313,41 @@
       if (e.key === 'ArrowLeft') prevCard()
       else if (e.key === 'ArrowRight') nextCard()
       else if (e.key === ' ' || e.key === 'Enter') { flipCard(); e.preventDefault() }
+    })
+
+    /* ═══════════ 滑动手势 ═══════════ */
+    var touchStartX = 0, touchStartY = 0
+
+    document.getElementById('flashcard').addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX
+        touchStartY = e.touches[0].clientY
+      }
+    }, { passive: true })
+
+    document.getElementById('flashcard').addEventListener('touchend', function(e) {
+      if (!touchStartX || !touchStartY) return
+      var dx = (e.changedTouches[0] ? e.changedTouches[0].clientX : touchStartX) - touchStartX
+      var dy = (e.changedTouches[0] ? e.changedTouches[0].clientY : touchStartY) - touchStartY
+      var absDx = Math.abs(dx), absDy = Math.abs(dy)
+      var SWIPE_THRESH = 50
+
+      if (absDx < SWIPE_THRESH && absDy < SWIPE_THRESH) {
+        // 滑动太小，不处理，留给 click 事件翻转
+        touchStartX = 0; touchStartY = 0
+        return
+      }
+
+      if (absDx > absDy) {
+        // 水平滑动
+        if (dx < -SWIPE_THRESH) nextCard()
+        else if (dx > SWIPE_THRESH) prevCard()
+      } else {
+        // 垂直向上滑动 → 翻转
+        if (dy < -SWIPE_THRESH) flipCard()
+      }
+
+      touchStartX = 0; touchStartY = 0
     })
 
     /* ═══════════════════════════════════════════
@@ -3952,7 +4396,7 @@
     const origOpenLesson = openLesson
     openLesson = function(num) {
       origOpenLesson(num)
-      // 在单词列表顶部加学习按钮
+      // 在单词列表顶部加学习按钮 + 全部标记掌握
       const header = document.querySelector('#page-words .page-header')
       const existing = document.getElementById('study-btn-area')
       if (existing) existing.remove()
@@ -3960,18 +4404,40 @@
       const btnArea = document.createElement('div')
       btnArea.id = 'study-btn-area'
       btnArea.style.cssText = 'margin-bottom:16px;'
+
+      // 开始学习按钮
       const btn = document.createElement('button')
-      btn.textContent = '开始学习'
+      btn.textContent = '▶ 开始学习'
       btn.style.cssText = `
         width:100%; padding:14px; border:none; border-radius:12px;
         background:var(--primary); color:white;
         font-family:var(--font-display); font-size:16px; font-weight:500;
         cursor:pointer; transition:opacity 0.2s;
       `
-      btn.onmouseover = () => btn.style.opacity = '0.9'
-      btn.onmouseout = () => btn.style.opacity = '1'
-      btn.onclick = () => startStudy(num)
+      btn.onmouseover = function() { btn.style.opacity = '0.9' }
+      btn.onmouseout = function() { btn.style.opacity = '1' }
+      btn.onclick = function() { startStudy(num) }
       btnArea.appendChild(btn)
+
+      // 全部标记为掌握按钮
+      const markBtn = document.createElement('button')
+      markBtn.id = 'mark-all-mastered-btn'
+      markBtn.textContent = '✓ 本课全部标记为掌握'
+      markBtn.onclick = function() {
+        if (!confirm('确定将本课所有词汇标记为"已掌握"吗？')) return
+        var now = Date.now()
+        ;(VOCAB[num] || []).forEach(function(w2) {
+          var key2 = wk(w2, num)
+          var d2 = srs[key2]
+          srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1) }
+        })
+        saveUserData()
+        updateHomeStats()
+        renderLessons()
+        openLesson(num)
+      }
+      btnArea.appendChild(markBtn)
+
       header.after(btnArea)
     }
 
