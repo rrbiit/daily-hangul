@@ -120,6 +120,7 @@
     .qa-course .qa-icon { background: var(--accent-purple-light); }
     .qa-search .qa-icon { background: var(--primary-light); }
     .qa-starred .qa-icon { background: var(--accent-yellow-light); }
+    .qa-quiz .qa-icon { background: #e0f2e9; }
     .quick-action .qa-title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
     .quick-action .qa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 
@@ -139,7 +140,7 @@
       .greeting { color: #d5cbd8; }
       .greeting-sub { color: #8a7e8e; }
       .greeting-date { color: #5a4e58; }
-      .card-front { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
+      .card-front { background: linear-gradient(160deg, #1e2238 0%, #1a1e32 100%); border-color: #2a2a45; }
       .card-kr { color: #d5cbd8; }
       .card-hint { color: #7a6e78; }
       .card-stars .star-off { color: #4a3e48; }
@@ -536,6 +537,101 @@
       border-radius: 4px; display: inline-block; margin-top: 2px;
     }
 
+    /* ─── 测验页 ─── */
+    .quiz-container { max-width: 400px; margin: 0 auto; }
+    .quiz-scope-bar { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .quiz-scope-btn {
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); color: var(--text-dim); cursor: pointer;
+      font-size: 13px; font-family: var(--font-display); transition: all 0.2s;
+    }
+    .quiz-scope-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    .quiz-start-btn {
+      width: 100%; padding: 14px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, #7eb8da, #81c784); color: white;
+      font-family: var(--font-display); font-size: 17px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; margin-bottom: 24px; letter-spacing: 0.02em;
+    }
+    .quiz-start-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .quiz-start-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+    .quiz-question-area {
+      text-align: center; padding: 28px 20px; background: var(--surface);
+      border-radius: 18px; border: 1px solid var(--border); margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .quiz-q-label { font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 10px; text-transform: uppercase; }
+    .quiz-q-word {
+      font-family: var(--font-display);
+      font-size: 32px; font-weight: 500; line-height: 1.4;
+      word-break: keep-all; letter-spacing: 0.03em;
+    }
+    .quiz-q-speak {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: 50%; margin-top: 10px;
+      background: var(--primary-light); border: none; cursor: pointer;
+      font-size: 20px; transition: all 0.2s; color: var(--primary);
+    }
+    .quiz-q-speak:hover { transform: scale(1.08); }
+    .quiz-q-speak.playing { background: var(--accent-pink-light); color: var(--accent-pink); }
+
+    .quiz-options {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+      margin-bottom: 20px;
+    }
+    .quiz-option {
+      padding: 16px 12px; border: 2px solid var(--border); border-radius: 14px;
+      background: var(--surface); text-align: center; cursor: pointer;
+      font-family: var(--font-display); font-size: 16px; font-weight: 500;
+      transition: all 0.2s; box-shadow: var(--shadow); word-break: keep-all;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .quiz-option:hover { border-color: var(--primary); background: var(--primary-light); }
+    .quiz-option.correct { border-color: var(--accent-green); background: var(--accent-green-light); color: #2e7d32; }
+    .quiz-option.wrong { border-color: var(--accent-pink); background: var(--accent-pink-light); color: #c62828; }
+    .quiz-option.dimmed { opacity: 0.5; pointer-events: none; }
+
+    .quiz-progress-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; font-size: 13px; color: var(--text-dim);
+    }
+    .quiz-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+    .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent-green)); border-radius: 3px; transition: width 0.3s; }
+
+    .quiz-result-card {
+      text-align: center; padding: 36px 24px; background: var(--surface);
+      border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .quiz-score { font-family: var(--font-display); font-size: 56px; font-weight: 600; line-height: 1; }
+    .quiz-score.perfect { color: var(--accent-green); }
+    .quiz-score.good { color: var(--primary); }
+    .quiz-score.ok { color: var(--accent-yellow); }
+    .quiz-score.bad { color: var(--accent-coral); }
+    .quiz-errors { margin-top: 20px; text-align: left; }
+    .quiz-errors-title { font-size: 14px; font-weight: 500; color: var(--text-dim); margin-bottom: 8px; }
+    .quiz-error-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: var(--bg); border-radius: 10px;
+      margin-bottom: 6px; font-size: 14px;
+    }
+    .quiz-error-item .qe-kr { font-family: var(--font-display); font-weight: 500; }
+    .quiz-error-item .qe-cn { color: var(--text-dim); font-size: 12px; }
+    .quiz-retry-btn {
+      width: 100%; padding: 14px; border: 1px solid var(--primary); border-radius: 14px;
+      background: var(--surface); color: var(--primary); font-family: var(--font-display);
+      font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 16px; transition: all 0.2s;
+    }
+    .quiz-retry-btn:hover { background: var(--primary-light); }
+
+    @media (prefers-color-scheme: dark) {
+      .quiz-option.correct { color: #a5d6a7; }
+      .quiz-option.wrong { color: #ef9a9a; }
+      .quiz-score.perfect { color: #81c784; }
+      .quiz-score.good { color: #7eb8da; }
+      .quiz-score.ok { color: #ffcc80; }
+      .quiz-score.bad { color: #ffab91; }
+    }
+
     /* ─── 掌握徽标 ─── */
     .word-mastery-badge {
       width: 18px; height: 18px; border-radius: 50%;
@@ -664,6 +760,13 @@
             <div>
               <div class="qa-title">课程列表</div>
               <div class="qa-desc">연세 한국어 1</div>
+            </div>
+          </div>
+          <div class="quick-action qa-quiz" onclick="showQuiz()">
+            <div class="qa-icon">📝</div>
+            <div>
+              <div class="qa-title">测验模式</div>
+              <div class="qa-desc">测测记住了多少</div>
             </div>
           </div>
           <div class="quick-action qa-search" onclick="showSearch()">
@@ -953,10 +1056,77 @@
         </div>
 
         <!-- 已选汇总 + 开始按钮 -->
-        <div id="review-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--bg);border-top:1px solid var(--border);text-align:center;z-index:10;">
+        <div id="review-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--bg);border-top:1px solid var(--border);text-align:center;z-index:200;">
           <span id="review-selected-info" style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:8px;"></span>
           <button id="review-start-btn" onclick="doReview()" style="width:100%;max-width:400px;padding:14px;border:none;border-radius:12px;background:var(--primary);color:white;font-family:var(--font-display);font-size:16px;font-weight:500;cursor:pointer;">开始复习</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ 测验页 ═══════════ -->
+    <div id="page-quiz" class="page">
+      <div class="container">
+        <div class="page-header" style="margin-bottom:16px;">
+          <button class="back-btn" onclick="quizGoHome()">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <div class="title-area">
+            <h1>📝 测验</h1>
+            <p id="quiz-subtitle">测测记住了多少</p>
+          </div>
+        </div>
+
+        <!-- 设置区 -->
+        <div id="quiz-setup">
+          <!-- 模式 + 数量 -->
+          <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:16px;flex-wrap:wrap;">
+            <div class="tab-bar" id="quiz-mode-bar" style="flex:1;min-width:200px;margin-bottom:0;">
+              <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">🇰🇷→🇨🇳 韩→中</button>
+              <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">🇨🇳→🇰🇷 中→韩</button>
+              <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
+            </div>
+            <div class="tab-bar" style="flex:0 0 auto;min-width:140px;margin-bottom:0;" id="quiz-count-bar">
+              <button class="tab-btn" data-count="5" onclick="setQuizCount(5)">5</button>
+              <button class="tab-btn active" data-count="10" onclick="setQuizCount(10)">10</button>
+              <button class="tab-btn" data-count="15" onclick="setQuizCount(15)">15</button>
+              <button class="tab-btn" data-count="20" onclick="setQuizCount(20)">20</button>
+            </div>
+          </div>
+
+          <!-- 范围选择 -->
+          <div class="quiz-scope-bar" id="quiz-scope-bar" style="margin-bottom:12px;">
+            <button class="quiz-scope-btn active" data-scope="all" onclick="setQuizScope('all')">📚 全部</button>
+            <button class="quiz-scope-btn" data-scope="unmastered" onclick="setQuizScope('unmastered')">📖 未掌握</button>
+            <button class="quiz-scope-btn" data-scope="starred" onclick="setQuizScope('starred')">⭐ 收藏</button>
+            <button class="quiz-scope-btn" data-scope="weak" onclick="setQuizScope('weak')">⚠️ 薄弱词</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-subtle);margin-bottom:8px;">按单元选择 · 勾选一个或多个（不选默认全部）</p>
+          <div id="quiz-lesson-list" style="padding-bottom:80px;"></div>
+
+          <!-- 已选汇总 + 开始按钮 -->
+          <div id="quiz-footer" style="position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom, 8px));background:var(--bg);border-top:1px solid var(--border);text-align:center;z-index:200;">
+            <span id="quiz-selected-info" style="font-size:13px;color:var(--text-dim);display:block;margin-bottom:8px;"></span>
+            <button id="quiz-start-btn" onclick="startQuiz()" style="width:100%;max-width:400px;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#7eb8da,#81c784);color:white;font-family:var(--font-display);font-size:17px;font-weight:500;cursor:pointer;letter-spacing:0.02em;">▶ 开始测验</button>
+          </div>
+        </div>
+
+        <!-- 答题区 -->
+        <div class="quiz-container" id="quiz-play" style="display:none;">
+          <div class="quiz-progress-row">
+            <button onclick="confirmExitQuiz()" style="border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:var(--font-display);color:var(--text-dim);">✕ 退出</button>
+            <span id="quiz-progress-text">1/10</span>
+            <span id="quiz-score-live">✅ 0</span>
+          </div>
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%;"></div></div>
+          <div class="quiz-question-area" id="quiz-question-area"></div>
+          <div class="quiz-options" id="quiz-options"></div>
+          <div id="quiz-feedback" style="text-align:center;min-height:24px;margin-top:8px;font-size:14px;font-weight:500;"></div>
+        </div>
+
+        <!-- 结果区 -->
+        <div class="quiz-container" id="quiz-result" style="display:none;"></div>
+      </div>
+    </div>
       </div>
     </div>
 
@@ -1034,11 +1204,9 @@
           <svg viewBox="0 0 24 24" class="icon-grid"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
           <span>课程</span>
         </button>
-        <button class="nav-item" data-page="page-starred" onclick="showStarred()">
-          <svg viewBox="0 0 24 24" class="icon-star" width="22" height="22">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          <span>收藏</span>
+        <button class="nav-item" data-page="page-quiz" onclick="showQuiz()">
+          <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+          <span>测验</span>
         </button>
         <button class="nav-item" data-page="page-weak" onclick="showWeakWords()">
           <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
@@ -2745,7 +2913,8 @@
     var PAGE_HASH = {
       'page-home': 'home', 'page-course': 'course', 'page-words': 'words',
       'page-study': 'study', 'page-starred': 'starred', 'page-weak': 'weak',
-      'page-search': 'search', 'page-review': 'review', 'page-settings': 'settings'
+      'page-search': 'search', 'page-review': 'review', 'page-settings': 'settings',
+      'page-quiz': 'quiz'
     }
     var HASH_PAGE = {}
     Object.keys(PAGE_HASH).forEach(function(k) { HASH_PAGE[PAGE_HASH[k]] = k })
@@ -2756,10 +2925,17 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
       document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active')
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      // 除学习模式外显示底部导航
+      if (id !== 'page-study') showNav()
       // 更新 URL hash + 浏览器历史（用于返回键和刷新定位）
       var newHash = PAGE_HASH[id] || 'home'
       if (location.hash !== '#' + newHash) {
-        history.pushState({ page: id }, '', '#' + newHash)
+        // 从 popstate 来的不用再推，只替换；正常导航才推一条
+        if (_fromPopstate) {
+          history.replaceState({ page: id }, '', '#' + newHash)
+        } else {
+          history.pushState({ page: id }, '', '#' + newHash)
+        }
       }
       // 回到首页时刷新统计数据 + 随机 emoji
       if (id === 'page-home') {
@@ -4328,6 +4504,414 @@
       startStudyPool(pool, type)
     }
 
+    /* ═══════════════════════════════════════════
+       测验模式
+       ═══════════════════════════════════════════ */
+
+    var quizMode = 'kr-cn'
+    var quizScope = 'all'
+    var quizCount = 10
+    var quizSelectedLessons = new Set()
+    var quizQuestions = []
+    var quizIndex = 0
+    var quizScore = 0
+    var quizErrors = []
+    var quizHistory = []
+    var quizAnswered = false
+
+    function loadQuizHistory() {
+      try { var v = lsGet('quiz-history', ''); quizHistory = v ? JSON.parse(v) : [] } catch(e) { quizHistory = [] }
+    }
+
+    function saveQuizHistory() {
+      if (quizHistory.length > 20) quizHistory = quizHistory.slice(-20)
+      lsSet('quiz-history', JSON.stringify(quizHistory))
+    }
+
+    function switchQuizMode(mode) {
+      quizMode = mode
+      document.querySelectorAll('#quiz-mode-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === mode)
+      })
+      renderQuizLessons()
+    }
+
+    function setQuizCount(n) {
+      quizCount = n
+      document.querySelectorAll('#quiz-count-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', parseInt(b.getAttribute('data-count')) === n)
+      })
+    }
+
+    function setQuizScope(s) {
+      quizScope = s
+      document.querySelectorAll('#quiz-scope-bar .quiz-scope-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-scope') === s)
+      })
+      renderQuizLessons()
+    }
+
+    function toggleQuizLesson(num) {
+      if (quizSelectedLessons.has(num)) quizSelectedLessons.delete(num)
+      else quizSelectedLessons.add(num)
+      renderQuizLessons()
+    }
+
+    function renderQuizLessons() {
+      var list = document.getElementById('quiz-lesson-list')
+      var footer = document.getElementById('quiz-footer')
+      var info = document.getElementById('quiz-selected-info')
+      var btn = document.getElementById('quiz-start-btn')
+      if (!list) return
+
+      list.innerHTML = ''
+      var totalCount = 0
+      var anySelected = quizSelectedLessons.size > 0
+
+      LESSONS.forEach(function(lesson) {
+        var words = VOCAB[lesson.num] || []
+        var count = 0
+        words.forEach(function(w) {
+          var key = wk(w, lesson.num)
+          var ok = false
+          if (quizScope === 'all') ok = true
+          else if (quizScope === 'unmastered' && !isMastered(w, lesson.num)) ok = true
+          else if (quizScope === 'starred' && starred.has(key)) ok = true
+          else if (quizScope === 'weak' && isWeak(key)) ok = true
+          if (ok) count++
+        })
+        if (count === 0) return
+        totalCount += count
+
+        var sel = quizSelectedLessons.has(lesson.num)
+        var div = document.createElement('div')
+        div.className = 'review-option'
+        div.style.cssText = sel ? 'border-color:var(--primary);background:var(--primary-light);' : ''
+        div.onclick = function() { toggleQuizLesson(lesson.num) }
+        div.innerHTML =
+          '<div class="ro-icon" style="font-size:20px;">' + (sel ? '☑️' : '☐') + '</div>' +
+          '<div><div class="ro-title">제' + lesson.num + '과 · ' + lesson.title + '</div>' +
+          '<div class="ro-desc">' + lesson.kr + '</div></div>' +
+          '<span class="ro-count" style="color:var(--primary);">' + count + '词</span>'
+        list.appendChild(div)
+      })
+
+      if (anySelected) {
+        var selTotal = 0
+        quizSelectedLessons.forEach(function(n) {
+          var ws = VOCAB[n] || []
+          ws.forEach(function(w) {
+            var key = wk(w, n)
+            var ok = false
+            if (quizScope === 'all') ok = true
+            else if (quizScope === 'unmastered' && !isMastered(w, n)) ok = true
+            else if (quizScope === 'starred' && starred.has(key)) ok = true
+            else if (quizScope === 'weak' && isWeak(key)) ok = true
+            if (ok) selTotal++
+          })
+        })
+        info.textContent = '已选 ' + quizSelectedLessons.size + ' 个单元，共 ' + selTotal + ' 词'
+      } else {
+        info.textContent = '未选单元则默认全部 · 共 ' + totalCount + ' 词'
+      }
+
+      footer.style.display = totalCount > 0 ? 'block' : 'none'
+      btn.disabled = totalCount < 4
+    }
+
+    function buildQuizPool() {
+      var pool = []
+      LESSONS.forEach(function(l) {
+        var words = VOCAB[l.num] || []
+        words.forEach(function(w) {
+          var item = {}
+          for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }
+          item.lessonNum = l.num
+          var key = wk(w, l.num)
+          var ok = false
+          if (quizScope === 'all') ok = true
+          else if (quizScope === 'unmastered' && !isMastered(w, l.num)) ok = true
+          else if (quizScope === 'starred' && starred.has(key)) ok = true
+          else if (quizScope === 'weak' && isWeak(key)) ok = true
+          if (ok) pool.push(item)
+        })
+      })
+      return pool
+    }
+
+    function generateQuizQuestions(pool) {
+      var n = Math.min(quizCount, pool.length)
+      var shuffled = pool.slice()
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1))
+        var t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t
+      }
+      var selected = shuffled.slice(0, n)
+
+      var questions = []
+      var allItems = []
+      LESSONS.forEach(function(l) {
+        (VOCAB[l.num] || []).forEach(function(w) {
+          var item = {}; for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }; item.lessonNum = l.num
+          allItems.push(item)
+        })
+      })
+
+      selected.forEach(function(w) {
+        var correct = quizMode === 'cn-kr' ? w.kr : w.cn
+        var distractors = allItems.filter(function(x) { return x.kr !== w.kr })
+        for (var i2 = distractors.length - 1; i2 > 0; i2--) {
+          var j2 = Math.floor(Math.random() * (i2 + 1))
+          var t2 = distractors[i2]; distractors[i2] = distractors[j2]; distractors[j2] = t2
+        }
+        var picked = distractors.slice(0, 3)
+        var options = picked.map(function(x) { return quizMode === 'cn-kr' ? x.kr : x.cn })
+        options.push(correct)
+        for (var i3 = options.length - 1; i3 > 0; i3--) {
+          var j3 = Math.floor(Math.random() * (i3 + 1))
+          var t3 = options[i3]; options[i3] = options[j3]; options[j3] = t3
+        }
+        questions.push({ word: w, options: options, correctIdx: options.indexOf(correct) })
+      })
+      return questions
+    }
+
+    function startQuiz() {
+      var nums = setKeys(quizSelectedLessons)
+      var pool = buildQuizPool()
+      if (nums.length > 0) { pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 }) }
+      if (pool.length < 4) { alert('词汇不足，至少需要4个词才能测验'); return }
+
+      quizQuestions = generateQuizQuestions(pool)
+      quizIndex = 0; quizScore = 0; quizErrors = []
+      document.getElementById('quiz-setup').style.display = 'none'
+      document.getElementById('quiz-play').style.display = 'block'
+      document.getElementById('quiz-result').style.display = 'none'
+      document.getElementById('quiz-result').innerHTML = ''
+      showQuizQuestion()
+    }
+
+    function showQuizQuestion() {
+      if (quizIndex >= quizQuestions.length) { showQuizResult(); return }
+      var q = quizQuestions[quizIndex]
+      quizAnswered = false
+
+      document.getElementById('quiz-progress-text').textContent = (quizIndex + 1) + '/' + quizQuestions.length
+      document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
+      document.getElementById('quiz-progress-fill').style.width = ((quizIndex) / quizQuestions.length * 100) + '%'
+      document.getElementById('quiz-feedback').textContent = ''
+
+      var area = document.getElementById('quiz-question-area')
+      var word = q.word
+      if (quizMode === 'kr-cn') {
+        area.innerHTML = '<div class="quiz-q-label">韩→中 · 选择正确的中文</div>' +
+          '<div class="quiz-q-word">' + word.kr + '</div>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
+      } else if (quizMode === 'cn-kr') {
+        area.innerHTML = '<div class="quiz-q-label">中→韩 · 选择正确的韩语</div>' +
+          '<div class="quiz-q-word">' + word.cn + '</div>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
+      } else {
+        area.innerHTML = '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
+          '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">点击播放发音</div>' +
+          '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>'
+      }
+
+      var optsEl = document.getElementById('quiz-options')
+      var labels = ['A', 'B', 'C', 'D']
+      optsEl.innerHTML = ''
+      q.options.forEach(function(opt, idx) {
+        var div = document.createElement('div')
+        div.className = 'quiz-option'
+        div.textContent = labels[idx] + '. ' + opt
+        div.onclick = function() { quizAnswer(idx) }
+        optsEl.appendChild(div)
+      })
+    }
+
+    function quizSpeakWord() {
+      var q = quizQuestions[quizIndex]
+      if (!q) return
+      var btn = document.getElementById('quiz-speak-btn')
+      if (btn) { btn.classList.add('playing'); setTimeout(function() { btn.classList.remove('playing') }, 1500) }
+      speak(q.word.kr, 'ko')
+      document.getElementById('quiz-feedback').textContent = '🔊 正在播放...'
+      document.getElementById('quiz-feedback').style.color = 'var(--text-dim)'
+      setTimeout(function() {
+        var fb = document.getElementById('quiz-feedback')
+        if (fb && fb.textContent === '🔊 正在播放...') { fb.textContent = '' }
+      }, 2500)
+    }
+
+    function quizAnswer(idx) {
+      if (quizAnswered) return
+      quizAnswered = true
+      var q = quizQuestions[quizIndex]
+      var correct = idx === q.correctIdx
+      var labels = ['A', 'B', 'C', 'D']
+
+      var opts = document.querySelectorAll('#quiz-options .quiz-option')
+      opts.forEach(function(opt, i) {
+        opt.style.pointerEvents = 'none'
+        if (i === q.correctIdx) opt.classList.add('correct')
+        else opt.classList.add('dimmed')
+      })
+      var fb = document.getElementById('quiz-feedback')
+      if (!correct) {
+        opts[idx].classList.add('wrong')
+        var w = q.word
+        quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
+        fb.textContent = '✗ 正确答案是 ' + labels[q.correctIdx]
+        fb.style.color = 'var(--accent-pink)'
+      } else {
+        quizScore++
+        fb.textContent = '✓ 正确！'
+        fb.style.color = 'var(--accent-green)'
+      }
+
+      document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
+
+      setTimeout(function() {
+        quizIndex++
+        showQuizQuestion()
+      }, 800)
+    }
+
+    function showQuizResult() {
+      document.getElementById('quiz-play').style.display = 'none'
+      var resultEl = document.getElementById('quiz-result')
+      resultEl.style.display = 'block'
+
+      var total = quizQuestions.length
+      var score = quizScore
+      var pct = Math.round(score / total * 100)
+      var gradeClass = pct >= 90 ? 'perfect' : pct >= 70 ? 'good' : pct >= 40 ? 'ok' : 'bad'
+      var gradeEmoji = pct >= 90 ? '🎉' : pct >= 70 ? '👍' : pct >= 40 ? '💪' : '📚'
+      var gradeText = pct >= 90 ? '太棒了！' : pct >= 70 ? '不错哦！' : pct >= 40 ? '继续加油！' : '多练练会更好！'
+
+      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total })
+      saveQuizHistory()
+
+      quizErrors.forEach(function(e) {
+        var d = srs[e.key] || { lv: 0, due: 0, ease: 2.5, n: 0 }
+        d.badCount = (d.badCount || 0) + 1
+        if (!d.lv) d.lv = 0
+        d.last = Date.now()
+        srs[e.key] = d
+      })
+      saveUserData()
+
+      var html = '<div class="quiz-result-card">'
+      html += '<div style="font-size:48px;margin-bottom:8px;">' + gradeEmoji + '</div>'
+      html += '<div class="quiz-score ' + gradeClass + '">' + score + '<span style="font-size:20px;color:var(--text-dim);">/' + total + '</span></div>'
+      html += '<div style="font-size:16px;color:var(--text-dim);margin-top:4px;">' + gradeText + '</div>'
+      html += '<div style="font-size:13px;color:var(--text-subtle);margin-top:8px;">正确率 ' + pct + '%</div>'
+
+      if (quizErrors.length > 0) {
+        html += '<div class="quiz-errors"><div class="quiz-errors-title">❌ 答错的词（已加入易错本）</div>'
+        quizErrors.forEach(function(e) {
+          html += '<div class="quiz-error-item"><div><span class="qe-kr">' + e.kr + '</span> · <span class="qe-cn">' + e.cn + '</span></div><span style="font-size:11px;color:var(--text-subtle);">제' + e.lessonNum + '과</span></div>'
+        })
+        html += '</div>'
+        html += '<button class="quiz-retry-btn" onclick="reviewQuizErrors()" style="border-color:var(--accent-pink);color:var(--accent-pink);">📖 复习这 ' + quizErrors.length + ' 个错题</button>'
+      }
+
+      html += '<button class="quiz-retry-btn" onclick="quizRetry()">🔄 再来一轮</button>'
+      html += '<button class="quiz-retry-btn" style="margin-top:8px;border-color:var(--border);color:var(--text-dim);" onclick="quizBackToSetup()">↩ 返回设置</button>'
+      html += '</div>'
+      resultEl.innerHTML = html
+      updateHomeStats()
+    }
+
+    function reviewQuizErrors() {
+      if (quizErrors.length === 0) return
+      var items = []
+      quizErrors.forEach(function(e) {
+        items.push({ kr: e.kr, cn: e.cn, pos: e.pos, stars: 3, lessonNum: e.lessonNum })
+      })
+      startStudyPool(items, '错题复习')
+      studyFromPage = 'page-quiz'
+    }
+
+    function quizRetry() {
+      var pool = buildQuizPool()
+      var nums = setKeys(quizSelectedLessons)
+      if (nums.length > 0) pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 })
+      if (pool.length < 4) { alert('词汇不足'); return }
+      quizQuestions = generateQuizQuestions(pool)
+      quizIndex = 0; quizScore = 0; quizErrors = []
+      document.getElementById('quiz-result').style.display = 'none'
+      document.getElementById('quiz-result').innerHTML = ''
+      document.getElementById('quiz-play').style.display = 'block'
+      showQuizQuestion()
+    }
+
+    function quizBackToSetup() {
+      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+      document.getElementById('quiz-play').style.display = 'none'
+      document.getElementById('quiz-result').style.display = 'none'
+      document.getElementById('quiz-result').innerHTML = ''
+      document.getElementById('quiz-setup').style.display = 'block'
+      renderQuizLessons()
+    }
+
+    function quizGoHome() {
+      if (!document.getElementById('quiz-play').style.display || document.getElementById('quiz-play').style.display === 'none') {
+        showPage('page-home')
+      } else {
+        confirmExitQuiz()
+      }
+    }
+
+    function confirmExitQuiz() {
+      if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+      }
+      document.getElementById('quiz-play').style.display = 'none'
+      document.getElementById('quiz-result').style.display = 'none'
+      document.getElementById('quiz-result').innerHTML = ''
+      document.getElementById('quiz-setup').style.display = 'block'
+      renderQuizLessons()
+    }
+
+    function showQuiz() {
+      quizMode = 'kr-cn'; quizScope = 'all'; quizCount = 10
+      quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+      document.getElementById('quiz-setup').style.display = 'block'
+      document.getElementById('quiz-play').style.display = 'none'
+      document.getElementById('quiz-result').style.display = 'none'
+      document.getElementById('quiz-result').innerHTML = ''
+      document.querySelectorAll('#quiz-mode-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === 'kr-cn')
+      })
+      document.querySelectorAll('#quiz-count-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', parseInt(b.getAttribute('data-count')) === 10)
+      })
+      document.querySelectorAll('#quiz-scope-bar .quiz-scope-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-scope') === 'all')
+      })
+      loadQuizHistory()
+      renderQuizLessons()
+      showPage('page-quiz')
+    }
+
+    // 拦截测验中底部导航跳转
+    var origShowPage = showPage
+    showPage = function(id) {
+      var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
+        document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
+      if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        if (id !== 'page-quiz' && id !== 'page-study') {
+          if (!confirm('确定退出吗？当前测验进度将丢失。')) return
+          quizQuestions = []
+        }
+      }
+      origShowPage(id)
+    }
+
+    loadQuizHistory()
+
     // 键盘支持
     document.addEventListener('keydown', function(e) {
       const studyPage = document.getElementById('page-study')
@@ -4588,13 +5172,16 @@
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
       showPage('page-settings')
     }
+    var _fromPopstate = false
     // 浏览器返回键监听
     window.addEventListener('popstate', function(e) {
+      _fromPopstate = true
       if (e.state && e.state.page) {
         showPage(e.state.page)
       } else {
         showPage('page-home')
       }
+      _fromPopstate = false
     })
 
     // 页面刷新后恢复上次位置
