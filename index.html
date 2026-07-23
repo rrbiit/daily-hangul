@@ -1121,6 +1121,10 @@
           <div class="quiz-question-area" id="quiz-question-area"></div>
           <div class="quiz-options" id="quiz-options"></div>
           <div id="quiz-feedback" style="text-align:center;min-height:24px;margin-top:8px;font-size:14px;font-weight:500;"></div>
+          <div id="quiz-nav" style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+            <button onclick="quizPrev()" id="quiz-prev-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--font-display);font-size:14px;cursor:pointer;">◀ 上一题</button>
+            <button onclick="quizNext()" id="quiz-next-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--font-display);font-size:14px;cursor:pointer;display:none;">下一题 ▶</button>
+          </div>
         </div>
 
         <!-- 结果区 -->
@@ -4700,12 +4704,22 @@
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
       document.getElementById('quiz-progress-fill').style.width = ((quizIndex) / quizQuestions.length * 100) + '%'
       document.getElementById('quiz-feedback').textContent = ''
+      document.getElementById('quiz-feedback').style.color = 'var(--text-dim)'
+
+      // 上一题/下一题按钮
+      var prevBtn = document.getElementById('quiz-prev-btn')
+      var nextBtn = document.getElementById('quiz-next-btn')
+      prevBtn.style.display = quizIndex > 0 ? '' : 'none'
+      nextBtn.style.display = 'none'
 
       var area = document.getElementById('quiz-question-area')
       var word = q.word
       if (quizMode === 'kr-cn') {
         area.innerHTML = '<div class="quiz-q-label">韩→中 · 选择正确的中文</div>' +
-          '<div class="quiz-q-word">' + word.kr + '</div>' +
+          '<div class="quiz-q-word" style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">' +
+            '<span>' + word.kr + '</span>' +
+            '<button class="quiz-q-speak" id="quiz-speak-btn" style="width:32px;height:32px;font-size:15px;margin-top:0;" onclick="event.stopPropagation();quizSpeakWord()" title="听发音">🔊</button>' +
+          '</div>' +
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
       } else if (quizMode === 'cn-kr') {
         area.innerHTML = '<div class="quiz-q-label">中→韩 · 选择正确的韩语</div>' +
@@ -4763,18 +4777,34 @@
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
         fb.textContent = '✗ 正确答案是 ' + labels[q.correctIdx]
         fb.style.color = 'var(--accent-pink)'
+        // 答错停在当前题，显示"下一题"按钮
+        document.getElementById('quiz-next-btn').style.display = ''
       } else {
         quizScore++
         fb.textContent = '✓ 正确！'
         fb.style.color = 'var(--accent-green)'
+        // 答对自动下一题
+        setTimeout(function() {
+          quizIndex++
+          showQuizQuestion()
+        }, 800)
       }
 
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
+    }
 
-      setTimeout(function() {
-        quizIndex++
-        showQuizQuestion()
-      }, 800)
+    // 上一题
+    function quizPrev() {
+      if (quizIndex <= 0) return
+      quizIndex--
+      showQuizQuestion()
+    }
+
+    // 下一题（答错后手动点击）
+    function quizNext() {
+      if (quizIndex >= quizQuestions.length - 1) { showQuizResult(); return }
+      quizIndex++
+      showQuizQuestion()
     }
 
     function showQuizResult() {
