@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -20,7 +20,7 @@
   <style>
     :root {
       --bg: #faf9f7;
-      --surface: rgba(255,255,255,0.94);
+      --surface: #ffffff;
       --primary: #7eb8da;
       --primary-dim: #5fa3c7;
       --primary-light: #dceef7;
@@ -45,7 +45,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1a1a2e; --surface: rgba(30,30,50,0.92);
+          --bg: #1a1a2e; --surface: rgb(30,30,50);
         --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a;
         --accent-green: #81c784; --accent-green-light: #1b2e1b;
         --accent-pink: #f48fb1; --accent-pink-light: #2e1b24;
@@ -128,13 +128,13 @@
     .course-content, .course-list { display: flex; flex-direction: column; gap: 10px; }
     /* ─── 底部导航 ─── */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
       border-top: 1px solid var(--border); display: flex; justify-content: center;
-      padding: 8px 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      background: rgba(255,255,255,0.85); box-shadow: 0 -1px 0 var(--border);
+      padding: 8px 0;
+      background: #ffffff !important; box-shadow: 0 -1px 0 var(--border);
     }
     @media (prefers-color-scheme: dark) {
-      .bottom-nav { background: rgba(30,30,50,0.88); }
+      .bottom-nav { background: #1a1a2e !important; }
       .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
       .greeting { color: #d5cbd8; }
       .greeting-sub { color: #8a7e8e; }
@@ -228,7 +228,7 @@
     .word-item .right-col { position: absolute; top: 6px; right: 8px; }
     .word-item.expanded { grid-column: 1 / -1; }
     .stars {
-      color: var(--star); font-size: 12px; letter-spacing: 1px;
+      color: var(--star); font-size: 10px; letter-spacing: 0.5px;
     }
 
     /* ─── 标签切换 ─── */
@@ -313,10 +313,9 @@
 
     /* ─── 学习模式页 ─── */
     .study-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; background: rgba(248,250,252,0.85);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      padding: 12px 16px; background: var(--bg);
       border-bottom: 1px solid var(--border);
     }
     .study-header .back-btn { width: 36px; height: 36px; }
@@ -439,11 +438,14 @@
     }
 
     .study-controls {
-      position: fixed; bottom: 0; left: 0; right: 0;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: flex-start; justify-content: center;
       gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 8px));
-      background: var(--surface);
+      background: #ffffff !important;
       border-top: 1px solid var(--border);
+    }
+    @media (prefers-color-scheme: dark) {
+      .study-controls { background: #1a1a2e !important; }
     }
     .study-controls > div {
       display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -452,8 +454,7 @@
       width: 46px; height: 46px;
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: var(--surface);
       color: var(--text);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
@@ -537,17 +538,23 @@
 
     /* ─── 掌握徽标 ─── */
     .word-mastery-badge {
-      font-size: 10px; padding: 1px 6px; border-radius: 10px;
-      cursor: pointer; font-weight: 500; z-index: 2;
-      transition: all 0.2s; white-space: nowrap;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; cursor: pointer; font-weight: 500; z-index: 2;
+      transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
     }
     .word-mastery-badge.unmastered {
-      color: var(--accent-coral); background: var(--accent-coral-light);
-      border: 1px solid var(--accent-coral);
+      color: #8e9aaf; background: #edf0f5;
+      border: 1px solid #c8cdd8;
     }
     .word-mastery-badge.mastered {
       color: var(--accent-green); background: var(--accent-green-light);
       border: 1px solid var(--accent-green);
+    }
+    @media (prefers-color-scheme: dark) {
+      .word-mastery-badge.unmastered {
+        color: #7a8a9a; background: #22263a; border-color: #3a3e52;
+      }
     }
     .word-mastery-badge:hover { transform: scale(1.08); }
 
@@ -584,8 +591,8 @@
 
     /* ─── 单词项操作区域（星星下方） ─── */
     .word-actions-under-stars {
-      position: absolute; top: 28px; right: 4px;
-      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+      position: absolute; top: 30px; right: 4px;
+      display: flex; flex-direction: row; align-items: center; gap: 4px;
       z-index: 2;
     }
 
@@ -1017,7 +1024,7 @@
     </div>
 
     <!-- ═══════════ 底部导航 ═══════════ -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" style="background:#ffffff;">
       <div class="nav-inner">
         <button class="nav-item active" data-page="page-home" onclick="showPage('page-home')">
           <svg viewBox="0 0 24 24" class="icon-home"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6" /></svg>
@@ -2734,12 +2741,26 @@
        页面切换
        ═══════════════════════════════════════════ */
 
+    // page id → URL hash 映射
+    var PAGE_HASH = {
+      'page-home': 'home', 'page-course': 'course', 'page-words': 'words',
+      'page-study': 'study', 'page-starred': 'starred', 'page-weak': 'weak',
+      'page-search': 'search', 'page-review': 'review', 'page-settings': 'settings'
+    }
+    var HASH_PAGE = {}
+    Object.keys(PAGE_HASH).forEach(function(k) { HASH_PAGE[PAGE_HASH[k]] = k })
+
     function showPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
       document.getElementById(id).classList.add('active')
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
       document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active')
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      // 更新 URL hash + 浏览器历史（用于返回键和刷新定位）
+      var newHash = PAGE_HASH[id] || 'home'
+      if (location.hash !== '#' + newHash) {
+        history.pushState({ page: id }, '', '#' + newHash)
+      }
       // 回到首页时刷新统计数据 + 随机 emoji
       if (id === 'page-home') {
         var homeEmojis = ['🫶','🧸','🌸','🐻','🐰','🍀','🩷','💝','🫧','🎀','🐣','☁️','🩵','🐱','🐶','🐥','🐼','🦊','🐨','🐸','🍰','🐾','⭐','🌈','💐']
@@ -3972,6 +3993,7 @@
         var cnHtml = highlightText(w.cn, q)
         var starsText = isStar ? renderStars(5) : renderStars(w.stars)
         var starsStyle = isStar ? 'color:var(--star);' : ''
+        var safeKr = w.kr.replace(/"/g, '&quot;')
 
         div.innerHTML =
           '<div class="left-col">' +
@@ -3985,6 +4007,7 @@
             '</span>' +
           '</div>' +
           '<div class="word-actions-under-stars">' +
+            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
             '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
               (mastered ? '✓' : '○') +
             '</span>' +
@@ -4565,6 +4588,21 @@
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
       showPage('page-settings')
     }
+    // 浏览器返回键监听
+    window.addEventListener('popstate', function(e) {
+      if (e.state && e.state.page) {
+        showPage(e.state.page)
+      } else {
+        showPage('page-home')
+      }
+    })
+
+    // 页面刷新后恢复上次位置
+    var initHash = location.hash.replace('#', '')
+    if (initHash && HASH_PAGE[initHash] && initHash !== 'home') {
+      showPage(HASH_PAGE[initHash])
+    }
+
     // PWA
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}) }
   </script>
