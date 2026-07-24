@@ -64,7 +64,7 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    .container { max-width: 640px; margin: 0 auto; padding: 48px 24px 96px; }
+    .container { max-width: 640px; margin: 0 auto; padding: 32px 20px 96px; }
     .page { display: none; }
     .page.active { display: block; animation: fadeIn 200ms ease; }
     @keyframes fadeIn {
@@ -75,53 +75,53 @@
     /* ─── 首页 ─── */
     .home-hero {
       background: linear-gradient(160deg, #fef5f7 0%, #faf7f9 40%, #f8f4f2 100%);
-      border-radius: 20px; padding: 18px 20px; margin-bottom: 16px;
+      border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
       position: relative; overflow: hidden; border: 1px solid #f3e8ec;
       box-shadow: 0 4px 20px rgba(180,160,170,0.1);
-      display: flex; align-items: center; gap: 14px;
+      display: flex; align-items: center; gap: 12px;
     }
-    .home-hero-emoji { font-size: 30px; flex-shrink: 0; line-height: 1; }
+    .home-hero-emoji { font-size: 26px; flex-shrink: 0; line-height: 1; }
     .home-hero-text { flex: 1; }
-    .greeting { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.2; color: #4a3f50; }
-    .greeting-sub { color: #9a8ea4; font-size: 13px; margin-top: 2px; }
+    .greeting { font-family: var(--font-display); font-size: 20px; font-weight: 400; letter-spacing: -0.01em; line-height: 1.2; color: #4a3f50; }
+    .greeting-sub { color: #9a8ea4; font-size: 12px; margin-top: 2px; }
     .greeting-date { font-size: 11px; color: #c4bcc8; margin-top: 2px; }
 
     .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
     .stat-card {
-      background: var(--surface); border-radius: 16px; padding: 16px 10px; text-align: center;
+      background: var(--surface); border-radius: 14px; padding: 12px 6px; text-align: center;
       border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.2s;
     }
-    .stat-card .sc-icon { font-size: 20px; margin-bottom: 4px; }
-    .stat-card .sc-num { font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 1.2; }
-    .stat-card .sc-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .stat-card .sc-icon { font-size: 16px; margin-bottom: 2px; }
+    .stat-card .sc-num { font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1.2; }
+    .stat-card .sc-label { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
     .sc-mastered .sc-num { color: var(--accent-green); }
     .sc-learning .sc-num { color: var(--accent-coral); }
     .sc-starred .sc-num { color: var(--star); }
 
-    .home-progress-bar-wrap { background: var(--surface); border-radius: 16px; padding: 14px 18px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-    .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .home-progress-bar-wrap .hp-label { font-size: 13px; color: var(--text-dim); }
-    .home-progress-bar-wrap .hp-pct { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--primary); }
-    .home-progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .home-progress-bar-wrap { background: var(--surface); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); max-width: 460px; }
+    .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .home-progress-bar-wrap .hp-label { font-size: 12px; color: var(--text-dim); }
+    .home-progress-bar-wrap .hp-pct { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
+    .home-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .home-progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; background: linear-gradient(90deg, var(--accent-green), var(--primary), var(--accent-purple)); }
 
     .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
     .quick-action {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 16px 14px; display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 12px 12px; display: flex; align-items: center; gap: 8px;
       cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); text-decoration: none; color: var(--text);
     }
     .quick-action:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
     .quick-action .qa-icon {
-      width: 40px; height: 40px; border-radius: 12px; display: flex;
-      align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 10px; display: flex;
+      align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
     }
     .qa-review .qa-icon { background: var(--accent-coral-light); }
     .qa-course .qa-icon { background: var(--accent-purple-light); }
     .qa-search .qa-icon { background: var(--primary-light); }
     .qa-starred .qa-icon { background: var(--accent-yellow-light); }
     .qa-quiz .qa-icon { background: #e0f2e9; }
-    .quick-action .qa-title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+    .quick-action .qa-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; }
     .quick-action .qa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 
     .course-section { margin-top: 0; }
@@ -156,7 +156,7 @@
     .nav-item.active { color: var(--primary); }
 
     /* ─── 课程详情页 ─── */
-    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .back-btn {
       width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
@@ -164,83 +164,100 @@
     }
     .back-btn:hover { background: var(--primary-light); color: var(--primary); }
     .back-btn svg { width: 20px; height: 20px; }
-    .page-header .title-area h1 { font-family: var(--font-display); font-size: 22px; font-weight: 500; line-height: 1.3; }
-    .page-header .title-area p { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
+    .page-header .title-area h1 { font-family: var(--font-display); font-size: 20px; font-weight: 500; line-height: 1.3; }
+    .page-header .title-area p { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
     .lesson-list { display: flex; flex-direction: column; gap: 10px; }
     .lesson-item {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
       cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+      max-width: 460px;
     }
     .lesson-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .lesson-item .num { width: 40px; font-family: var(--font-display); font-size: 14px; font-weight: 500; flex-shrink: 0; }
+    .lesson-item .num { width: 36px; font-family: var(--font-display); font-size: 13px; font-weight: 500; flex-shrink: 0; }
     .lesson-item:nth-child(5n+1) .num { color: var(--accent-blue, #7eb8da); }
     .lesson-item:nth-child(5n+2) .num { color: var(--accent-pink); }
     .lesson-item:nth-child(5n+3) .num { color: var(--accent-green); }
     .lesson-item:nth-child(5n+4) .num { color: var(--accent-purple); }
     .lesson-item:nth-child(5n+5) .num { color: var(--accent-coral); }
     .lesson-item .info { flex: 1; }
-    .lesson-item .info .title { font-family: var(--font-display); font-size: 15px; font-weight: 500; }
-    .lesson-item .info .meta { font-size: 13px; color: var(--text-dim); margin-top: 1px; }
-    .lesson-item .stats { display: flex; align-items: center; gap: 8px; }
-    .lesson-item .stats .bar-wrap { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .lesson-item .info .title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+    .lesson-item .info .meta { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+    .lesson-item .stats { display: flex; align-items: center; gap: 6px; }
+    .lesson-item .stats .bar-wrap { width: 50px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
     .lesson-item .stats .bar-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
-    .lesson-item .stats .count { font-size: 12px; color: var(--text-dim); min-width: 32px; text-align: right; }
+    .lesson-item .stats .count { font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: right; }
 
     .course-item {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
       transition: all 0.2s; cursor: pointer; box-shadow: var(--shadow);
+      max-width: 460px;
     }
     .course-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .course-item.locked { opacity: 0.4; pointer-events: none; }
-    .course-item .name { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
-    .course-item .sub { font-size: 14px; color: var(--text-dim); margin-top: 2px; }
-    .course-item .right { display: flex; align-items: center; gap: 12px; }
-    .course-item .right .bar-wrap { width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .course-item .name { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+    .course-item .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .course-item .right { display: flex; align-items: center; gap: 8px; }
+    .course-item .right .bar-wrap { width: 60px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .course-item .right .bar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.5s; }
-    .course-item .right .pct { font-size: 12px; color: var(--text-dim); width: 24px; text-align: right; }
+    .course-item .right .pct { font-size: 11px; color: var(--text-dim); width: 22px; text-align: right; }
     .course-item .right .arrow { color: var(--text-subtle); }
-    .course-item .right .arrow svg { width: 16px; height: 16px; }
+    .course-item .right .arrow svg { width: 14px; height: 14px; }
 
     /* ─── 单词列表页 ─── */
     .word-count { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
     .word-list { margin-top: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .word-item {
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 10px 12px; display: flex; flex-direction: column; align-items: stretch;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto auto;
+      gap: 2px 8px;
+      align-items: center;
       cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
       position: relative; min-height: 0;
     }
     .word-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .word-item .left-col { flex: 1; min-width: 0; }
+    .word-item .left-col,
+    .word-item .right-col { display: contents; }
     .word-item .kr {
       font-family: var(--font-display); font-size: 16px; font-weight: 500;
       letter-spacing: 0.01em; line-height: 1.3; word-break: keep-all;
+      grid-row: 1; grid-column: 1;
     }
     .word-item .pos {
       font-size: 10px; color: var(--accent-pink); font-weight: 500;
       background: var(--accent-pink-light); padding: 0px 6px; border-radius: 3px;
-      display: inline-block; margin-top: 4px;
+      display: inline-block; grid-row: 2; grid-column: 1;
+      justify-self: start;
     }
     .word-item .cn {
-      font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.3;
+      font-size: 12px; color: var(--text-dim); line-height: 1.3; word-break: keep-all;
+      grid-row: 3; grid-column: 1;
     }
-    .word-item .right-col { position: absolute; top: 6px; right: 8px; }
-    .word-item.expanded { grid-column: 1 / -1; }
     .stars {
       color: var(--star); font-size: 10px; letter-spacing: 0.5px;
+    }
+    /* 点击发音时的微高亮闪烁 */
+    .word-item.speaking .kr {
+      animation: speak-flash 0.35s ease;
+    }
+    @keyframes speak-flash {
+      0% { color: var(--primary); }
+      100% { color: inherit; }
     }
 
     /* ─── 标签切换 ─── */
     .tab-bar {
-      display: flex; gap: 4px; margin-bottom: 20px;
-      background: var(--border); border-radius: 12px; padding: 4px;
+      display: flex; gap: 2px; margin-bottom: 14px;
+      background: var(--border); border-radius: 10px; padding: 3px;
     }
     .tab-btn {
-      flex: 1; padding: 8px; border: none; border-radius: 8px;
+      flex: 1; padding: 6px 5px; border: none; border-radius: 7px;
       background: transparent; color: var(--text-dim);
-      font-family: var(--font-body); font-size: 14px; font-weight: 500;
+      font-family: var(--font-body); font-size: 12px; font-weight: 500;
       cursor: pointer; transition: all 0.2s;
     }
     .tab-btn.active {
@@ -518,18 +535,19 @@
     .search-box input::placeholder { color: var(--text-subtle); }
     .review-options { display: flex; flex-direction: column; gap: 10px; }
     .review-option {
-      display: flex; align-items: center; gap: 14px;
+      display: flex; align-items: center; gap: 10px;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px 18px;
+      border-radius: 12px; padding: 10px 14px;
       cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+      max-width: 460px;
     }
     .review-option:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .review-option .ro-icon { font-size: 24px; flex-shrink: 0; }
-    .review-option .ro-title { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
-    .review-option .ro-desc { font-size: 13px; color: var(--text-dim); margin-top: 1px; }
+    .review-option .ro-icon { font-size: 20px; flex-shrink: 0; }
+    .review-option .ro-title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+    .review-option .ro-desc { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
     .review-option .ro-count {
       margin-left: auto; font-family: var(--font-display);
-      font-size: 18px; font-weight: 500; color: var(--accent-coral); flex-shrink: 0;
+      font-size: 16px; font-weight: 500; color: var(--accent-coral); flex-shrink: 0;
     }
     .search-result-item .lesson-tag {
       font-size: 11px; color: var(--accent-purple);
@@ -539,17 +557,17 @@
 
     /* ─── 测验页 ─── */
     .quiz-container { max-width: 400px; margin: 0 auto; }
-    .quiz-scope-bar { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .quiz-scope-bar { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
     .quiz-scope-btn {
-      padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 5px 10px; border: 1px solid var(--border); border-radius: 7px;
       background: var(--surface); color: var(--text-dim); cursor: pointer;
-      font-size: 13px; font-family: var(--font-display); transition: all 0.2s;
+      font-size: 12px; font-family: var(--font-display); transition: all 0.2s;
     }
     .quiz-scope-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
     .quiz-start-btn {
-      width: 100%; padding: 14px; border: none; border-radius: 14px;
+      width: 100%; padding: 12px; border: none; border-radius: 12px;
       background: linear-gradient(135deg, #7eb8da, #81c784); color: white;
-      font-family: var(--font-display); font-size: 17px; font-weight: 500;
+      font-family: var(--font-display); font-size: 15px; font-weight: 500;
       cursor: pointer; transition: all 0.2s; margin-bottom: 24px; letter-spacing: 0.02em;
     }
     .quiz-start-btn:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -663,7 +681,7 @@
     .word-speak-btn:hover { opacity: 1; }
 
     /* ─── 可点击星标 ─── */
-    .word-stars-clickable { cursor: pointer; z-index: 2; position: relative; user-select: none; }
+    .word-stars-clickable { cursor: pointer; z-index: 2; position: relative; user-select: none; grid-row: 1; grid-column: 2; justify-self: end; }
 
     /* ─── 过滤栏 ─── */
     #word-filter-bar { margin-top: 4px; margin-bottom: 12px; }
@@ -685,11 +703,32 @@
     /* ─── 薄弱词快捷入口 ─── */
     .qa-weak .qa-icon { background: var(--accent-pink-light); }
 
-    /* ─── 单词项操作区域（星星下方） ─── */
+    /* ─── 单词项操作区域（星星下方：喇叭 + 掌握 并排） ─── */
     .word-actions-under-stars {
-      position: absolute; top: 30px; right: 4px;
       display: flex; flex-direction: row; align-items: center; gap: 4px;
-      z-index: 2;
+      grid-row: 2; grid-column: 2; justify-self: end;
+    }
+    /* ─── 学习小按钮（卡片右下角） ─── */
+    .word-learn-btn {
+      font-size: 10px; padding: 3px 8px;
+      border: 1px solid var(--primary); border-radius: 5px;
+      background: var(--primary-light); color: var(--primary);
+      cursor: pointer; font-family: var(--font-display); font-weight: 500;
+      white-space: nowrap; letter-spacing: 0.02em;
+      transition: all 0.2s; line-height: 1.3;
+      grid-row: 3; grid-column: 2; justify-self: end;
+    }
+    .word-learn-btn:hover {
+      background: var(--primary); color: #fff;
+    }
+
+    /* ─── 测验记录 ─── */
+    .quiz-history-item {
+      transition: all 0.15s;
+    }
+    .quiz-history-item:hover {
+      border-color: var(--primary) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     }
 
     /* SVG 图标 */
@@ -947,6 +986,9 @@
     <div id="page-starred" class="page">
       <div class="container">
         <div class="page-header" style="margin-bottom:16px;">
+          <button class="back-btn" onclick="showPage('page-home')">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
           <div class="title-area">
             <h1>收藏</h1>
             <p id="starred-count">共 0 项</p>
@@ -973,6 +1015,9 @@
     <div id="page-weak" class="page">
       <div class="container">
         <div class="page-header">
+          <button class="back-btn" onclick="showPage('page-home')">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
           <div class="title-area">
             <h1>⚠️ 易错本</h1>
             <p class="word-count" id="weak-words-count">加载中...</p>
@@ -982,13 +1027,6 @@
         <!-- 开始复习按钮 -->
         <div id="weak-study-btn-area" style="margin-bottom:16px;">
           <button onclick="startStudyWeak()" style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--primary);color:white;font-family:var(--font-display);font-size:16px;font-weight:500;cursor:pointer;">▶ 开始复习薄弱词</button>
-        </div>
-
-        <!-- 过滤栏 -->
-        <div class="tab-bar" id="weak-filter-bar" style="margin-bottom:12px;">
-          <button class="tab-btn active" data-filter="all" onclick="setWeakFilter('all')">全部</button>
-          <button class="tab-btn" data-filter="unmastered" onclick="setWeakFilter('unmastered')">未掌握</button>
-          <button class="tab-btn" data-filter="mastered" onclick="setWeakFilter('mastered')">已掌握</button>
         </div>
 
         <!-- 单词列表 -->
@@ -1076,16 +1114,23 @@
           </div>
         </div>
 
-        <!-- 设置区 -->
-        <div id="quiz-setup">
+        <!-- 标签：测验 / 记录 -->
+        <div class="tab-bar" style="margin-bottom:14px;" id="quiz-tab-bar">
+          <button class="tab-btn active" data-qtab="quiz" onclick="switchQuizTab('quiz')">📝 测验</button>
+          <button class="tab-btn" data-qtab="history" onclick="switchQuizTab('history')">📋 记录</button>
+        </div>
+
+        <div id="quiz-tab-content">
+          <!-- 设置区 -->
+          <div id="quiz-setup">
           <!-- 模式 + 数量 -->
-          <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:16px;flex-wrap:wrap;">
-            <div class="tab-bar" id="quiz-mode-bar" style="flex:1;min-width:200px;margin-bottom:0;">
-              <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">🇰🇷→🇨🇳 韩→中</button>
-              <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">🇨🇳→🇰🇷 中→韩</button>
+          <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:12px;flex-wrap:wrap;">
+            <div class="tab-bar" id="quiz-mode-bar" style="flex:1;min-width:180px;margin-bottom:0;">
+              <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">韩→中</button>
+              <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">中→韩</button>
               <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
             </div>
-            <div class="tab-bar" style="flex:0 0 auto;min-width:140px;margin-bottom:0;" id="quiz-count-bar">
+            <div class="tab-bar" style="flex:0 0 auto;min-width:120px;margin-bottom:0;" id="quiz-count-bar">
               <button class="tab-btn" data-count="5" onclick="setQuizCount(5)">5</button>
               <button class="tab-btn active" data-count="10" onclick="setQuizCount(10)">10</button>
               <button class="tab-btn" data-count="15" onclick="setQuizCount(15)">15</button>
@@ -1129,6 +1174,13 @@
 
         <!-- 结果区 -->
         <div class="quiz-container" id="quiz-result" style="display:none;"></div>
+
+        </div><!-- /quiz-tab-content -->
+
+        <!-- 测验记录 -->
+        <div id="quiz-history-tab-content" style="display:none;">
+          <div id="quiz-history-list"></div>
+        </div>
       </div>
     </div>
       </div>
@@ -1208,7 +1260,7 @@
           <svg viewBox="0 0 24 24" class="icon-grid"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
           <span>课程</span>
         </button>
-        <button class="nav-item" data-page="page-quiz" onclick="showQuiz()">
+        <button class="nav-item" data-page="page-quiz" onclick="quizNavGuard()">
           <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
           <span>测验</span>
         </button>
@@ -1273,7 +1325,7 @@
     function masteryCount(num) {
       return (VOCAB[num] || []).filter(function(w) { return isMastered(w, num) }).length
     }
-    // 判断是否是薄弱词（累计失败 >= 3 次且未掌握）
+    // 判断是否是薄弱词（累计失败 >= 1 次且未掌握）
     function isWeak(key) {
       var d = srs[key]
       return !!(d && (d.badCount || 0) >= 1 && d.lv < 4)
@@ -2707,24 +2759,12 @@
         div.setAttribute('data-lesson', String(num))
 
         div.onclick = function(e) {
-          // 点了操作按钮不展开
-          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable'))) return
-          var existing = div.querySelector('.word-detail')
-          if (existing) {
-            existing.remove()
-            div.classList.remove('expanded')
-            return
-          }
-          list.querySelectorAll('.word-detail').forEach(function(d) { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
-          list.querySelectorAll('.word-item.expanded').forEach(function(it) { it.classList.remove('expanded') })
-          div.classList.add('expanded')
-          var exList2 = generateExample(w)
-          var exBlock = exList2 && exList2.length > 0 ? renderExamplesHTML(exList2) : '<div style="color:var(--text-dim);font-size:13px;">暂无例句</div>'
-          var detail = document.createElement('div')
-          detail.className = 'word-detail'
-          detail.style.cssText = 'margin-top:12px;padding:12px 14px;background:var(--bg);border-radius:8px;border-top:1px solid var(--border);'
-          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + '</span><button onclick="event.stopPropagation();startStudy(' + num + ',' + origIdx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
-          div.appendChild(detail)
+          // 点了操作按钮不触发卡片点击
+          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
+          // 点击卡片空白处 → 播放读音
+          speak(w.kr, 'ko')
+          div.classList.add('speaking')
+          setTimeout(function() { div.classList.remove('speaking') }, 350)
         }
 
         var starsText = isStar ? renderStars(5) : renderStars(w.stars)
@@ -2732,19 +2772,20 @@
         div.innerHTML =
           '<div class="left-col">' +
             '<div class="kr">' + w.kr + '</div>' +
-            '<div><span class="pos">' + w.pos + '</span></div>' +
+            '<span class="pos">' + w.pos + '</span>' +
             '<div class="cn">' + w.cn + '</div>' +
           '</div>' +
           '<div class="right-col">' +
             '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
-          '</div>' +
-          '<div class="word-actions-under-stars">' +
-            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
-            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
-              (mastered ? '✓' : '○') +
-            '</span>' +
+            '<div class="word-actions-under-stars">' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+                (mastered ? '✓' : '○') +
+              '</span>' +
+            '</div>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + num + ',' + origIdx + ')">▶ 学习</button>' +
           '</div>'
 
         list.appendChild(div)
@@ -2929,8 +2970,8 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
       document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active')
       window.scrollTo({ top: 0, behavior: 'smooth' })
-      // 除学习模式外显示底部导航
-      if (id !== 'page-study') showNav()
+      // 除学习/测验模式外显示底部导航
+      if (id !== 'page-study' && id !== 'page-quiz') showNav()
       // 更新 URL hash + 浏览器历史（用于返回键和刷新定位）
       var newHash = PAGE_HASH[id] || 'home'
       if (location.hash !== '#' + newHash) {
@@ -3819,7 +3860,7 @@
           if (d && d.lv >= 4) {
             delete srs[badgeKey]
           } else {
-            srs[badgeKey] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1) }
+            srs[badgeKey] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1), badCount: 0 }
           }
           saveUserData()
           updateHomeStats()
@@ -3827,6 +3868,10 @@
           // 根据当前页面刷新列表
           if (document.getElementById('page-weak').classList.contains('active')) {
             renderWeakWords()
+          } else if (document.getElementById('page-starred').classList.contains('active')) {
+            showStarred()
+          } else if (document.getElementById('page-search').classList.contains('active')) {
+            doSearch()
           } else {
             openLesson(currentLessonNum)
           }
@@ -3840,18 +3885,27 @@
         e.stopPropagation()
         var starKey = starEl.getAttribute('data-key')
         if (starKey) {
-          if (starred.has(starKey)) starred.delete(starKey)
+          var wasStarred = starred.has(starKey)
+          if (wasStarred) starred.delete(starKey)
           else starred.add(starKey)
           saveUserData()
-          // 局部刷新该卡片
           var wItem = starEl.closest('.word-item')
-          if (wItem) {
+          // 收藏页取消收藏 → 从 DOM 移除卡片
+          if (wasStarred && document.getElementById('page-starred').classList.contains('active')) {
+            if (wItem) wItem.remove()
+            // 如果列表空了，显示空状态
+            var vlist = document.getElementById('starred-list')
+            var vlistItems = vlist ? vlist.querySelectorAll('.word-item') : []
+            if (vlist && vlistItems.length === 0) {
+              vlist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的单词</div>'
+            }
+          } else if (wItem) {
+            // 其他页面：局部刷新星标
             var isStar = starred.has(starKey)
             var starsSpan = wItem.querySelector('.word-stars-clickable')
             if (starsSpan) {
               var origLesson = parseInt(wItem.getAttribute('data-lesson'))
               var origWords = VOCAB[origLesson] || []
-              // 找到原始词数据
               var foundW = null
               for (var wi = 0; wi < origWords.length; wi++) {
                 if (wk(origWords[wi], origLesson) === starKey) { foundW = origWords[wi]; break }
@@ -3904,8 +3958,8 @@
         // 已经掌握了 → 取消掌握，重置为新词
         delete srs[key]
       } else {
-        // 标记已掌握
-        srs[key] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1) }
+        // 标记已掌握，badCount 清零 → 从易错本移除
+        srs[key] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1), badCount: 0 }
       }
       updateSrsStatus()
       updateHomeStats()
@@ -3992,22 +4046,29 @@
             div.className = 'word-item'
             div.setAttribute('data-key', key2)
             div.setAttribute('data-lesson', String(w.lessonNum))
-            div.onclick = () => startStudy(w.lessonNum, w.wordIdx)
+            div.onclick = function(e) {
+              if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
+              speak(w.kr, 'ko')
+              div.classList.add('speaking')
+              setTimeout(function() { div.classList.remove('speaking') }, 350)
+            }
             div.innerHTML =
               '<div class="left-col">' +
                 '<div class="kr">' + w.kr + '</div>' +
+                '<span class="pos">' + (w.pos || '') + '</span>' +
                 '<div class="cn">' + w.cn + '</div>' +
               '</div>' +
               '<div class="right-col">' +
                 '<span class="word-stars-clickable" data-key="' + key2 + '" title="点击切换收藏" style="color:var(--star);">' +
                   '<span class="stars">' + renderStars(5) + '</span>' +
                 '</span>' +
-              '</div>' +
-              '<div class="word-actions-under-stars">' +
-                '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
-                '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
-                  (mastered2 ? '✓' : '○') +
-                '</span>' +
+                '<div class="word-actions-under-stars">' +
+                  '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+                  '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
+                    (mastered2 ? '✓' : '○') +
+                  '</span>' +
+                '</div>' +
+                '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + w.lessonNum + ',' + w.wordIdx + ')">▶ 学习</button>' +
               '</div>'
             vlist.appendChild(div)
           })
@@ -4167,17 +4228,26 @@
         div.className = 'word-item search-result-item'
         div.setAttribute('data-key', key)
         div.setAttribute('data-lesson', String(w.lessonNum))
-        div.onclick = function() { openLesson(w.lessonNum) }
+        div.onclick = function(e) {
+          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
+          speak(w.kr, 'ko')
+          div.classList.add('speaking')
+          setTimeout(function() { div.classList.remove('speaking') }, 350)
+        }
 
         var krHtml = highlightText(w.kr, q)
         var cnHtml = highlightText(w.cn, q)
         var starsText = isStar ? renderStars(5) : renderStars(w.stars)
         var starsStyle = isStar ? 'color:var(--star);' : ''
         var safeKr = w.kr.replace(/"/g, '&quot;')
+        // 找到该词在课程中的原始索引
+        var origWords = VOCAB[w.lessonNum] || []
+        var sIdx = origWords.findIndex(function(ow) { return ow.kr === w.kr && ow.cn === w.cn })
 
         div.innerHTML =
           '<div class="left-col">' +
             '<div class="kr">' + krHtml + '</div>' +
+            '<span class="pos">' + w.pos + '</span>' +
             '<div class="cn">' + cnHtml + '</div>' +
             '<span class="lesson-tag">제' + w.lessonNum + '과</span>' +
           '</div>' +
@@ -4185,12 +4255,13 @@
             '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
-          '</div>' +
-          '<div class="word-actions-under-stars">' +
-            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
-            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
-              (mastered ? '✓' : '○') +
-            '</span>' +
+            '<div class="word-actions-under-stars">' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+                (mastered ? '✓' : '○') +
+              '</span>' +
+            '</div>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + w.lessonNum + ',' + (sIdx >= 0 ? sIdx : 0) + ')">▶ 学习</button>' +
           '</div>'
 
         results.appendChild(div)
@@ -4261,28 +4332,14 @@
       return pool
     }
 
-    // 易错本过滤
-    let weakFilter = 'all'
-    function setWeakFilter(f) {
-      weakFilter = f
-      document.querySelectorAll('#weak-filter-bar .tab-btn').forEach(function(b) {
-        b.classList.toggle('active', b.getAttribute('data-filter') === f)
-      })
-      renderWeakWords()
-    }
-
     // 打开易错本列表页
     function showWeakWords() {
-      weakFilter = 'all'
-      document.querySelectorAll('#weak-filter-bar .tab-btn').forEach(function(b) {
-        b.classList.toggle('active', b.getAttribute('data-filter') === 'all')
-      })
       showPage('page-weak')
       renderWeakWords()
     }
 
     function renderWeakWords() {
-      // 收集所有薄弱词
+      // 收集所有薄弱词（未掌握 + 有错误记录）
       var items = []
       LESSONS.forEach(function(l) {
         var ws = VOCAB[l.num] || []
@@ -4294,22 +4351,6 @@
           }
         }
       })
-
-      // 排序：未掌握在前
-      items.sort(function(a, b) {
-        var aM = isMastered(a, a.lessonNum), bM = isMastered(b, b.lessonNum)
-        if (aM && !bM) return 1
-        if (!aM && bM) return -1
-        return 0
-      })
-
-      // 过滤
-      var filtered = items
-      if (weakFilter === 'unmastered') {
-        filtered = items.filter(function(x) { return !isMastered(x, x.lessonNum) })
-      } else if (weakFilter === 'mastered') {
-        filtered = items.filter(function(x) { return isMastered(x, x.lessonNum) })
-      }
 
       // 更新计数
       document.getElementById('weak-words-count').textContent = '共 ' + items.length + ' 个薄弱词'
@@ -4328,7 +4369,7 @@
 
       // 渲染
       list.innerHTML = ''
-      filtered.forEach(function(w) {
+      items.forEach(function(w) {
         var key = w.key
         var num = w.lessonNum
         var mastered = isMastered(w, num)
@@ -4341,24 +4382,12 @@
         div.setAttribute('data-lesson', String(num))
 
         div.onclick = function(e) {
-          // 点了操作按钮不展开
-          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable'))) return
-          var existing = div.querySelector('.word-detail')
-          if (existing) {
-            existing.remove()
-            div.classList.remove('expanded')
-            return
-          }
-          list.querySelectorAll('.word-detail').forEach(function(d) { d.remove(); d.parentElement && d.parentElement.classList.remove('expanded') })
-          list.querySelectorAll('.word-item.expanded').forEach(function(it) { it.classList.remove('expanded') })
-          div.classList.add('expanded')
-          var exList2 = generateExample(w)
-          var exBlock = exList2 && exList2.length > 0 ? renderExamplesHTML(exList2) : '<div style="color:var(--text-dim);font-size:13px;">暂无例句</div>'
-          var detail = document.createElement('div')
-          detail.className = 'word-detail'
-          detail.style.cssText = 'margin-top:12px;padding:12px 14px;background:var(--bg);border-radius:8px;border-top:1px solid var(--border);'
-          detail.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:12px;color:var(--text-subtle);">📖 例句 · ' + w.kr + ' · 제' + num + '과</span><button onclick="event.stopPropagation();startStudy(' + num + ', ' + w.origIdx + ')" style="font-size:12px;padding:4px 12px;border:1px solid var(--primary);border-radius:6px;background:var(--primary-light);color:var(--primary);cursor:pointer;font-family:var(--font-display);">开始学习 →</button></div>' + exBlock
-          div.appendChild(detail)
+          // 点了操作按钮不触发卡片点击
+          if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
+          // 点击卡片空白处 → 播放读音
+          speak(w.kr, 'ko')
+          div.classList.add('speaking')
+          setTimeout(function() { div.classList.remove('speaking') }, 350)
         }
 
         var starsText = isStar ? renderStars(5) : renderStars(w.stars)
@@ -4367,19 +4396,20 @@
         div.innerHTML =
           '<div class="left-col">' +
             '<div class="kr">' + w.kr + '</div>' +
-            '<div><span class="pos">' + w.pos + '</span></div>' +
+            '<span class="pos">' + w.pos + '</span>' +
             '<div class="cn">' + w.cn + '</div>' +
           '</div>' +
           '<div class="right-col">' +
             '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
-          '</div>' +
-          '<div class="word-actions-under-stars">' +
-            '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
-            '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
-              (mastered ? '✓' : '○') +
-            '</span>' +
+            '<div class="word-actions-under-stars">' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
+                (mastered ? '✓' : '○') +
+              '</span>' +
+            '</div>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + num + ', ' + w.origIdx + ')">▶ 学习</button>' +
           '</div>'
 
         list.appendChild(div)
@@ -4530,6 +4560,43 @@
     function saveQuizHistory() {
       if (quizHistory.length > 20) quizHistory = quizHistory.slice(-20)
       lsSet('quiz-history', JSON.stringify(quizHistory))
+      renderQuizHistory()
+    }
+
+    function renderQuizHistory() {
+      var container = document.getElementById('quiz-history-list')
+      if (!container) return
+      if (quizHistory.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
+        return
+      }
+      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音' }
+      var html = ''
+      // 倒序显示，最新的在前面
+      for (var i = quizHistory.length - 1; i >= 0; i--) {
+        var h = quizHistory[i]
+        var d = new Date(h.date)
+        var dateStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
+        var pct = Math.round(h.score / h.total * 100)
+        var gradeDot = pct >= 90 ? '🟢' : pct >= 70 ? '🔵' : pct >= 40 ? '🟡' : '🔴'
+        html += '<div class="quiz-history-item" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">'
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+        html += '<span style="font-size:13px;font-weight:500;">' + gradeDot + ' ' + h.score + '/' + h.total + ' <span style="color:var(--text-dim);font-size:11px;">(' + pct + '%)</span></span>'
+        html += '<span style="font-size:11px;color:var(--text-subtle);">' + (modeLabels[h.mode] || h.mode) + ' · ' + dateStr + '</span>'
+        html += '</div>'
+        if (h.errors && h.errors.length > 0) {
+          html += '<div style="font-size:11px;color:var(--accent-pink);line-height:1.6;">'
+          html += '<span style="color:var(--text-subtle);">薄弱词：</span>'
+          var errTexts = []
+          for (var ei = 0; ei < h.errors.length; ei++) {
+            errTexts.push(h.errors[ei].kr + '(' + h.errors[ei].cn + ')')
+          }
+          html += errTexts.join('、')
+          html += '</div>'
+        }
+        html += '</div>'
+      }
+      container.innerHTML = html
     }
 
     function switchQuizMode(mode) {
@@ -4692,6 +4759,7 @@
       document.getElementById('quiz-play').style.display = 'block'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
+      document.getElementById('quiz-tab-bar').style.display = 'none'
       showQuizQuestion()
     }
 
@@ -4819,7 +4887,7 @@
       var gradeEmoji = pct >= 90 ? '🎉' : pct >= 70 ? '👍' : pct >= 40 ? '💪' : '📚'
       var gradeText = pct >= 90 ? '太棒了！' : pct >= 70 ? '不错哦！' : pct >= 40 ? '继续加油！' : '多练练会更好！'
 
-      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total })
+      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
       saveQuizHistory()
 
       quizErrors.forEach(function(e) {
@@ -4882,6 +4950,8 @@
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
       document.getElementById('quiz-setup').style.display = 'block'
+      document.getElementById('quiz-tab-bar').style.display = ''
+      switchQuizTab('quiz')
       renderQuizLessons()
     }
 
@@ -4902,6 +4972,8 @@
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
       document.getElementById('quiz-setup').style.display = 'block'
+      document.getElementById('quiz-tab-bar').style.display = ''
+      switchQuizTab('quiz')
       renderQuizLessons()
     }
 
@@ -4923,7 +4995,49 @@
       })
       loadQuizHistory()
       renderQuizLessons()
+      renderQuizHistory()
+      // 切到测验标签
+      switchQuizTab('quiz')
+      document.getElementById('quiz-tab-bar').style.display = ''
       showPage('page-quiz')
+    }
+
+    // 测验页标签切换：测验 / 记录
+    function switchQuizTab(tab) {
+      document.querySelectorAll('#quiz-tab-bar .tab-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-qtab') === tab)
+      })
+      var quizContent = document.getElementById('quiz-tab-content')
+      var historyContent = document.getElementById('quiz-history-tab-content')
+      if (tab === 'history') {
+        if (quizContent) quizContent.style.display = 'none'
+        if (historyContent) historyContent.style.display = 'block'
+        loadQuizHistory()
+        renderQuizHistory()
+      } else {
+        if (quizContent) quizContent.style.display = 'block'
+        if (historyContent) historyContent.style.display = 'none'
+      }
+    }
+
+    // 底部导航测验按钮 —— 如果测验进行中则先确认
+    function quizNavGuard() {
+      var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
+        document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
+      if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+        document.getElementById('quiz-play').style.display = 'none'
+        document.getElementById('quiz-result').style.display = 'none'
+        document.getElementById('quiz-result').innerHTML = ''
+        document.getElementById('quiz-setup').style.display = 'block'
+        document.getElementById('quiz-tab-bar').style.display = ''
+        switchQuizTab('quiz')
+        renderQuizLessons()
+        renderQuizHistory()
+      } else {
+        showQuiz()
+      }
     }
 
     // 拦截测验中底部导航跳转
@@ -4934,7 +5048,12 @@
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (id !== 'page-quiz' && id !== 'page-study') {
           if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-          quizQuestions = []
+          quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+          document.getElementById('quiz-play').style.display = 'none'
+          document.getElementById('quiz-result').style.display = 'none'
+          document.getElementById('quiz-result').innerHTML = ''
+          document.getElementById('quiz-setup').style.display = 'block'
+          document.getElementById('quiz-tab-bar').style.display = ''
         }
       }
       origShowPage(id)
@@ -5066,7 +5185,7 @@
         ;(VOCAB[num] || []).forEach(function(w2) {
           var key2 = wk(w2, num)
           var d2 = srs[key2]
-          srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1) }
+          srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
         })
         saveUserData()
         updateHomeStats()
