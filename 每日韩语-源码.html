@@ -160,8 +160,6 @@
     }
     :root[data-theme="dark"] .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
     :root[data-theme="dark"] .greeting { color: #d5cbd8; }
-    :root[data-theme="dark"] .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
-    :root[data-theme="dark"] .greeting { color: #d5cbd8; }
     :root[data-theme="dark"] .greeting-sub { color: #8a7e8e; }
     :root[data-theme="dark"] .greeting-date { color: #5a4e58; }
     :root[data-theme="dark"] .card-front { background: linear-gradient(160deg, #1e2238 0%, #1a1e32 100%); border-color: #2a2a45; }
@@ -819,6 +817,13 @@
 
         <!-- 快捷入口 -->
         <div class="quick-actions">
+          <div class="quick-action qa-continue" id="qa-continue" style="display:none;border-color:var(--primary);" onclick="resumeStudy()">
+            <div class="qa-icon">▶️</div>
+            <div>
+              <div class="qa-title" style="color:var(--primary);">继续学习</div>
+              <div class="qa-desc">上次学到一半</div>
+            </div>
+          </div>
           <div class="quick-action qa-review" onclick="showReviewSetup()">
             <div class="qa-icon">🔄</div>
             <div>
@@ -826,14 +831,14 @@
               <div class="qa-desc">查漏补缺</div>
             </div>
           </div>
-          <div class="quick-action qa-course" onclick="showPage('page-course')">
+          <div class="quick-action qa-course" onclick="navigateRoot('page-course')">
             <div class="qa-icon">📗</div>
             <div>
               <div class="qa-title">课程列表</div>
               <div class="qa-desc">연세 한국어 1</div>
             </div>
           </div>
-          <div class="quick-action qa-quiz" onclick="showQuiz()">
+          <div class="quick-action qa-quiz" onclick="navQuiz()">
             <div class="qa-icon">📝</div>
             <div>
               <div class="qa-title">测验模式</div>
@@ -847,14 +852,14 @@
               <div class="qa-desc">中文 / 韩语</div>
             </div>
           </div>
-          <div class="quick-action qa-starred" onclick="showStarred()">
+          <div class="quick-action qa-starred" onclick="showStarredNav()">
             <div class="qa-icon">❤️</div>
             <div>
               <div class="qa-title">我的收藏</div>
               <div class="qa-desc">重点回顾</div>
             </div>
           </div>
-          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWords()">
+          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWordsNav()">
             <div class="qa-icon">⚠️</div>
             <div>
               <div class="qa-title">易错本 · <span id="home-weak" style="color:var(--accent-pink);">0</span></div>
@@ -2850,7 +2855,7 @@
 
       // 切换到指定标签
       switchLessonTab(tab === 'grammar' ? 'grammar' : 'vocab')
-      showPage('page-words')
+      navigateTo('page-words')
       showHintIfNeeded('word-list')
     }
 
@@ -2997,6 +3002,7 @@
         var circ = 2 * Math.PI * 46
         ring.style.strokeDashoffset = circ * (1 - pct / 100)
       }
+      updateContinueBtn()
     }
 
     /* ═══════════════════════════════════════════
@@ -3780,7 +3786,7 @@
       document.getElementById('study-title').textContent = title
       hideNav()
       showCard()
-      showPage('page-study')
+      navigateTo('page-study')
     }
 
     function startStudy(lessonNum, startIndex) {
@@ -3859,10 +3865,60 @@
     }
 
     // 上一张
+    // ─── 保存/恢复学习进度 ───
+    function saveStudyProgress() {
+      if (!studyWords || studyWords.length === 0) return
+      lsSet('ys-study-progress', JSON.stringify({
+        words: studyWords,
+        index: studyIndex,
+        title: document.getElementById('study-title').textContent,
+        fromPage: studyFromPage
+      }))
+      updateContinueBtn()
+    }
+
+    function clearStudyProgress() {
+      localStorage.removeItem('ys-study-progress')
+      updateContinueBtn()
+    }
+
+    function hasStudyProgress() {
+      return !!lsGet('ys-study-progress', '')
+    }
+
+    function resumeStudy() {
+      var raw = lsGet('ys-study-progress', '')
+      if (!raw) return
+      try {
+        var p = JSON.parse(raw)
+        if (!p.words || p.words.length === 0) return
+        _studyContextList = p.words
+        studyWords = p.words
+        studyIndex = Math.min(p.index, p.words.length - 1)
+        studyFromPage = p.fromPage || 'page-home'
+        isFlipped = false
+        document.getElementById('study-title').textContent = p.title || '继续学习'
+        hideNav()
+        showCard()
+        navigateTo('page-study')
+      } catch(e) {}
+    }
+
+    function updateContinueBtn() {
+      var btn = document.getElementById('qa-continue')
+      if (!btn) return
+      if (hasStudyProgress()) {
+        btn.style.display = ''
+      } else {
+        btn.style.display = 'none'
+      }
+    }
+
     function prevCard() {
       if (studyIndex > 0) {
         studyIndex--
         showCard('left')
+        saveStudyProgress()
       }
     }
 
@@ -3871,6 +3927,9 @@
       if (studyIndex < studyWords.length - 1) {
         studyIndex++
         showCard('right')
+        saveStudyProgress()
+      } else {
+        clearStudyProgress()
       }
     }
 
@@ -4078,11 +4137,18 @@
 
     function exitStudy() {
       window.speechSynthesis && window.speechSynthesis.cancel()
+      saveStudyProgress()
       showNav()
       goBack()
     }
 
     // 显示收藏列表
+    // 底部导航收藏（带页面栈重置）
+    function showStarredNav() {
+      navigateRoot('page-starred')
+      showStarred()
+    }
+
     function showStarred() {
       showPage('page-starred')
 

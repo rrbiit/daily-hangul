@@ -12,6 +12,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="每日韩语">
   <link rel="manifest" href="manifest.json">
+  <script>
+    // 尽早应用主题，防止闪烁
+    (function(){
+      var t = localStorage.getItem('ys-theme') || 'auto';
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      else if (t === 'light') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', 'auto');
+    })()
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,9 +52,21 @@
       --font-display: 'Noto Sans KR', 'Noto Sans SC', sans-serif;
       --font-body: 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
+    :root[data-theme="dark"] {
+      --bg: #1a1a2e; --surface: rgb(30,30,50);
+      --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a;
+      --accent-green: #81c784; --accent-green-light: #1b2e1b;
+      --accent-pink: #f48fb1; --accent-pink-light: #2e1b24;
+      --accent-yellow: #ffcc80; --accent-yellow-light: #2e2418;
+      --accent-coral: #ffab91; --accent-coral-light: #2e1e18;
+      --accent-purple: #b39ddb; --accent-purple-light: #221b2e;
+      --text: #c9d1d9; --text-dim: #7a8a9a; --text-subtle: #5a6a7a;
+      --border: #2a2a45; --star: #f6a973;
+    }
+    /* 系统自动模式：无 data-theme 或 data-theme="auto" 时跟随系统 */
     @media (prefers-color-scheme: dark) {
-      :root {
-          --bg: #1a1a2e; --surface: rgb(30,30,50);
+      :root:not([data-theme]), :root[data-theme="auto"] {
+        --bg: #1a1a2e; --surface: rgb(30,30,50);
         --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a;
         --accent-green: #81c784; --accent-green-light: #1b2e1b;
         --accent-pink: #f48fb1; --accent-pink-light: #2e1b24;
@@ -102,6 +123,9 @@
     .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .home-progress-bar-wrap .hp-label { font-size: 12px; color: var(--text-dim); }
     .home-progress-bar-wrap .hp-pct { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
+    .home-progress-bar-wrap .hp-mid { margin-bottom: 6px; }
+    .home-progress-bar-wrap .hp-mastered { font-size: 12px; color: var(--text-dim); }
+    .home-progress-bar-wrap .hp-mastered strong { color: var(--accent-green); font-family: var(--font-display); font-size: 14px; }
     .home-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .home-progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; background: linear-gradient(90deg, var(--accent-green), var(--primary), var(--accent-purple)); }
 
@@ -132,19 +156,27 @@
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
       border-top: 1px solid var(--border); display: flex; justify-content: center;
       padding: 8px 0;
-      background: #ffffff !important; box-shadow: 0 -1px 0 var(--border);
+      background: var(--surface); box-shadow: 0 -1px 0 var(--border);
     }
+    :root[data-theme="dark"] .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
+    :root[data-theme="dark"] .greeting { color: #d5cbd8; }
+    :root[data-theme="dark"] .greeting-sub { color: #8a7e8e; }
+    :root[data-theme="dark"] .greeting-date { color: #5a4e58; }
+    :root[data-theme="dark"] .card-front { background: linear-gradient(160deg, #1e2238 0%, #1a1e32 100%); border-color: #2a2a45; }
+    :root[data-theme="dark"] .card-kr { color: #d5cbd8; }
+    :root[data-theme="dark"] .card-hint { color: #7a6e78; }
+    :root[data-theme="dark"] .card-stars .star-off { color: #4a3e48; }
+    :root[data-theme="dark"] .study-controls { background: var(--surface); }
     @media (prefers-color-scheme: dark) {
-      .bottom-nav { background: #1a1a2e !important; }
-      .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
-      .greeting { color: #d5cbd8; }
-      .greeting-sub { color: #8a7e8e; }
-      .greeting-date { color: #5a4e58; }
-      .card-front { background: linear-gradient(160deg, #1e2238 0%, #1a1e32 100%); border-color: #2a2a45; }
-      .card-kr { color: #d5cbd8; }
-      .card-hint { color: #7a6e78; }
-      .card-stars .star-off { color: #4a3e48; }
-      .study-controls { background: var(--surface); }
+      :root:not([data-theme]) .home-hero, :root[data-theme="auto"] .home-hero { background: linear-gradient(160deg, #2a1e28 0%, #1e222a 100%); border-color: #3a2e38; }
+      :root:not([data-theme]) .greeting, :root[data-theme="auto"] .greeting { color: #d5cbd8; }
+      :root:not([data-theme]) .greeting-sub, :root[data-theme="auto"] .greeting-sub { color: #8a7e8e; }
+      :root:not([data-theme]) .greeting-date, :root[data-theme="auto"] .greeting-date { color: #5a4e58; }
+      :root:not([data-theme]) .card-front, :root[data-theme="auto"] .card-front { background: linear-gradient(160deg, #1e2238 0%, #1a1e32 100%); border-color: #2a2a45; }
+      :root:not([data-theme]) .card-kr, :root[data-theme="auto"] .card-kr { color: #d5cbd8; }
+      :root:not([data-theme]) .card-hint, :root[data-theme="auto"] .card-hint { color: #7a6e78; }
+      :root:not([data-theme]) .card-stars .star-off, :root[data-theme="auto"] .card-stars .star-off { color: #4a3e48; }
+      :root:not([data-theme]) .study-controls, :root[data-theme="auto"] .study-controls { background: var(--surface); }
     }
     .nav-inner { max-width: 640px; width: 100%; display: flex; justify-content: space-around; padding: 0 16px; }
     .nav-item {
@@ -462,8 +494,9 @@
       background: #ffffff !important;
       border-top: 1px solid var(--border);
     }
+    :root[data-theme="dark"] .study-controls { background: #1a1a2e !important; }
     @media (prefers-color-scheme: dark) {
-      .study-controls { background: #1a1a2e !important; }
+      :root:not([data-theme]) .study-controls, :root[data-theme="auto"] .study-controls { background: #1a1a2e !important; }
     }
     .study-controls > div {
       display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -511,11 +544,15 @@
     .srs-rate-sm.rate-hard-sm { background: #fff3e0; color: #e65100; }
     .srs-rate-sm.rate-good-sm { background: #e8f5e9; color: #2e7d32; }
     .srs-rate-sm.rate-easy-sm { background: #e3f2fd; color: #1565c0; }
+    :root[data-theme="dark"] .srs-rate-sm.rate-again-sm { background: #3e1a22; color: #ef9a9a; }
+    :root[data-theme="dark"] .srs-rate-sm.rate-hard-sm { background: #3e2418; color: #ffcc80; }
+    :root[data-theme="dark"] .srs-rate-sm.rate-good-sm { background: #1a2e1a; color: #a5d6a7; }
+    :root[data-theme="dark"] .srs-rate-sm.rate-easy-sm { background: #1a2638; color: #90caf9; }
     @media (prefers-color-scheme: dark) {
-      .srs-rate-sm.rate-again-sm { background: #3e1a22; color: #ef9a9a; }
-      .srs-rate-sm.rate-hard-sm { background: #3e2418; color: #ffcc80; }
-      .srs-rate-sm.rate-good-sm { background: #1a2e1a; color: #a5d6a7; }
-      .srs-rate-sm.rate-easy-sm { background: #1a2638; color: #90caf9; }
+      :root:not([data-theme]) .srs-rate-sm.rate-again-sm, :root[data-theme="auto"] .srs-rate-sm.rate-again-sm { background: #3e1a22; color: #ef9a9a; }
+      :root:not([data-theme]) .srs-rate-sm.rate-hard-sm, :root[data-theme="auto"] .srs-rate-sm.rate-hard-sm { background: #3e2418; color: #ffcc80; }
+      :root:not([data-theme]) .srs-rate-sm.rate-good-sm, :root[data-theme="auto"] .srs-rate-sm.rate-good-sm { background: #1a2e1a; color: #a5d6a7; }
+      :root:not([data-theme]) .srs-rate-sm.rate-easy-sm, :root[data-theme="auto"] .srs-rate-sm.rate-easy-sm { background: #1a2638; color: #90caf9; }
     }
 
     /* ─── 搜索页 ─── */
@@ -641,13 +678,19 @@
     }
     .quiz-retry-btn:hover { background: var(--primary-light); }
 
+    :root[data-theme="dark"] .quiz-option.correct { color: #a5d6a7; }
+    :root[data-theme="dark"] .quiz-option.wrong { color: #ef9a9a; }
+    :root[data-theme="dark"] .quiz-score.perfect { color: #81c784; }
+    :root[data-theme="dark"] .quiz-score.good { color: #7eb8da; }
+    :root[data-theme="dark"] .quiz-score.ok { color: #ffcc80; }
+    :root[data-theme="dark"] .quiz-score.bad { color: #ffab91; }
     @media (prefers-color-scheme: dark) {
-      .quiz-option.correct { color: #a5d6a7; }
-      .quiz-option.wrong { color: #ef9a9a; }
-      .quiz-score.perfect { color: #81c784; }
-      .quiz-score.good { color: #7eb8da; }
-      .quiz-score.ok { color: #ffcc80; }
-      .quiz-score.bad { color: #ffab91; }
+      :root:not([data-theme]) .quiz-option.correct, :root[data-theme="auto"] .quiz-option.correct { color: #a5d6a7; }
+      :root:not([data-theme]) .quiz-option.wrong, :root[data-theme="auto"] .quiz-option.wrong { color: #ef9a9a; }
+      :root:not([data-theme]) .quiz-score.perfect, :root[data-theme="auto"] .quiz-score.perfect { color: #81c784; }
+      :root:not([data-theme]) .quiz-score.good, :root[data-theme="auto"] .quiz-score.good { color: #7eb8da; }
+      :root:not([data-theme]) .quiz-score.ok, :root[data-theme="auto"] .quiz-score.ok { color: #ffcc80; }
+      :root:not([data-theme]) .quiz-score.bad, :root[data-theme="auto"] .quiz-score.bad { color: #ffab91; }
     }
 
     /* ─── 掌握徽标 ─── */
@@ -665,8 +708,11 @@
       color: var(--accent-green); background: var(--accent-green-light);
       border: 1px solid var(--accent-green);
     }
+    :root[data-theme="dark"] .word-mastery-badge.unmastered {
+      color: #7a8a9a; background: #22263a; border-color: #3a3e52;
+    }
     @media (prefers-color-scheme: dark) {
-      .word-mastery-badge.unmastered {
+      :root:not([data-theme]) .word-mastery-badge.unmastered, :root[data-theme="auto"] .word-mastery-badge.unmastered {
         color: #7a8a9a; background: #22263a; border-color: #3a3e52;
       }
     }
@@ -755,30 +801,14 @@
           </div>
         </div>
 
-        <!-- 统计卡片 -->
-        <div class="stat-cards">
-          <div class="stat-card sc-mastered">
-            <div class="sc-icon">✅</div>
-            <div class="sc-num" id="home-mastered">0</div>
-            <div class="sc-label" id="stat-mastered-label">待复习</div>
-          </div>
-          <div class="stat-card sc-learning">
-            <div class="sc-icon">📖</div>
-            <div class="sc-num" id="home-remaining">0</div>
-            <div class="sc-label" id="stat-remaining-label">学习中</div>
-          </div>
-          <div class="stat-card sc-starred">
-            <div class="sc-icon">⭐</div>
-            <div class="sc-num" id="home-starred">0</div>
-            <div class="sc-label">已收藏</div>
-          </div>
-        </div>
-
-        <!-- 总进度条 -->
+        <!-- 学习进度 -->
         <div class="home-progress-bar-wrap">
           <div class="hp-top">
-            <span class="hp-label">📚 学习进度 · <span id="home-total">0</span> 个词汇</span>
+            <span class="hp-label">📚 学习进度</span>
             <span class="hp-pct" id="home-pct">0%</span>
+          </div>
+          <div class="hp-mid">
+            <span class="hp-mastered">已掌握：<strong id="home-mastered">0</strong> / <span id="home-total">0</span></span>
           </div>
           <div class="home-progress-bar">
             <div class="home-progress-fill" id="home-progress-fill" style="width:0%"></div>
@@ -787,6 +817,13 @@
 
         <!-- 快捷入口 -->
         <div class="quick-actions">
+          <div class="quick-action qa-continue" id="qa-continue" style="display:none;border-color:var(--primary);" onclick="resumeStudy()">
+            <div class="qa-icon">▶️</div>
+            <div>
+              <div class="qa-title" style="color:var(--primary);">继续学习</div>
+              <div class="qa-desc">上次学到一半</div>
+            </div>
+          </div>
           <div class="quick-action qa-review" onclick="showReviewSetup()">
             <div class="qa-icon">🔄</div>
             <div>
@@ -794,14 +831,14 @@
               <div class="qa-desc">查漏补缺</div>
             </div>
           </div>
-          <div class="quick-action qa-course" onclick="showPage('page-course')">
+          <div class="quick-action qa-course" onclick="navigateRoot('page-course')">
             <div class="qa-icon">📗</div>
             <div>
               <div class="qa-title">课程列表</div>
               <div class="qa-desc">연세 한국어 1</div>
             </div>
           </div>
-          <div class="quick-action qa-quiz" onclick="showQuiz()">
+          <div class="quick-action qa-quiz" onclick="navQuiz()">
             <div class="qa-icon">📝</div>
             <div>
               <div class="qa-title">测验模式</div>
@@ -815,14 +852,14 @@
               <div class="qa-desc">中文 / 韩语</div>
             </div>
           </div>
-          <div class="quick-action qa-starred" onclick="showStarred()">
+          <div class="quick-action qa-starred" onclick="showStarredNav()">
             <div class="qa-icon">❤️</div>
             <div>
               <div class="qa-title">我的收藏</div>
               <div class="qa-desc">重点回顾</div>
             </div>
           </div>
-          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWords()">
+          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWordsNav()">
             <div class="qa-icon">⚠️</div>
             <div>
               <div class="qa-title">易错本 · <span id="home-weak" style="color:var(--accent-pink);">0</span></div>
@@ -844,7 +881,7 @@
     <div id="page-course" class="page">
       <div class="container">
         <div class="page-header">
-          <button class="back-btn" onclick="showPage('page-home')">
+          <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -860,7 +897,7 @@
     <div id="page-words" class="page">
       <div class="container">
         <div class="page-header">
-          <button class="back-btn" onclick="showPage('page-course')">
+          <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -883,6 +920,10 @@
 
         <!-- 单词列表 -->
         <div id="lesson-vocab">
+          <div id="word-list-hint" style="display:none;font-size:12px;color:var(--text-dim);text-align:center;padding:8px 12px;margin-bottom:8px;background:var(--primary-light);border-radius:10px;line-height:1.8;">
+            💡 点击卡片听发音 · ⭐ 收藏 · ○ 标记掌握
+            <button onclick="dismissHint('word-list')" style="margin-left:8px;border:none;background:none;color:var(--text-subtle);cursor:pointer;font-size:14px;padding:0 4px;" title="不再提示">✕</button>
+          </div>
           <div class="word-list" id="word-list"></div>
         </div>
 
@@ -986,7 +1027,7 @@
     <div id="page-starred" class="page">
       <div class="container">
         <div class="page-header" style="margin-bottom:16px;">
-          <button class="back-btn" onclick="showPage('page-home')">
+          <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -1015,7 +1056,7 @@
     <div id="page-weak" class="page">
       <div class="container">
         <div class="page-header">
-          <button class="back-btn" onclick="showPage('page-home')">
+          <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -1058,7 +1099,7 @@
     <div id="page-review" class="page">
       <div class="container">
         <div class="page-header" style="margin-bottom:16px;">
-          <button class="back-btn" onclick="showPage('page-home')">
+          <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -1105,7 +1146,7 @@
     <div id="page-quiz" class="page">
       <div class="container">
         <div class="page-header" style="margin-bottom:16px;">
-          <button class="back-btn" onclick="quizGoHome()">
+          <button class="back-btn" onclick="quizGoBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
@@ -1221,6 +1262,16 @@
           <div style="font-size:12px;color:var(--text-subtle);margin-top:6px;padding-left:4px;">正面显示的语言，翻转后显示对应翻译</div>
         </div>
 
+        <!-- 主题模式 -->
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">🎨 主题模式</h3>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <button id="theme-auto" onclick="setTheme('auto')" style="display:block;width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);background:var(--primary-light);color:var(--primary);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">🖥️ 跟随系统</button>
+            <button id="theme-light" onclick="setTheme('light')" style="display:block;width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);background:transparent;color:var(--text);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">☀️ 浅色模式</button>
+            <button id="theme-dark" onclick="setTheme('dark')" style="display:block;width:100%;padding:14px 20px;border:none;background:transparent;color:var(--text);font-size:15px;font-family:var(--font-display);cursor:pointer;text-align:left;">🌙 深色模式</button>
+          </div>
+        </div>
+
         <!-- 数据管理 -->
         <div style="margin-bottom:32px;">
           <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">📊 数据管理</h3>
@@ -1250,25 +1301,25 @@
     </div>
 
     <!-- ═══════════ 底部导航 ═══════════ -->
-    <nav class="bottom-nav" style="background:#ffffff;">
+    <nav class="bottom-nav">
       <div class="nav-inner">
-        <button class="nav-item active" data-page="page-home" onclick="showPage('page-home')">
+        <button class="nav-item active" data-page="page-home" onclick="navigateRoot('page-home')">
           <svg viewBox="0 0 24 24" class="icon-home"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6" /></svg>
           <span>首页</span>
         </button>
-        <button class="nav-item" data-page="page-course" onclick="showPage('page-course')">
+        <button class="nav-item" data-page="page-course" onclick="navigateRoot('page-course')">
           <svg viewBox="0 0 24 24" class="icon-grid"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
           <span>课程</span>
         </button>
-        <button class="nav-item" data-page="page-quiz" onclick="quizNavGuard()">
+        <button class="nav-item" data-page="page-quiz" onclick="navQuiz()">
           <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
           <span>测验</span>
         </button>
-        <button class="nav-item" data-page="page-weak" onclick="showWeakWords()">
+        <button class="nav-item" data-page="page-weak" onclick="showWeakWordsNav()">
           <svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
           <span>易错本</span>
         </button>
-        <button class="nav-item" data-page="page-settings" onclick="showSettings()">
+        <button class="nav-item" data-page="page-settings" onclick="showSettingsNav()">
           <svg viewBox="0 0 24 24" class="icon-settings"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
           <span>设置</span>
         </button>
@@ -2743,6 +2794,14 @@
       var mc = masteryCount(num)
       document.getElementById('words-count').textContent = `共 ${rawWords.length} 个词汇 · 已掌握 ${mc}/${rawWords.length}`
 
+      // 构建学习上下文列表（带 lessonNum）
+      var ctxList = []
+      filtered.forEach(function(w) {
+        var cw = {}; for (var ck in w) { if (w.hasOwnProperty(ck)) cw[ck] = w[ck] }
+        cw.lessonNum = num; ctxList.push(cw)
+      })
+      _studyContextList = ctxList
+
       // 渲染单词
       const list = document.getElementById('word-list')
       list.innerHTML = ''
@@ -2785,7 +2844,7 @@
                 (mastered ? '✓' : '○') +
               '</span>' +
             '</div>' +
-            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + num + ',' + origIdx + ')">▶ 学习</button>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key + '\',\'제' + num + '과\',\'page-words\')">▶ 学习</button>' +
           '</div>'
 
         list.appendChild(div)
@@ -2796,7 +2855,8 @@
 
       // 切换到指定标签
       switchLessonTab(tab === 'grammar' ? 'grammar' : 'vocab')
-      showPage('page-words')
+      navigateTo('page-words')
+      showHintIfNeeded('word-list')
     }
 
     // 渲染语法
@@ -2929,16 +2989,10 @@
       var el
       el = document.getElementById('home-total'); if (el) el.textContent = totalWords
       el = document.getElementById('home-mastered'); if (el) el.textContent = masteredCount
-      el = document.getElementById('home-remaining'); if (el) el.textContent = learningCount
-      el = document.getElementById('home-starred'); if (el) el.textContent = starredCount
       el = document.getElementById('home-weak'); if (el) el.textContent = weakCount
       el = document.getElementById('qa-weak'); if (el) el.style.display = weakCount > 0 ? '' : 'none'
       el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
-
-      // 更新卡片标签
-      el = document.getElementById('stat-mastered-label'); if (el) el.textContent = '已掌握'
-      el = document.getElementById('stat-remaining-label'); if (el) el.textContent = '学习中'
 
       // 兼容旧版元素
       el = document.getElementById('home-course-bar'); if (el) el.style.width = pct + '%'
@@ -2948,6 +3002,7 @@
         var circ = 2 * Math.PI * 46
         ring.style.strokeDashoffset = circ * (1 - pct / 100)
       }
+      updateContinueBtn()
     }
 
     /* ═══════════════════════════════════════════
@@ -2996,6 +3051,34 @@
         var el1 = document.getElementById('course-count'); if (el1) el1.textContent = LESSONS.length
         var el2 = document.getElementById('course-words'); if (el2) el2.textContent = tWords
       }
+    }
+
+    /* ═══════════ 页面栈（统一返回逻辑）══════════ */
+    var _pageStack = []
+    var _currentPage = 'page-home'
+
+    // 向前导航：推入栈
+    function navigateTo(pageId) {
+      _pageStack.push(_currentPage)
+      _currentPage = pageId
+      showPage(pageId)
+    }
+
+    // 返回上一页：弹出栈并回退浏览器历史
+    function goBack() {
+      if (_pageStack.length > 0) {
+        _currentPage = _pageStack.pop()
+        history.back()
+      } else {
+        navigateRoot('page-home')
+      }
+    }
+
+    // 底部导航 / 重置路径
+    function navigateRoot(pageId) {
+      _pageStack = []
+      _currentPage = pageId
+      showPage(pageId)
     }
 
     /* ═══════════ 时段问候 ═══════════ */
@@ -3665,41 +3748,65 @@
       return list
     }
 
-    function startStudy(lessonNum, startIndex) {
-      var raw = VOCAB[lessonNum] || []
-      studyWords = []
-      for (var i = 0; i < raw.length; i++) {
-        var w = {}
-        var src = raw[i]
-        for (var k in src) { if (src.hasOwnProperty(k)) w[k] = src[k] }
-        w.lessonNum = lessonNum
-        studyWords.push(w)
-      }
-      if (studyWords.length === 0) return
+    // 当前页面的词汇列表上下文（供 startStudyFromContext 使用）
+    var _studyContextList = null
 
-      // 智能排序：未掌握的排前面
-      studyWords.sort(function(a, b) {
-        var aM = isMastered(a, lessonNum), bM = isMastered(b, lessonNum)
+    // 从当前上下文列表开始学习（支持收藏/搜索/易错本/单词列表等任何来源）
+    function startStudyFromContext(startKey, title, fromPage) {
+      var list = _studyContextList
+      if (!list || list.length === 0) return
+
+      // 智能排序：未掌握的排前面（保留原始相对顺序）
+      list.sort(function(a, b) {
+        var aM = isMastered(a, a.lessonNum), bM = isMastered(b, b.lessonNum)
         if (aM && !bM) return 1
         if (!aM && bM) return -1
         return 0
       })
 
-      // 若未指定起始位置，自动跳到第一个未掌握词
-      if (typeof startIndex !== 'number') {
-        for (var j = 0; j < studyWords.length; j++) {
-          if (!isMastered(studyWords[j], lessonNum)) { startIndex = j; break }
+      // 根据 startKey 找到排序后的位置
+      var startIdx = 0
+      if (startKey) {
+        for (var i = 0; i < list.length; i++) {
+          if (wk(list[i], list[i].lessonNum) === startKey) { startIdx = i; break }
         }
-        if (typeof startIndex !== 'number') startIndex = 0
       }
 
-      studyIndex = (typeof startIndex === 'number' && startIndex >= 0 && startIndex < studyWords.length) ? startIndex : 0
+      // 若未找到或未指定，自动跳到第一个未掌握词
+      if (!startKey || startIdx === 0) {
+        for (var j = 0; j < list.length; j++) {
+          if (!isMastered(list[j], list[j].lessonNum)) { startIdx = j; break }
+        }
+      }
+
+      studyWords = list
+      studyIndex = (startIdx >= 0 && startIdx < list.length) ? startIdx : 0
       isFlipped = false
-      studyFromPage = 'page-words'
-      document.getElementById('study-title').textContent = `제${lessonNum}과`
+      studyFromPage = fromPage
+      document.getElementById('study-title').textContent = title
       hideNav()
       showCard()
-      showPage('page-study')
+      navigateTo('page-study')
+    }
+
+    function startStudy(lessonNum, startIndex) {
+      var raw = VOCAB[lessonNum] || []
+      var list = []
+      for (var i = 0; i < raw.length; i++) {
+        var w = {}
+        var src = raw[i]
+        for (var k in src) { if (src.hasOwnProperty(k)) w[k] = src[k] }
+        w.lessonNum = lessonNum
+        list.push(w)
+      }
+      if (list.length === 0) return
+
+      _studyContextList = list
+      var startKey = null
+      if (typeof startIndex === 'number' && startIndex >= 0 && startIndex < raw.length) {
+        startKey = wk(raw[startIndex], lessonNum)
+      }
+      startStudyFromContext(startKey, '제' + lessonNum + '과', 'page-words')
     }
 
     // 显示当前卡片
@@ -3758,10 +3865,60 @@
     }
 
     // 上一张
+    // ─── 保存/恢复学习进度 ───
+    function saveStudyProgress() {
+      if (!studyWords || studyWords.length === 0) return
+      lsSet('ys-study-progress', JSON.stringify({
+        words: studyWords,
+        index: studyIndex,
+        title: document.getElementById('study-title').textContent,
+        fromPage: studyFromPage
+      }))
+      updateContinueBtn()
+    }
+
+    function clearStudyProgress() {
+      localStorage.removeItem('ys-study-progress')
+      updateContinueBtn()
+    }
+
+    function hasStudyProgress() {
+      return !!lsGet('ys-study-progress', '')
+    }
+
+    function resumeStudy() {
+      var raw = lsGet('ys-study-progress', '')
+      if (!raw) return
+      try {
+        var p = JSON.parse(raw)
+        if (!p.words || p.words.length === 0) return
+        _studyContextList = p.words
+        studyWords = p.words
+        studyIndex = Math.min(p.index, p.words.length - 1)
+        studyFromPage = p.fromPage || 'page-home'
+        isFlipped = false
+        document.getElementById('study-title').textContent = p.title || '继续学习'
+        hideNav()
+        showCard()
+        navigateTo('page-study')
+      } catch(e) {}
+    }
+
+    function updateContinueBtn() {
+      var btn = document.getElementById('qa-continue')
+      if (!btn) return
+      if (hasStudyProgress()) {
+        btn.style.display = ''
+      } else {
+        btn.style.display = 'none'
+      }
+    }
+
     function prevCard() {
       if (studyIndex > 0) {
         studyIndex--
         showCard('left')
+        saveStudyProgress()
       }
     }
 
@@ -3770,6 +3927,9 @@
       if (studyIndex < studyWords.length - 1) {
         studyIndex++
         showCard('right')
+        saveStudyProgress()
+      } else {
+        clearStudyProgress()
       }
     }
 
@@ -3977,11 +4137,18 @@
 
     function exitStudy() {
       window.speechSynthesis && window.speechSynthesis.cancel()
+      saveStudyProgress()
       showNav()
-      showPage(studyFromPage)
+      goBack()
     }
 
     // 显示收藏列表
+    // 底部导航收藏（带页面栈重置）
+    function showStarredNav() {
+      navigateRoot('page-starred')
+      showStarred()
+    }
+
     function showStarred() {
       showPage('page-starred')
 
@@ -4023,6 +4190,13 @@
 
       const total = totalWordCount + totalGramCount
       count.textContent = `共 ${total} 项`
+
+      // 构建学习上下文列表（所有收藏词的扁平列表）
+      var starredCtxList = []
+      sortedLessonNums.forEach(function(n) {
+        (wordGroups[n] || []).forEach(function(sw) { starredCtxList.push(sw) })
+      })
+      _studyContextList = starredCtxList
 
       // 渲染单词（按课分组，带标题）
       vlist.innerHTML = ''
@@ -4068,7 +4242,7 @@
                     (mastered2 ? '✓' : '○') +
                   '</span>' +
                 '</div>' +
-                '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + w.lessonNum + ',' + w.wordIdx + ')">▶ 学习</button>' +
+                '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key2 + '\',\'收藏\',\'page-starred\')">▶ 学习</button>' +
               '</div>'
             vlist.appendChild(div)
           })
@@ -4213,6 +4387,9 @@
       empty.style.display = 'none'
       results.innerHTML = ''
 
+      // 设置学习上下文
+      _studyContextList = hits
+
       // 结果计数
       var countDiv = document.createElement('div')
       countDiv.style.cssText = 'font-size:12px;color:var(--text-dim);margin-bottom:8px;grid-column:1/-1;'
@@ -4261,7 +4438,7 @@
                 (mastered ? '✓' : '○') +
               '</span>' +
             '</div>' +
-            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + w.lessonNum + ',' + (sIdx >= 0 ? sIdx : 0) + ')">▶ 学习</button>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key + '\',\'搜索结果\',\'page-search\')">▶ 学习</button>' +
           '</div>'
 
         results.appendChild(div)
@@ -4338,6 +4515,12 @@
       renderWeakWords()
     }
 
+    // 底部导航易错本（带页面栈重置）
+    function showWeakWordsNav() {
+      navigateRoot('page-weak')
+      renderWeakWords()
+    }
+
     function renderWeakWords() {
       // 收集所有薄弱词（未掌握 + 有错误记录）
       var items = []
@@ -4354,6 +4537,9 @@
 
       // 更新计数
       document.getElementById('weak-words-count').textContent = '共 ' + items.length + ' 个薄弱词'
+
+      // 设置学习上下文
+      _studyContextList = items
 
       // 空状态
       var emptyEl = document.getElementById('weak-empty')
@@ -4409,7 +4595,7 @@
                 (mastered ? '✓' : '○') +
               '</span>' +
             '</div>' +
-            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudy(' + num + ', ' + w.origIdx + ')">▶ 学习</button>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key + '\',\'易错本\',\'page-weak\')">▶ 学习</button>' +
           '</div>'
 
         list.appendChild(div)
@@ -4424,18 +4610,10 @@
     }
 
     function startStudyPool(pool, label) {
-      for (var i = pool.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp
-      }
-      studyWords = pool
-      studyIndex = 0
-      isFlipped = false
-      studyFromPage = 'page-review'
-      document.getElementById('study-title').textContent = '复习 · ' + label
-      hideNav()
-      showCard()
-      showPage('page-study')
+      if (pool.length === 0) return
+      _studyContextList = pool
+      // 复习模式：默认从第一个开始（pool 已随机打乱或保持顺序由调用方决定）
+      startStudyFromContext(null, '复习 · ' + label, 'page-review')
     }
 
     function toggleReviewLesson(num) {
@@ -4795,7 +4973,7 @@
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
       } else {
         area.innerHTML = '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
-          '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">点击播放发音</div>' +
+          '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>'
       }
 
@@ -4809,6 +4987,11 @@
         div.onclick = function() { quizAnswer(idx) }
         optsEl.appendChild(div)
       })
+
+      // 自动播放发音：韩→中和听音模式
+      if (quizMode === 'kr-cn' || quizMode === 'listen') {
+        setTimeout(function() { quizSpeakWord() }, 400)
+      }
     }
 
     function quizSpeakWord() {
@@ -4955,9 +5138,9 @@
       renderQuizLessons()
     }
 
-    function quizGoHome() {
+    function quizGoBack() {
       if (!document.getElementById('quiz-play').style.display || document.getElementById('quiz-play').style.display === 'none') {
-        showPage('page-home')
+        goBack()
       } else {
         confirmExitQuiz()
       }
@@ -5038,6 +5221,26 @@
       } else {
         showQuiz()
       }
+    }
+
+    // 底部导航测验按钮（带页面栈重置）
+    function navQuiz() {
+      var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
+        document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
+      if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+        document.getElementById('quiz-play').style.display = 'none'
+        document.getElementById('quiz-result').style.display = 'none'
+        document.getElementById('quiz-result').innerHTML = ''
+        document.getElementById('quiz-setup').style.display = 'block'
+        document.getElementById('quiz-tab-bar').style.display = ''
+        switchQuizTab('quiz')
+        renderQuizLessons()
+        renderQuizHistory()
+      }
+      navigateRoot('page-quiz')
+      showQuiz()
     }
 
     // 拦截测验中底部导航跳转
@@ -5175,22 +5378,39 @@
       btn.onclick = function() { startStudy(num) }
       btnArea.appendChild(btn)
 
-      // 全部标记为掌握按钮
-      const markBtn = document.createElement('button')
+      // 全部标记/取消掌握按钮（智能切换）
+      var allMastered = (VOCAB[num] || []).every(function(w) { return isMastered(w, num) })
+      var markBtn = document.createElement('button')
       markBtn.id = 'mark-all-mastered-btn'
-      markBtn.textContent = '✓ 本课全部标记为掌握'
-      markBtn.onclick = function() {
-        if (!confirm('确定将本课所有词汇标记为"已掌握"吗？')) return
-        var now = Date.now()
-        ;(VOCAB[num] || []).forEach(function(w2) {
-          var key2 = wk(w2, num)
-          var d2 = srs[key2]
-          srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
-        })
-        saveUserData()
-        updateHomeStats()
-        renderLessons()
-        openLesson(num)
+
+      if (allMastered) {
+        markBtn.textContent = '↩ 取消全部已掌握'
+        markBtn.style.cssText = 'margin-top:8px;width:100%;padding:10px;border:1px solid var(--accent-pink);border-radius:10px;background:var(--accent-pink-light);color:var(--accent-pink);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;'
+        markBtn.onclick = function() {
+          if (!confirm('确定将本课所有词汇恢复为"未掌握"吗？')) return
+          ;(VOCAB[num] || []).forEach(function(w2) {
+            delete srs[wk(w2, num)]
+          })
+          saveUserData()
+          updateHomeStats()
+          renderLessons()
+          openLesson(num)
+        }
+      } else {
+        markBtn.textContent = '✓ 本课全部标记为掌握'
+        markBtn.onclick = function() {
+          if (!confirm('确定将本课所有词汇标记为"已掌握"吗？')) return
+          var now = Date.now()
+          ;(VOCAB[num] || []).forEach(function(w2) {
+            var key2 = wk(w2, num)
+            var d2 = srs[key2]
+            srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
+          })
+          saveUserData()
+          updateHomeStats()
+          renderLessons()
+          openLesson(num)
+        }
       }
       btnArea.appendChild(markBtn)
 
@@ -5202,6 +5422,63 @@
        ═══════════════════════════════════════════ */
 
     // ─── 卡片方向 ───
+    // ─── 新手提示 ───
+    function dismissHint(name) {
+      lsSet('hint-' + name, '1')
+      var el = document.getElementById(name + '-hint')
+      if (el) el.style.display = 'none'
+    }
+
+    function showHintIfNeeded(name) {
+      if (lsGet('hint-' + name, '0') === '1') return
+      var el = document.getElementById(name + '-hint')
+      if (el) el.style.display = 'block'
+    }
+
+    // ─── 主题模式 ───
+    var _themeMedia = window.matchMedia('(prefers-color-scheme: dark)')
+
+    function applyTheme() {
+      var mode = lsGet('ys-theme', 'auto')
+      if (mode === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark')
+      } else if (mode === 'light') {
+        document.documentElement.removeAttribute('data-theme')
+      } else {
+        // auto：跟随系统，用 media query 自动切换
+        document.documentElement.setAttribute('data-theme', 'auto')
+      }
+      updateThemeButtons(mode)
+    }
+
+    function setTheme(mode) {
+      lsSet('ys-theme', mode)
+      applyTheme()
+    }
+
+    function updateThemeButtons(mode) {
+      var btns = { 'auto': 'theme-auto', 'light': 'theme-light', 'dark': 'theme-dark' }
+      for (var k in btns) {
+        if (!btns.hasOwnProperty(k)) continue
+        var el = document.getElementById(btns[k])
+        if (!el) continue
+        if (k === mode) {
+          el.style.background = 'var(--primary-light)'
+          el.style.color = 'var(--primary)'
+        } else {
+          el.style.background = 'transparent'
+          el.style.color = 'var(--text)'
+        }
+      }
+    }
+
+    // 监听系统主题变化（仅在 auto 模式下生效）
+    _themeMedia.addEventListener('change', function() {
+      if (lsGet('ys-theme', 'auto') === 'auto') {
+        applyTheme()
+      }
+    })
+
     function setCardDir(dir) {
       cardDirection = dir
       lsSet('ys-carddir', dir)
@@ -5321,13 +5598,21 @@
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
       showPage('page-settings')
     }
+
+    // 底部导航设置（带页面栈重置）
+    function showSettingsNav() {
+      navigateRoot('page-settings')
+      showSettings()
+    }
     var _fromPopstate = false
     // 浏览器返回键监听
     window.addEventListener('popstate', function(e) {
       _fromPopstate = true
       if (e.state && e.state.page) {
+        _currentPage = e.state.page
         showPage(e.state.page)
       } else {
+        _currentPage = 'page-home'
         showPage('page-home')
       }
       _fromPopstate = false
