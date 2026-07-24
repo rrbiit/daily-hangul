@@ -1,0 +1,10 @@
+# Netlify local state
+.netlify/
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor config
+.vscode/settings.json
