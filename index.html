@@ -107,20 +107,8 @@
     .greeting-sub { color: #9a8ea4; font-size: 12px; margin-top: 2px; }
     .greeting-date { font-size: 11px; color: #c4bcc8; margin-top: 2px; }
 
-    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-    .stat-card {
-      background: var(--surface); border-radius: 14px; padding: 12px 6px; text-align: center;
-      border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.2s;
-    }
-    .stat-card .sc-icon { font-size: 16px; margin-bottom: 2px; }
-    .stat-card .sc-num { font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1.2; }
-    .stat-card .sc-label { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
-    .sc-mastered .sc-num { color: var(--accent-green); }
-    .sc-learning .sc-num { color: var(--accent-coral); }
-    .sc-starred .sc-num { color: var(--star); }
-
-    .home-progress-bar-wrap { background: var(--surface); border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); max-width: 460px; }
-    .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .home-progress-bar-wrap { background: var(--surface); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .home-progress-bar-wrap .hp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .home-progress-bar-wrap .hp-label { font-size: 12px; color: var(--text-dim); }
     .home-progress-bar-wrap .hp-pct { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--primary); }
     .home-progress-bar-wrap .hp-mid { margin-bottom: 6px; }
@@ -129,24 +117,32 @@
     .home-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .home-progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; background: linear-gradient(90deg, var(--accent-green), var(--primary), var(--accent-purple)); }
 
-    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-    .quick-action {
+    /* 首页主操作按钮 */
+    .main-cta {
+      background: var(--surface); border: 1.5px solid var(--primary);
+      border-radius: 16px; padding: 20px 22px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 16px;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 2px 12px rgba(126,184,218,0.12);
+    }
+    .main-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(126,184,218,0.2); }
+    .main-cta-icon { font-size: 30px; flex-shrink: 0; line-height: 1; }
+    .main-cta-text { flex: 1; }
+    .main-cta-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--primary); }
+    .main-cta-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .main-cta-arrow { font-size: 18px; color: var(--primary); flex-shrink: 0; }
+
+    /* 首页次要入口 */
+    .secondary-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .secondary-action {
       background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 12px 12px; display: flex; align-items: center; gap: 8px;
-      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); text-decoration: none; color: var(--text);
+      padding: 14px 6px; text-align: center;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
     }
-    .quick-action:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-    .quick-action .qa-icon {
-      width: 36px; height: 36px; border-radius: 10px; display: flex;
-      align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
-    }
-    .qa-review .qa-icon { background: var(--accent-coral-light); }
-    .qa-course .qa-icon { background: var(--accent-purple-light); }
-    .qa-search .qa-icon { background: var(--primary-light); }
-    .qa-starred .qa-icon { background: var(--accent-yellow-light); }
-    .qa-quiz .qa-icon { background: #e0f2e9; }
-    .quick-action .qa-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; }
-    .quick-action .qa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+    .secondary-action:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .secondary-action .sa-icon { font-size: 22px; margin-bottom: 4px; line-height: 1; }
+    .secondary-action .sa-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; }
+    .secondary-action .sa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 
 
     /* ─── 底部导航 ─── */
@@ -192,6 +188,13 @@
       border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
       cursor: pointer; color: var(--text); transition: all 0.2s; flex-shrink: 0; box-shadow: var(--shadow);
     }
+    .header-search-btn {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
+      cursor: pointer; color: var(--text-dim); transition: all 0.2s; flex-shrink: 0;
+      box-shadow: var(--shadow); font-size: 16px; margin-left: auto;
+    }
+    .header-search-btn:hover { background: var(--primary-light); color: var(--primary); }
     .back-btn:hover { background: var(--primary-light); color: var(--primary); }
     .back-btn svg { width: 20px; height: 20px; }
     .page-header .title-area h1 { font-family: var(--font-display); font-size: 20px; font-weight: 500; line-height: 1.3; }
@@ -728,9 +731,6 @@
     }
     #mark-all-mastered-btn:hover { opacity: 0.85; }
 
-    /* ─── 薄弱词快捷入口 ─── */
-    .qa-weak .qa-icon { background: var(--accent-pink-light); }
-
     /* ─── 单词项操作区域（星星下方：喇叭 + 掌握 并排） ─── */
     .word-actions-under-stars {
       display: flex; flex-direction: row; align-items: center; gap: 4px;
@@ -797,56 +797,32 @@
           </div>
         </div>
 
-        <!-- 快捷入口 -->
-        <div class="quick-actions">
-          <div class="quick-action qa-continue" id="qa-continue" style="display:none;border-color:var(--primary);" onclick="resumeStudy()">
-            <div class="qa-icon">▶️</div>
-            <div>
-              <div class="qa-title" style="color:var(--primary);">继续学习</div>
-              <div class="qa-desc">上次学到一半</div>
-            </div>
+        <!-- 主操作按钮 -->
+        <div class="main-cta" id="main-cta" onclick="startMainStudy()">
+          <div class="main-cta-icon">📖</div>
+          <div class="main-cta-text">
+            <div class="main-cta-title" id="main-cta-title">开始学习</div>
+            <div class="main-cta-desc" id="main-cta-desc">연세 한국어 1</div>
           </div>
-          <div class="quick-action qa-review" onclick="showReviewSetup()">
-            <div class="qa-icon">🔄</div>
-            <div>
-              <div class="qa-title">复习模式</div>
-              <div class="qa-desc">查漏补缺</div>
-            </div>
+          <div class="main-cta-arrow">→</div>
+        </div>
+
+        <!-- 次要入口 -->
+        <div class="secondary-actions">
+          <div class="secondary-action" onclick="showReviewSetup()">
+            <div class="sa-icon">🔄</div>
+            <div class="sa-title">复习</div>
+            <div class="sa-desc" id="home-review-desc">查漏补缺</div>
           </div>
-          <div class="quick-action qa-course" onclick="navigateRoot('page-course')">
-            <div class="qa-icon">📗</div>
-            <div>
-              <div class="qa-title">课程列表</div>
-              <div class="qa-desc">연세 한국어 1</div>
-            </div>
+          <div class="secondary-action" onclick="navQuiz()">
+            <div class="sa-icon">📝</div>
+            <div class="sa-title">测验</div>
+            <div class="sa-desc">测测记住了多少</div>
           </div>
-          <div class="quick-action qa-quiz" onclick="navQuiz()">
-            <div class="qa-icon">📝</div>
-            <div>
-              <div class="qa-title">测验模式</div>
-              <div class="qa-desc">测测记住了多少</div>
-            </div>
-          </div>
-          <div class="quick-action qa-search" onclick="showSearch()">
-            <div class="qa-icon">🔍</div>
-            <div>
-              <div class="qa-title">搜索词汇</div>
-              <div class="qa-desc">中文 / 韩语</div>
-            </div>
-          </div>
-          <div class="quick-action qa-starred" onclick="showStarredNav()">
-            <div class="qa-icon">❤️</div>
-            <div>
-              <div class="qa-title">我的收藏</div>
-              <div class="qa-desc">重点回顾</div>
-            </div>
-          </div>
-          <div class="quick-action qa-weak" id="qa-weak" style="display:none;" onclick="showWeakWordsNav()">
-            <div class="qa-icon">⚠️</div>
-            <div>
-              <div class="qa-title">易错本 · <span id="home-weak" style="color:var(--accent-pink);">0</span></div>
-              <div class="qa-desc">重点攻克薄弱词</div>
-            </div>
+          <div class="secondary-action" onclick="showStarredNav()">
+            <div class="sa-icon">⭐</div>
+            <div class="sa-title">收藏</div>
+            <div class="sa-desc">重点回顾</div>
           </div>
         </div>
 
@@ -865,6 +841,7 @@
             <h1>연세 한국어 1</h1>
             <p>延世韩国语1 · <span id="course-count">0</span>课 · <span id="course-words">0</span>个词汇</p>
           </div>
+          <button class="header-search-btn" onclick="showSearch()" title="搜索词汇">🔍</button>
         </div>
         <div class="lesson-list" id="lesson-list"></div>
       </div>
@@ -881,6 +858,7 @@
             <h1 id="words-title">제1과 - 소개</h1>
             <p class="word-count" id="words-count">加载中...</p>
           </div>
+          <button class="header-search-btn" onclick="showSearch()" title="搜索词汇">🔍</button>
         </div>
         <!-- 标签切换：单词 / 语法 -->
         <div class="tab-bar">
@@ -2950,19 +2928,9 @@
       var el
       el = document.getElementById('home-total'); if (el) el.textContent = totalWords
       el = document.getElementById('home-mastered'); if (el) el.textContent = masteredCount
-      el = document.getElementById('home-weak'); if (el) el.textContent = weakCount
-      el = document.getElementById('qa-weak'); if (el) el.style.display = weakCount > 0 ? '' : 'none'
       el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
-
-      // 兼容旧版元素
-      el = document.getElementById('home-course-bar'); if (el) el.style.width = pct + '%'
-      el = document.getElementById('home-course-pct'); if (el) el.textContent = pct + '%'
-      var ring = document.getElementById('home-ring')
-      if (ring) {
-        var circ = 2 * Math.PI * 46
-        ring.style.strokeDashoffset = circ * (1 - pct / 100)
-      }
+      el = document.getElementById('home-review-desc'); if (el) el.textContent = dueCount > 0 ? dueCount + ' 个待复习' : '查漏补缺'
       updateContinueBtn()
     }
 
@@ -3865,13 +3833,31 @@
       } catch(e) {}
     }
 
-    function updateContinueBtn() {
-      var btn = document.getElementById('qa-continue')
-      if (!btn) return
+    function startMainStudy() {
       if (hasStudyProgress()) {
-        btn.style.display = ''
+        resumeStudy()
       } else {
-        btn.style.display = 'none'
+        navigateTo('page-course')
+      }
+    }
+
+    function updateContinueBtn() {
+      var titleEl = document.getElementById('main-cta-title')
+      var descEl = document.getElementById('main-cta-desc')
+      if (!titleEl || !descEl) return
+      if (hasStudyProgress()) {
+        var raw = lsGet('ys-study-progress', '')
+        try {
+          var p = JSON.parse(raw)
+          titleEl.textContent = '继续学习'
+          descEl.textContent = p.title || '恢复上次进度'
+        } catch(e) {
+          titleEl.textContent = '开始学习'
+          descEl.textContent = '연세 한국어 1'
+        }
+      } else {
+        titleEl.textContent = '开始学习'
+        descEl.textContent = '연세 한국어 1'
       }
     }
 
