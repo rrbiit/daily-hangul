@@ -148,9 +148,7 @@
     .quick-action .qa-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; }
     .quick-action .qa-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 
-    .course-section { margin-top: 0; }
-    .course-section h2 { font-size: 14px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.02em; margin-bottom: 10px; }
-    .course-content, .course-list { display: flex; flex-direction: column; gap: 10px; }
+
     /* ─── 底部导航 ─── */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
@@ -220,22 +218,6 @@
     .lesson-item .stats .bar-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
     .lesson-item .stats .count { font-size: 11px; color: var(--text-dim); min-width: 28px; text-align: right; }
 
-    .course-item {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
-      transition: all 0.2s; cursor: pointer; box-shadow: var(--shadow);
-      max-width: 460px;
-    }
-    .course-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .course-item.locked { opacity: 0.4; pointer-events: none; }
-    .course-item .name { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
-    .course-item .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-    .course-item .right { display: flex; align-items: center; gap: 8px; }
-    .course-item .right .bar-wrap { width: 60px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .course-item .right .bar-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.5s; }
-    .course-item .right .pct { font-size: 11px; color: var(--text-dim); width: 22px; text-align: right; }
-    .course-item .right .arrow { color: var(--text-subtle); }
-    .course-item .right .arrow svg { width: 14px; height: 14px; }
 
     /* ─── 单词列表页 ─── */
     .word-count { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
@@ -868,11 +850,6 @@
           </div>
         </div>
 
-        <!-- 课程列表 -->
-        <div class="course-section">
-          <h2>📚 延世韩国语 1 · 课程目录</h2>
-          <div class="course-content" id="home-course-list"></div>
-        </div>
       </div>
     </div>
 
@@ -2736,22 +2713,6 @@
           d.onclick = function() { openLesson(l.num) }
           d.innerHTML = '<span class="num">제' + l.num + '과</span><div class="info"><div class="title">' + l.title + '</div><div class="meta">' + l.kr + ' · ' + total + '个词 · 掌握' + done + '个</div></div><div class="stats"><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="count">' + done + '/' + total + '</span></div>'
           list.appendChild(d)
-        })
-      }
-      // 首页课程列表
-      var homeList = document.getElementById('home-course-list')
-      if (homeList) {
-        homeList.innerHTML = ''
-        LESSONS.forEach(function(l) {
-          w = VOCAB[l.num] || []
-          total = w.length
-          done = w.filter(function(x) { var d = srs[wk(x, l.num)]; return d && d.lv >= 4 }).length
-          pct = total > 0 ? Math.round((done / total) * 100) : 0
-          d = document.createElement('div')
-          d.className = 'course-item'
-          d.onclick = function() { openLesson(l.num) }
-          d.innerHTML = '<div><div class="name">제' + l.num + '과 · ' + l.title + '</div><div class="sub">' + l.kr + ' · ' + total + '词 · 已掌握 ' + done + ' 词</div></div><div class="right"><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="pct">' + pct + '%</span><div class="arrow"><svg viewBox="0 0 24 24" class="icon-chevron" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg></div></div>'
-          homeList.appendChild(d)
         })
       }
     }
