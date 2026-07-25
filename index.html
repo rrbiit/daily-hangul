@@ -162,7 +162,6 @@
     }
     .main-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(126,184,218,0.2); }
     .main-cta-icon { font-size: 26px; flex-shrink: 0; line-height: 1; }
-    .main-cta.has-progress .main-cta-icon { animation: hero-float 3s ease-in-out infinite; }
     .main-cta-text { flex: 1; }
     .main-cta-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #498cab; }
     .main-cta-desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
@@ -930,7 +929,7 @@
         <!-- 主操作行 -->
         <div class="home-action-row">
           <div class="main-cta" id="main-cta" onclick="startMainStudy()">
-            <div class="main-cta-icon" id="main-cta-icon">📖</div>
+            <div class="main-cta-icon">📖</div>
             <div class="main-cta-text">
               <div class="main-cta-title" id="main-cta-title">开始学习</div>
               <div class="main-cta-desc" id="main-cta-desc">연세 한국어 1</div>
@@ -4052,7 +4051,6 @@
     function updateContinueBtn() {
       var titleEl = document.getElementById('main-cta-title')
       var descEl = document.getElementById('main-cta-desc')
-      var ctaEl = document.getElementById('main-cta')
       if (!titleEl || !descEl) return
       if (hasStudyProgress()) {
         var raw = lsGet('ys-study-progress', '')
@@ -4060,22 +4058,13 @@
           var p = JSON.parse(raw)
           titleEl.textContent = '继续学习'
           descEl.textContent = p.title || '恢复上次进度'
-          var iconEl = document.getElementById('main-cta-icon')
-          if (iconEl) iconEl.textContent = '▶️'
         } catch(e) {
           titleEl.textContent = '开始学习'
           descEl.textContent = '연세 한국어 1'
-          if (ctaEl) ctaEl.classList.remove('has-progress')
-          var iconEl = document.getElementById('main-cta-icon')
-          if (iconEl) iconEl.textContent = '📖'
         }
-        if (ctaEl) ctaEl.classList.add('has-progress')
       } else {
         titleEl.textContent = '开始学习'
         descEl.textContent = '연세 한국어 1'
-        if (ctaEl) ctaEl.classList.remove('has-progress')
-        var iconEl2 = document.getElementById('main-cta-icon')
-        if (iconEl2) iconEl2.textContent = '📖'
       }
     }
 
