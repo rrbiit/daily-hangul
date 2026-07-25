@@ -13,12 +13,16 @@
   <meta name="apple-mobile-web-app-title" content="每日韩语">
   <link rel="manifest" href="manifest.json">
   <script>
-    // 尽早应用主题，防止闪烁
+    // 尽早应用主题，防止闪烁（auto 模式在 JS 层解析，CSS 只需一套 dark 规则）
     (function(){
       var t = localStorage.getItem('ys-theme') || 'auto';
-      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      else if (t === 'light') document.documentElement.removeAttribute('data-theme');
-      else document.documentElement.setAttribute('data-theme', 'auto');
+      if (t === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else if (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
     })()
   </script>
 
@@ -2857,11 +2861,10 @@
       var mode = lsGet('ys-theme', 'auto')
       if (mode === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark')
-      } else if (mode === 'light') {
-        document.documentElement.removeAttribute('data-theme')
+      } else if (mode === 'auto' && _themeMedia.matches) {
+        document.documentElement.setAttribute('data-theme', 'dark')
       } else {
-        // auto：跟随系统，用 media query 自动切换
-        document.documentElement.setAttribute('data-theme', 'auto')
+        document.documentElement.removeAttribute('data-theme')
       }
       updateThemeButtons(mode)
     }

@@ -5,10 +5,10 @@
 
 ---
 
-## 📅 2026-07-26 02:10 · v1.4.2
+## 📅 2026-07-26 02:21 · v1.4.2
 
 ### 📝 一句话总结
-单文件拆分：5785 行巨石 → 5 个文件，代码找起来不再像大海捞针。
+单文件拆分 + 深色模式 CSS 去重：5785 行巨石 → 5 个文件，CSS 减少 57 行重复规则。
 
 ### 🎯 本次更新目标
 - **为什么修改？** 5785 行单文件维护成本越来越高——改数据怕碰 JS，改样式怕碰 HTML，每次定位都要上下翻几十屏。
@@ -24,6 +24,8 @@
 - **index.html 瘦身至 3067 行**：仅保留 HTML 结构 + 页面逻辑，加载顺序 `style.css → data.js → utils.js → 主脚本`。
 - **Service Worker 更新**：`hangul-v4 → v5`，缓存列表新增 `style.css`、`data.js`、`utils.js`。
 - **`masteryCount()` 移至 data.js 之后**：该函数依赖 `VOCAB`，确保加载顺序正确。
+- **深色模式 CSS 去重**（-57 行）：`auto` 模式改由 JS 层解析——head 内联脚本 + `applyTheme()` 直接根据系统偏好设置 `data-theme="dark"`，CSS 不再需要 `@media (prefers-color-scheme: dark)` 和 `:root:not([data-theme])` 两套重复选择器。删除全部 7 个 `@media` 重复块，CSS 从 864 → 807 行。
+- **版本号修正**：`APP_CONFIG.version` 从 `1.3.0` → `1.4.2`。
 
 ### 👤 用户体验变化
 - **用户无感知变化**。拆分是纯工程优化，不影响任何页面功能。
@@ -40,11 +42,10 @@
 - **加载顺序验证**：`masteryCount` 原本定义在 data.js 之前的脚本块中（L1395），虽然函数体延迟求值不报错，但为了一致性移到了 data.js 之后。
 - **style.css 中的深色模式无需修改**：`@media` 和 `:root[data-theme]` 选择器不依赖文件位置，抽出后完全正常。
 - **utils.js 引用的全局变量**：`srs`、`starred`、`studyIndex`、`studyWords` 等均在主脚本中定义，utils.js 函数只在调用时访问，定义时不需要存在。
+- **CSS 去重的关键**：原来的 `@media auto` 方案需要 CSS 为 `[data-theme="dark"]` 和 `@media auto` 各写一套相同的规则。改为 JS 在 `auto` 模式下主动检查系统偏好、直接设置 `data-theme="dark"` 或移除属性，CSS 只需一套 `[data-theme="dark"]` 规则，`_themeMedia` 监听器在系统切换时重新判定。
 
 ### 📌 下一步建议
 - **可考虑将 HTML 页面模板也拆出**：7 个 `<div id="page-*">` 共约 400 行，可独立为 `pages.html` 用 fetch 加载（但需注意这会破坏双击打开，需要权衡）。
-- **CSS 深色模式仍有重复**：`data-theme="dark"` 和 `@media auto` 两套规则值相同但选择器不同，未来可用 CSS 变量嵌套或构建工具自动生成。
-- **版本号仍为 1.3.0**：`APP_CONFIG.version` 在 data.js 中尚未更新（与 CHANGELOG 不同步），下次发版建议一并修正。
 
 ## 📅 2026-07-26 01:23 · v1.4.1
 
