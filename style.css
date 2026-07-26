@@ -140,6 +140,13 @@
     .hsa-starred .hsa-label { color: #d4a550; }
     .hsa-search { background: #f0f5f8; border: 1px solid #d4e0e8; }
     .hsa-search .hsa-label { color: #6a8a9e; }
+    .hsa-count {
+      font-family: var(--font-display); font-size: 10px; font-weight: 500;
+      color: #c9a860;
+      margin-left: 1px;
+    }
+    .hsa-count:empty,
+    .hsa-count[data-zero="true"] { display: none; }
 
     /* ─── 首页课程列表 ─── */
     .home-section-title { font-size: 13px; color: var(--text-dim); font-weight: 500; margin-bottom: 8px; }

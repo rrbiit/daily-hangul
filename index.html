@@ -80,6 +80,7 @@
             <div class="home-side-action hsa-starred" onclick="showStarredNav()">
               <span class="hsa-icon">⭐</span>
               <span class="hsa-label">收藏</span>
+              <span class="hsa-count" id="starred-count-badge">0</span>
             </div>
             <div class="home-side-action hsa-search" onclick="showSearch()">
               <span class="hsa-icon">🔍</span>
@@ -777,6 +778,7 @@
           else grammarStarred.add(k)
           this.textContent = grammarStarred.has(k) ? '★' : '☆'
           saveUserData()
+          updateStarredCount()
         }
 
         // 语法掌握切换
@@ -853,6 +855,16 @@
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
       renderHomeLessons()
       updateContinueBtn()
+      updateStarredCount()
+    }
+
+    function updateStarredCount() {
+      var el = document.getElementById('starred-count-badge')
+      if (!el) return
+      var total = starred.size + grammarStarred.size
+      el.textContent = total
+      if (total === 0) el.setAttribute('data-zero', 'true')
+      else el.removeAttribute('data-zero')
     }
 
     /* ═══════════════════════════════════════════
@@ -1536,6 +1548,7 @@
       else starred.add(key)
       updateStarBtn()
       saveUserData()
+      updateStarredCount()
     }
 
     function updateStarBtn() {
@@ -1742,6 +1755,7 @@
           if (grammarStarred.has(k)) grammarStarred.delete(k)
           else grammarStarred.add(k)
           saveUserData()
+          updateStarredCount()
           showStarred() // 刷新收藏列表
         }
 
@@ -2072,7 +2086,7 @@
     }
 
     function saveQuizHistory() {
-      if (quizHistory.length > 20) quizHistory = quizHistory.slice(-20)
+      if (quizHistory.length > 300) quizHistory = quizHistory.slice(-300)
       lsSet('quiz-history', JSON.stringify(quizHistory))
       renderQuizHistory()
     }
