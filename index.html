@@ -3055,6 +3055,10 @@
     var initHash = location.hash.replace('#', '')
     if (initHash && HASH_PAGE[initHash] && initHash !== 'home') {
       showPage(HASH_PAGE[initHash])
+      if (initHash === 'quiz') { renderQuizLessons(); renderQuizHistory() }
+      if (initHash === 'starred') { renderStarred() }
+      if (initHash === 'weak') { renderWeakWords() }
+      if (initHash === 'settings') { showSettings() }
     }
 
     // PWA
