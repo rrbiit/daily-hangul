@@ -2788,6 +2788,7 @@
     const origOpenLesson = openLesson
     openLesson = function(num) {
       origOpenLesson(num)
+      lsSet('ys-last-lesson', String(num))
       // 在单词列表顶部加学习按钮 + 全部标记掌握
       const header = document.querySelector('#page-words .page-header')
       const existing = document.getElementById('study-btn-area')
@@ -3056,9 +3057,17 @@
     if (initHash && HASH_PAGE[initHash] && initHash !== 'home') {
       showPage(HASH_PAGE[initHash])
       if (initHash === 'quiz') { renderQuizLessons(); renderQuizHistory() }
-      if (initHash === 'starred') { renderStarred() }
+      if (initHash === 'starred') { showStarred() }
       if (initHash === 'weak') { renderWeakWords() }
       if (initHash === 'settings') { showSettings() }
+      if (initHash === 'study') { resumeStudy() }
+      if (initHash === 'words') {
+        var lastLesson = parseInt(lsGet('ys-last-lesson', '1'))
+        openLesson(lastLesson)
+      }
+      // 设置页已由 showSettings() 处理
+    } else if (!initHash || initHash === 'home') {
+      renderTodaySummary()
     }
 
     // PWA
