@@ -210,7 +210,7 @@
 - 涉及哪些文件
 - 是否存在风险
 - 是否有后续优化建议
-- 若涉及版本发布，请同步更新 [data.js](data.js) 中 `APP_CONFIG.version`，与 CHANGELOG 版本号保持一致。
+- 若涉及版本发布，请同步更新 [data.js](data.js) 中 `APP_CONFIG.version`（与 CHANGELOG 版本号一致），并 bump [sw.js](sw.js) 的缓存版本号 `CACHE`（如 hangul-v5→v6），确保安装版/桌面应用能刷新缓存。
 
 ---
 
