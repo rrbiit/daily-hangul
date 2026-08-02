@@ -26,6 +26,7 @@
       var key = wk(w, w.lessonNum)
       var d = srs[key] || { lv: 0, due: 0, ease: 2.5, n: 0 }
       var now = Date.now()
+      if (typeof recordSessionRate === 'function') recordSessionRate(quality)
       d.n = (d.n || 0) + 1
       d.last = now
 

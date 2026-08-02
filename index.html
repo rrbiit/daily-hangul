@@ -1187,6 +1187,7 @@
     function startStudyFromContext(startKey, title, fromPage) {
       var list = _studyContextList
       if (!list || list.length === 0) return
+      resetSessionStats()
 
       // 智能排序：未掌握的排前面（保留原始相对顺序）
       list.sort(function(a, b) {
@@ -1335,6 +1336,7 @@
         studyWords = p.words
         studyIndex = Math.min(p.index, p.words.length - 1)
         studyFromPage = p.fromPage || 'page-home'
+        resetSessionStats()
         isFlipped = false
         document.getElementById('study-title').textContent = p.title || '继续学习'
         hideNav()
@@ -1401,6 +1403,7 @@
         saveStudyProgress()
       } else {
         clearStudyProgress()
+        showStudyDone()
       }
     }
 
@@ -2006,6 +2009,39 @@
         })
       })
       return pool
+    }
+
+    // 本次学习会话统计（学完收尾提示用）
+    var _sessionStats = { forgot: 0, hard: 0, good: 0, easy: 0 }
+    var _sessionDoneShown = false
+    function resetSessionStats() {
+      _sessionStats = { forgot: 0, hard: 0, good: 0, easy: 0 }
+      _sessionDoneShown = false
+    }
+    function recordSessionRate(quality) {
+      if (quality === 0) _sessionStats.forgot++
+      else if (quality === 1) _sessionStats.hard++
+      else if (quality === 2) _sessionStats.good++
+      else if (quality === 3) _sessionStats.easy++
+    }
+    function showStudyDone() {
+      if (_sessionDoneShown) return
+      _sessionDoneShown = true
+      var total = (studyWords && studyWords.length) || 0
+      var forgot = _sessionStats.forgot, hard = _sessionStats.hard
+      var smooth = _sessionStats.good + _sessionStats.easy
+      var el = document.getElementById('study-done-stats')
+      var ov = document.getElementById('study-done-overlay')
+      if (!el || !ov) return
+      var html = '本次共学 <strong>' + total + '</strong> 个词<br>'
+      html += '忘记 <strong>' + forgot + '</strong> · 困难 <strong>' + hard + '</strong> · 顺利 <strong>' + smooth + '</strong>'
+      if (forgot > 0) html += '<div class="study-done-note">忘记的词已进易错本，很快会再复习</div>'
+      el.innerHTML = html
+      ov.style.display = 'flex'
+    }
+    function closeStudyDone() {
+      var ov = document.getElementById('study-done-overlay')
+      if (ov) ov.style.display = 'none'
     }
 
     // 打开易错本列表页
@@ -3140,6 +3176,16 @@
           <p id="search-empty-text"></p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 学完收尾弹窗 ═══════════ -->
+  <div id="study-done-overlay" class="study-done-overlay" style="display:none;" onclick="if(event.target===this)closeStudyDone()">
+    <div class="study-done-modal">
+      <div class="study-done-emoji">🎉</div>
+      <div class="study-done-title">学完啦！</div>
+      <div class="study-done-stats" id="study-done-stats"></div>
+      <button class="study-done-btn" onclick="closeStudyDone()">完成</button>
     </div>
   </div>
 </body>
