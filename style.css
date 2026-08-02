@@ -526,16 +526,16 @@
     .ctrl-btn.ctrl-speak {
       width: 54px; height: 54px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f48fb1, #ffab91);
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
       border-color: transparent;
       color: white;
-      box-shadow: 0 4px 16px rgba(244,143,177,0.35);
+      box-shadow: 0 4px 16px rgba(126,184,218,0.35);
     }
-    .ctrl-btn.ctrl-speak:hover { background: linear-gradient(135deg, #f06292, #ff8a65); transform: scale(1.05); }
+    .ctrl-btn.ctrl-speak:hover { background: linear-gradient(135deg, var(--primary-dim), #4a93b8); transform: scale(1.05); }
     .ctrl-btn.ctrl-speak.playing { animation: speak-breath 0.9s ease; }
     @keyframes speak-breath {
-      0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(244,143,177,0.35); }
-      50% { transform: scale(1.14); box-shadow: 0 4px 26px rgba(244,143,177,0.75); }
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(126,184,218,0.35); }
+      50% { transform: scale(1.14); box-shadow: 0 4px 26px rgba(126,184,218,0.75); }
     }
     .ctrl-btn.active { color: var(--accent-green); border-color: var(--accent-green); background: var(--accent-green-light); }
     .ctrl-btn.active svg { fill: var(--accent-green); stroke: var(--accent-green); }
