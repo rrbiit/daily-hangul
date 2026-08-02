@@ -210,6 +210,7 @@
 - 涉及哪些文件
 - 是否存在风险
 - 是否有后续优化建议
+- 若涉及版本发布，请同步更新 [data.js](data.js) 中 `APP_CONFIG.version`，与 CHANGELOG 版本号保持一致。
 
 ---
 
