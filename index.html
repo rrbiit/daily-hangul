@@ -69,7 +69,7 @@
         <!-- 主操作行 -->
         <div class="home-action-row">
           <div class="main-cta" id="main-cta" onclick="startMainStudy()">
-            <div class="main-cta-icon">📖</div>
+            <div class="main-cta-icon" id="main-cta-icon">📖</div>
             <div class="main-cta-text">
               <div class="main-cta-title" id="main-cta-title">开始学习</div>
               <div class="main-cta-desc" id="main-cta-desc">연세 한국어 1</div>
@@ -1344,7 +1344,12 @@
     }
 
     function startMainStudy() {
-      if (hasStudyProgress()) {
+      var due = buildDuePool()
+      if (due.length > 0) {
+        // 今日复习优先：到期词直接进入闪卡复习
+        _studyContextList = due
+        startStudyFromContext(null, '今日复习', 'page-home')
+      } else if (hasStudyProgress()) {
         resumeStudy()
       } else {
         navigateTo('page-course')
@@ -1354,7 +1359,16 @@
     function updateContinueBtn() {
       var titleEl = document.getElementById('main-cta-title')
       var descEl = document.getElementById('main-cta-desc')
+      var iconEl = document.getElementById('main-cta-icon')
       if (!titleEl || !descEl) return
+      var due = buildDuePool()
+      if (due.length > 0) {
+        titleEl.textContent = '今日复习 ' + due.length + ' 个词'
+        descEl.textContent = '到期复习 · 防止遗忘'
+        if (iconEl) iconEl.textContent = '🔁'
+        return
+      }
+      if (iconEl) iconEl.textContent = '📖'
       if (hasStudyProgress()) {
         var raw = lsGet('ys-study-progress', '')
         try {
@@ -1970,6 +1984,25 @@
           else if (type === 'unmastered' && _isUnmastered(w, num)) pool.push(item)
           else if (type === 'starred' && starred.has(wk(w, num))) pool.push(item)
           else if (type === 'weak' && isWeak(wk(w, num))) pool.push(item)
+        })
+      })
+      return pool
+    }
+
+    // 今日到期复习词池：只算学过、未掌握、已到期的词（纯新词不算"复习"）
+    function buildDuePool() {
+      const pool = []
+      LESSONS.forEach(lesson => {
+        const num = lesson.num
+        const words = VOCAB[num] || []
+        words.forEach(w => {
+          const d = srs[wk(w, num)]
+          if (d && d.lv < 4 && d.due <= Date.now()) {
+            const item = {}
+            for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }
+            item.lessonNum = num
+            pool.push(item)
+          }
         })
       })
       return pool

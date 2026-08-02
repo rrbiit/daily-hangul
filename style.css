@@ -489,7 +489,7 @@
       padding: 10px 14px; margin-bottom: 8px;
       cursor: pointer; transition: background 0.15s;
     }
-    .example-pair:hover { background: #f0ecf2; }
+    .example-pair:hover { background: var(--primary-light); }
     .ex-clickable { cursor: pointer; }
     .example-pair:last-child { margin-bottom: 0; }
     .example-item {
