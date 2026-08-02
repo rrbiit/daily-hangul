@@ -1287,6 +1287,11 @@
       // 更新收藏/掌握按钮状态
       updateStarBtn()
       updateSrsStatus()
+
+      // 自动播放当前单词发音（韩语优先方向：正面即韩语；中文优先时跳过，避免提前泄露答案）
+      if (cardDirection !== 'cn-first' && w.kr) {
+        speak(w.kr, 'ko')
+      }
     }
 
     // 翻转卡片
