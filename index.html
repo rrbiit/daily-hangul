@@ -1363,8 +1363,8 @@
       if (!titleEl || !descEl) return
       var due = buildDuePool()
       if (due.length > 0) {
-        titleEl.textContent = '今日复习 ' + due.length + ' 个词'
-        descEl.textContent = '到期复习 · 防止遗忘'
+        titleEl.textContent = '今日复习'
+        descEl.textContent = due.length + ' 个词到期'
         if (iconEl) iconEl.textContent = '🔁'
         return
       }
