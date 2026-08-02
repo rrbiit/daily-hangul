@@ -1290,6 +1290,7 @@
 
       // 自动播放当前单词发音（韩语优先方向：正面即韩语；中文优先时跳过，避免提前泄露答案）
       if (cardDirection !== 'cn-first' && w.kr) {
+        flashSpeakBtn()
         speak(w.kr, 'ko')
       }
     }
@@ -1389,14 +1390,25 @@
       }
     }
 
-    // 发音
-    // 发音：Google TTS Audio，夸克可用
+    // 发音按钮呼吸反馈：自动/手动发音时点亮，短暂后自然熄灭
+    var _speakFbTimer = null
+    function flashSpeakBtn() {
+      var btn = document.getElementById('ctrl-speak')
+      if (!btn) return
+      if (_speakFbTimer) { clearTimeout(_speakFbTimer); _speakFbTimer = null }
+      btn.classList.add('playing')
+      _speakFbTimer = setTimeout(function() {
+        btn.classList.remove('playing')
+        _speakFbTimer = null
+      }, 900)
+    }
+
+    // 发音：始终播韩语单词（中文优先时正面虽是中文，按钮仍读韩语，避免播中文无意义）
     function speakWord() {
       var w = studyWords[studyIndex]
       if (!w) return
-      var text = cardDirection === 'cn-first' ? w.cn : w.kr
-      var lang = cardDirection === 'cn-first' ? 'zh-CN' : 'ko'
-      speak(text, lang)
+      flashSpeakBtn()
+      speak(w.kr, 'ko')
     }
 
     // 通用发音函数：speak('안녕하세요', 'ko')

@@ -532,6 +532,11 @@
       box-shadow: 0 4px 16px rgba(244,143,177,0.35);
     }
     .ctrl-btn.ctrl-speak:hover { background: linear-gradient(135deg, #f06292, #ff8a65); transform: scale(1.05); }
+    .ctrl-btn.ctrl-speak.playing { animation: speak-breath 0.9s ease; }
+    @keyframes speak-breath {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(244,143,177,0.35); }
+      50% { transform: scale(1.14); box-shadow: 0 4px 26px rgba(244,143,177,0.75); }
+    }
     .ctrl-btn.active { color: var(--accent-green); border-color: var(--accent-green); background: var(--accent-green-light); }
     .ctrl-btn.active svg { fill: var(--accent-green); stroke: var(--accent-green); }
     .ctrl-label {
