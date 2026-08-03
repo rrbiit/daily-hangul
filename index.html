@@ -325,14 +325,17 @@
         <div id="quiz-tab-content">
           <!-- 设置区 -->
           <div id="quiz-setup">
-          <!-- 模式 + 数量 -->
-          <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:12px;flex-wrap:wrap;">
-            <div class="tab-bar" id="quiz-mode-bar" style="flex:1;min-width:180px;margin-bottom:0;">
-              <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">韩→中</button>
-              <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">中→韩</button>
-              <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
-            </div>
-            <div class="tab-bar" style="flex:0 0 auto;min-width:120px;margin-bottom:0;" id="quiz-count-bar">
+          <!-- 模式 -->
+          <div class="tab-bar" id="quiz-mode-bar" style="margin-bottom:12px;">
+            <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">韩→中</button>
+            <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">中→韩</button>
+            <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
+            <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">✍️ 听写</button>
+          </div>
+          <!-- 每轮题数 -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">每轮题数</span>
+            <div class="tab-bar" id="quiz-count-bar" style="flex:1;margin-bottom:0;">
               <button class="tab-btn" data-count="5" onclick="setQuizCount(5)">5</button>
               <button class="tab-btn active" data-count="10" onclick="setQuizCount(10)">10</button>
               <button class="tab-btn" data-count="15" onclick="setQuizCount(15)">15</button>
@@ -367,6 +370,10 @@
           <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%;"></div></div>
           <div class="quiz-question-area" id="quiz-question-area"></div>
           <div class="quiz-options" id="quiz-options"></div>
+          <div id="quiz-dict-input" style="display:none;margin-top:14px;">
+            <input id="quiz-dict-field" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="输入韩语…" onkeydown="if(event.key==='Enter')dictSubmit()" style="width:100%;padding:12px 14px;font-size:18px;text-align:center;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font-family:var(--font-display);outline:none;box-sizing:border-box;" />
+            <button id="quiz-dict-submit" onclick="dictSubmit()" style="width:100%;margin-top:10px;padding:12px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-family:var(--font-display);font-size:15px;font-weight:500;cursor:pointer;">确认</button>
+          </div>
           <div id="quiz-feedback" style="text-align:center;min-height:24px;margin-top:8px;font-size:14px;font-weight:500;"></div>
           <div id="quiz-nav" style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
             <button onclick="quizPrev()" id="quiz-prev-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--font-display);font-size:14px;cursor:pointer;">◀ 上一题</button>
@@ -2259,7 +2266,7 @@
         container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
         return
       }
-      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音' }
+      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音', 'dict': '✍️ 听写' }
       var html = ''
       // 倒序显示，最新的在前面
       for (var i = quizHistory.length - 1; i >= 0; i--) {
@@ -2271,7 +2278,7 @@
         html += '<div class="quiz-history-item" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">'
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
         html += '<span style="font-size:13px;font-weight:500;">' + gradeDot + ' ' + h.score + '/' + h.total + ' <span style="color:var(--text-dim);font-size:11px;">(' + pct + '%)</span></span>'
-        html += '<span style="font-size:11px;color:var(--text-subtle);">' + (modeLabels[h.mode] || h.mode) + ' · ' + dateStr + '</span>'
+        html += '<span style="font-size:11px;color:var(--text-subtle);">' + (modeLabels[h.mode] || h.mode) + (h.partial ? ' <span style="color:var(--accent-coral);">未完成</span>' : '') + ' · ' + dateStr + '</span>'
         html += '</div>'
         if (h.errors && h.errors.length > 0) {
           html += '<div style="font-size:11px;color:var(--accent-pink);line-height:1.6;">'
@@ -2418,6 +2425,11 @@
       })
 
       selected.forEach(function(w) {
+        // 听写模式无需选项，直接输入韩语
+        if (quizMode === 'dict') {
+          questions.push({ word: w, options: [], correctIdx: -1 })
+          return
+        }
         var correct = quizMode === 'cn-kr' ? w.kr : w.cn
         var distractors = allItems.filter(function(x) { return x.kr !== w.kr })
         for (var i2 = distractors.length - 1; i2 > 0; i2--) {
@@ -2484,26 +2496,48 @@
         area.innerHTML = '<div class="quiz-q-label">中→韩 · 选择正确的韩语</div>' +
           '<div class="quiz-q-word">' + word.cn + '</div>' +
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
-      } else {
+      } else if (quizMode === 'listen') {
         area.innerHTML = '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
           '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>' +
           '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
+      } else {  // dict 听写
+        area.innerHTML = '<div class="quiz-q-label">✍️ 听写 · 听发音写出韩语</div>' +
+          '<div class="quiz-q-word">' + word.cn + '</div>' +
+          '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>' +
+          '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="重播发音">🔊</button>' +
+          '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
       }
 
       var optsEl = document.getElementById('quiz-options')
-      var labels = ['A', 'B', 'C', 'D']
-      optsEl.innerHTML = ''
-      q.options.forEach(function(opt, idx) {
-        var div = document.createElement('div')
-        div.className = 'quiz-option'
-        div.textContent = labels[idx] + '. ' + opt
-        div.onclick = function() { quizAnswer(idx) }
-        optsEl.appendChild(div)
-      })
+      var dictInput = document.getElementById('quiz-dict-input')
+      var dictField = document.getElementById('quiz-dict-field')
+      if (quizMode === 'dict') {
+        // 听写：隐藏选项，显示输入框
+        optsEl.innerHTML = ''
+        optsEl.style.display = 'none'
+        if (dictInput) dictInput.style.display = 'block'
+        if (dictField) {
+          dictField.disabled = false
+          dictField.value = ''
+          setTimeout(function() { dictField.focus() }, 350)
+        }
+      } else {
+        if (dictInput) dictInput.style.display = 'none'
+        optsEl.style.display = ''
+        var labels = ['A', 'B', 'C', 'D']
+        optsEl.innerHTML = ''
+        q.options.forEach(function(opt, idx) {
+          var div = document.createElement('div')
+          div.className = 'quiz-option'
+          div.textContent = labels[idx] + '. ' + opt
+          div.onclick = function() { quizAnswer(idx) }
+          optsEl.appendChild(div)
+        })
+      }
 
-      // 自动播放发音：韩→中和听音模式
-      if (quizMode === 'kr-cn' || quizMode === 'listen') {
+      // 自动播放发音：韩→中、听音、听写模式
+      if (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'dict') {
         setTimeout(function() { quizSpeakWord() }, 400)
       }
     }
@@ -2558,6 +2592,37 @@
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
     }
 
+    // 听写模式：提交输入判分
+    function dictSubmit() {
+      if (quizAnswered) return
+      var q = quizQuestions[quizIndex]
+      if (!q) return
+      quizAnswered = true
+      var field = document.getElementById('quiz-dict-field')
+      if (field) field.disabled = true
+      var input = normalizeForCompare(field ? field.value : '')
+      var correct = normalizeForCompare(q.word.kr)
+      var fb = document.getElementById('quiz-feedback')
+      if (input === correct) {
+        quizScore++
+        fb.textContent = '✓ 正确！'
+        fb.style.color = 'var(--accent-green)'
+        // 答对自动下一题
+        setTimeout(function() {
+          quizIndex++
+          showQuizQuestion()
+        }, 800)
+      } else {
+        var w = q.word
+        quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
+        fb.innerHTML = '✗ 正确答案是 <strong>' + w.kr + '</strong>'
+        fb.style.color = 'var(--accent-pink)'
+        // 答错停在当前题，显示"下一题"按钮
+        document.getElementById('quiz-next-btn').style.display = ''
+      }
+      document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
+    }
+
     // 上一题
     function quizPrev() {
       if (quizIndex <= 0) return
@@ -2572,23 +2637,11 @@
       showQuizQuestion()
     }
 
-    function showQuizResult() {
-      document.getElementById('quiz-play').style.display = 'none'
-      addQuizSummary(quizScore, quizQuestions.length)
-
-      var resultEl = document.getElementById('quiz-result')
-      resultEl.style.display = 'block'
-
-      var total = quizQuestions.length
-      var score = quizScore
-      var pct = Math.round(score / total * 100)
-      var gradeClass = pct >= 90 ? 'perfect' : pct >= 70 ? 'good' : pct >= 40 ? 'ok' : 'bad'
-      var gradeEmoji = pct >= 90 ? '🎉' : pct >= 70 ? '👍' : pct >= 40 ? '💪' : '📚'
-      var gradeText = pct >= 90 ? '太棒了！' : pct >= 70 ? '不错哦！' : pct >= 40 ? '继续加油！' : '多练练会更好！'
-
-      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
+    // 保存一笔测验记录（含错词进易错本），完整完成和半途退出共用
+    function persistQuizRecord(score, total, partial) {
+      addQuizSummary(score, total)
+      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, partial: !!partial, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
       saveQuizHistory()
-
       quizErrors.forEach(function(e) {
         var d = srs[e.key] || { lv: 0, due: 0, ease: 2.5, n: 0 }
         d.badCount = (d.badCount || 0) + 1
@@ -2599,6 +2652,21 @@
         srs[e.key] = d
       })
       saveUserData()
+    }
+
+    function showQuizResult() {
+      document.getElementById('quiz-play').style.display = 'none'
+      persistQuizRecord(quizScore, quizQuestions.length, false)
+
+      var resultEl = document.getElementById('quiz-result')
+      resultEl.style.display = 'block'
+
+      var total = quizQuestions.length
+      var score = quizScore
+      var pct = Math.round(score / total * 100)
+      var gradeClass = pct >= 90 ? 'perfect' : pct >= 70 ? 'good' : pct >= 40 ? 'ok' : 'bad'
+      var gradeEmoji = pct >= 90 ? '🎉' : pct >= 70 ? '👍' : pct >= 40 ? '💪' : '📚'
+      var gradeText = pct >= 90 ? '太棒了！' : pct >= 70 ? '不错哦！' : pct >= 40 ? '继续加油！' : '多练练会更好！'
 
       var html = '<div class="quiz-result-card">'
       html += '<div style="font-size:48px;margin-bottom:8px;">' + gradeEmoji + '</div>'
@@ -2668,7 +2736,10 @@
 
     function confirmExitQuiz() {
       if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
+        var answered = quizScore + quizErrors.length
+        if (!confirm(answered > 0 ? '确定退出吗？已答的 ' + answered + ' 题会计入测验记录。' : '确定退出吗？')) return
+        // 半途退出也保存已答部分的记录
+        if (answered > 0) persistQuizRecord(quizScore, answered, true)
         quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
       }
       document.getElementById('quiz-play').style.display = 'none'

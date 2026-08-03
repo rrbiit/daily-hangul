@@ -1307,5 +1307,5 @@
 
     const APP_CONFIG = {
       textbook: '연세 한국어 1',
-      version: '1.7.0',
+      version: '1.8.0',
     }

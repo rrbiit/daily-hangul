@@ -5,6 +5,17 @@
       return intervals[Math.min(lv, intervals.length - 1)]
     }
 
+    /* ═══════════ 输入归一化（听写判分用）═══════════ */
+    function normalizeForCompare(str) {
+      var s = String(str || '')
+      // 全角→半角（字母/数字/标点）
+      s = s.replace(/[！-～]/g, function(c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0) })
+      // 全角空格→半角
+      s = s.replace(/　/g, ' ')
+      // 去首尾空格、压缩连续空格
+      return s.trim().replace(/\s+/g, ' ')
+    }
+
     function srsStatus(key) {
       var d = srs[key]
       if (!d || d.lv === 0) return { text: '新词', lv: 0, due: false }
