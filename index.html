@@ -1505,6 +1505,8 @@
         e.stopPropagation()
         var badgeKey = badgeEl.getAttribute('data-key')
         if (badgeKey) {
+          // 记住当前位置：刷新列表会触发 scrollTo(0)，先记下再还原，避免跳回顶部
+          var savedScrollY = window.scrollY
           var parts = badgeKey.split('|')
           var ln = parseInt(parts[0])
           var d = srs[badgeKey]
@@ -1527,6 +1529,8 @@
           } else {
             openLesson(currentLessonNum)
           }
+          // 还原滚动位置（抵消 showPage 的 scrollTo(0)）
+          window.scrollTo({ top: savedScrollY, behavior: 'auto' })
         }
         return
       }
