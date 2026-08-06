@@ -845,6 +845,28 @@
       fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     }
 
+    /* ─── 学习记录页 ─── */
+    .stats-month {
+      font-family: var(--font-display); font-size: 15px; font-weight: 600;
+      color: var(--text); margin: 18px 0 6px;
+    }
+    .stats-week-label {
+      font-size: 11px; color: var(--text-subtle); margin: 8px 0 2px;
+      letter-spacing: 0.03em;
+    }
+    .stats-day {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 7px 2px; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .stats-day.today {
+      background: var(--primary-light); border-radius: 8px;
+      padding: 7px 10px; margin: 0 -10px;
+    }
+    .stats-date { color: var(--text); font-variant-numeric: tabular-nums; }
+    .stats-info { color: var(--text-dim); }
+    .stats-info.empty { color: var(--text-subtle); font-size: 12px; }
+
     /* ─── 响应式适配：手机 / 平板 / 电脑 ─── */
 
     /* 平板 / 电脑（宽 ≥768px）：内容列加宽，阅读更舒适 */

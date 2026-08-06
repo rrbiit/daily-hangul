@@ -16,6 +16,25 @@
       return s.trim().replace(/\s+/g, ' ')
     }
 
+    /* ═══════════ 编辑距离（听写宽容判分用）═══════════ */
+    function levenshtein(a, b) {
+      a = String(a || ''); b = String(b || '')
+      var m = a.length, n = b.length
+      if (m === 0) return n
+      if (n === 0) return m
+      var d = []
+      for (var i = 0; i <= m; i++) d[i] = [i]
+      for (var j = 0; j <= n; j++) d[0][j] = j
+      for (var i = 1; i <= m; i++) {
+        var ai = a.charCodeAt(i - 1)
+        for (var j = 1; j <= n; j++) {
+          var cost = ai === b.charCodeAt(j - 1) ? 0 : 1
+          d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + cost)
+        }
+      }
+      return d[m][n]
+    }
+
     function srsStatus(key) {
       var d = srs[key]
       if (!d || d.lv === 0) return { text: '新词', lv: 0, due: false }
@@ -47,10 +66,13 @@
       }
 
       if (quality === 0) {
+        var wasMastered = d.lv >= 4
         // 忘记了：重置
         d.lv = 0
         d.ease = Math.max(1.3, (d.ease || 2.5) - 0.2)
         d.due = now + 10*60*1000  // 10分钟后
+        // 已掌握的词被评"忘记"→ 降级提示
+        if (wasMastered && typeof showToast === 'function') showToast('已移出「已掌握」，10分钟后复习')
       } else if (quality === 1) {
         // 困难：保持等级，延长间隔
         d.ease = Math.max(1.3, (d.ease || 2.5) - 0.15)

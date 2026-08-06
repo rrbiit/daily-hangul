@@ -49,8 +49,8 @@
           </div>
         </div>
 
-        <!-- 学习进度 -->
-        <div class="home-progress-bar-wrap">
+        <!-- 学习进度（点击进入学习记录） -->
+        <div class="home-progress-bar-wrap" onclick="showStats()" style="cursor:pointer;" title="查看学习记录">
           <div class="hp-row">
             <span class="hp-label">📚 已掌握 <strong id="home-mastered">0</strong> / <span id="home-total">0</span></span>
             <span class="hp-pct" id="home-pct">0%</span>
@@ -303,6 +303,28 @@
       </div>
     </div>
 
+    <!-- ═══════════ 学习记录页 ═══════════ -->
+    <div id="page-stats" class="page">
+      <div class="container">
+        <div class="page-header" style="margin-bottom:16px;">
+          <button class="back-btn" onclick="goBack()">
+            <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <div class="title-area">
+            <h1>学习记录</h1>
+          </div>
+        </div>
+
+        <!-- 坚持总览 -->
+        <div id="stats-overview"></div>
+        <!-- 每日学习记录（按周/月归组） -->
+        <div id="stats-list"></div>
+        <!-- 测验记录 -->
+        <div id="stats-analysis"></div>
+        <div id="stats-history"></div>
+      </div>
+    </div>
+
     <!-- ═══════════ 测验页 ═══════════ -->
     <div id="page-quiz" class="page">
       <div class="container">
@@ -347,6 +369,7 @@
           <div class="quiz-scope-bar" id="quiz-scope-bar" style="margin-bottom:12px;">
             <button class="quiz-scope-btn active" data-scope="all" onclick="setQuizScope('all')">📚 全部</button>
             <button class="quiz-scope-btn" data-scope="unmastered" onclick="setQuizScope('unmastered')">📖 未掌握</button>
+            <button class="quiz-scope-btn" data-scope="mastered" onclick="setQuizScope('mastered')">✅ 已掌握</button>
             <button class="quiz-scope-btn" data-scope="starred" onclick="setQuizScope('starred')">⭐ 收藏</button>
             <button class="quiz-scope-btn" data-scope="weak" onclick="setQuizScope('weak')">⚠️ 薄弱词</button>
           </div>
@@ -882,7 +905,7 @@
     var PAGE_HASH = {
       'page-home': 'home', 'page-course': 'course', 'page-words': 'words',
       'page-study': 'study', 'page-starred': 'starred', 'page-weak': 'weak',
-      'page-settings': 'settings', 'page-quiz': 'quiz'
+      'page-settings': 'settings', 'page-quiz': 'quiz', 'page-stats': 'stats'
     }
     var HASH_PAGE = {}
     Object.keys(PAGE_HASH).forEach(function(k) { HASH_PAGE[PAGE_HASH[k]] = k })
@@ -1092,31 +1115,52 @@
       '작은 성공이 큰 변화를 만듭니다 🦋', '오늘도 파이팅! 🔥'
     ]
 
-    function loadTodaySummary() {
-      var today = getStudyDay()
+    /* ═══════════ 每日学习日志（持久化统计）═══════════ */
+    function loadDailyLog() {
       try {
-        var raw = sessionStorage.getItem('ys-today-summary')
-        if (raw) { var s = JSON.parse(raw); if (s.date === today) return s }
+        var raw = lsGet('ys-daily-log', '')
+        if (raw) return JSON.parse(raw)
       } catch(e) {}
-      return { date: today, studyWords: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0 }
+      return {}
     }
 
-    function saveTodaySummary(s) {
-      try { sessionStorage.setItem('ys-today-summary', JSON.stringify(s)) } catch(e) {}
+    function saveDailyLog(log) { lsSet('ys-daily-log', JSON.stringify(log)) }
+
+    // 今天的日志条目（不存在则初始化，返回 log 引用便于直接改）
+    function todayLogEntry() {
+      var log = loadDailyLog()
+      var day = getStudyDay()
+      if (!log[day]) log[day] = { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0 }
+      return { log: log, entry: log[day] }
+    }
+
+    function loadTodaySummary() {
+      var today = getStudyDay()
+      var log = loadDailyLog()
+      var e = log[today] || { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0 }
+      return { date: today, studyWords: e.words, quizRounds: e.quizRounds, quizTotal: e.quizTotal, quizCorrect: e.quizCorrect }
     }
 
     function addStudySummary(count) {
-      var s = loadTodaySummary()
-      s.studyWords += count
-      saveTodaySummary(s)
+      var t = todayLogEntry()
+      t.entry.words += count
+      saveDailyLog(t.log)
     }
 
     function addQuizSummary(score, total) {
-      var s = loadTodaySummary()
-      s.quizRounds += 1
-      s.quizTotal += total
-      s.quizCorrect += score
-      saveTodaySummary(s)
+      var t = todayLogEntry()
+      t.entry.quizRounds += 1
+      t.entry.quizTotal += total
+      t.entry.quizCorrect += score
+      saveDailyLog(t.log)
+    }
+
+    // 统计：累计学习词数
+    function cumulativeWords() {
+      var log = loadDailyLog()
+      var sum = 0
+      for (var k in log) { if (log.hasOwnProperty(k)) sum += (log[k].words || 0) }
+      return sum
     }
 
     function renderTodaySummary() {
@@ -1137,6 +1181,130 @@
       }
       textEl.innerHTML = fb + ' · ' + parts.join(' · ')
       el.style.display = 'flex'
+    }
+
+    /* ═══════════ 学习记录页 ═══════════ */
+    function showStats() {
+      navigateTo('page-stats')
+      renderStatsContent()
+    }
+
+    function renderStatsContent() {
+      renderStatsOverview()
+      renderStatsList()
+      renderQuizHistory('stats-history', 'stats-analysis')
+    }
+
+    function renderStatsOverview() {
+      var el = document.getElementById('stats-overview')
+      if (!el) return
+      var streak = loadStreak()
+      var today = loadTodaySummary()
+      var cum = cumulativeWords()
+      var log = loadDailyLog()
+      var cumQuiz = 0, cumCorrect = 0
+      for (var k in log) { if (log.hasOwnProperty(k)) { cumQuiz += (log[k].quizTotal || 0); cumCorrect += (log[k].quizCorrect || 0) } }
+
+      // 完全没有记录时：友好的空状态，鼓励开始，而不是一屏的 0
+      if (cum === 0 && cumQuiz === 0 && streak.count === 0) {
+        el.innerHTML =
+          '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 20px;text-align:center;">' +
+          '<div style="font-size:40px;line-height:1;">🌱</div>' +
+          '<p style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:1.7;">还没有学习记录<br>今天学几个词，这里就会出现你的学习足迹</p>' +
+          '<button onclick="startMainStudy()" style="margin-top:14px;padding:11px 26px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-family:var(--font-display);font-size:15px;font-weight:500;cursor:pointer;">📖 去学习</button>' +
+          '</div>'
+        return
+      }
+
+      var cumPct = cumQuiz > 0 ? Math.round(cumCorrect / cumQuiz * 100) : 0
+
+      var html = ''
+      html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
+      html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;margin-bottom:6px;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
+      html += '<div style="font-size:13px;color:var(--text-dim);line-height:1.7;">'
+      html += '📖 今天学了 <strong>' + today.studyWords + '</strong> 个词'
+      if (today.quizRounds > 0) {
+        var todayPct = today.quizTotal > 0 ? Math.round(today.quizCorrect / today.quizTotal * 100) : 0
+        html += ' · ✅ 测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）'
+      }
+      html += '</div>'
+      html += '<div style="font-size:13px;color:var(--text-dim);margin-top:4px;">'
+      html += '累计：学习 <strong>' + cum + '</strong> 词 · 测验 <strong>' + cumCorrect + '/' + cumQuiz + '</strong>（' + cumPct + '%）'
+      html += '</div>'
+      html += '</div>'
+      el.innerHTML = html
+    }
+
+    function renderStatsList() {
+      var el = document.getElementById('stats-list')
+      if (!el) return
+      var log = loadDailyLog()
+      var todayKey = getStudyDay()
+      var weekNames = ['日', '一', '二', '三', '四', '五', '六']
+
+      // 起始学习日：最早有记录的一天，否则今天
+      var startTs = Date.now()
+      for (var k in log) {
+        if (log.hasOwnProperty(k)) {
+          var t = new Date(k + 'T12:00:00').getTime()
+          if (t < startTs) startTs = t
+        }
+      }
+
+      var html = ''
+      var curMonth = null
+      var curWeek = null
+      var weekNum = 0
+      var ts = startTs
+      var guard = 0
+
+      while (guard < 4000) {
+        guard++
+        var key = getStudyDay(ts)
+        var dObj = new Date(ts)
+        var e = log[key] || null
+
+        // 周起点（周一），周归入其起点所在的月份
+        var dow = dObj.getDay()
+        var weekStart = new Date(dObj)
+        weekStart.setDate(dObj.getDate() - ((dow + 6) % 7))
+        var weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekStart.getDate() + 6)
+        var weekMonth = weekStart.getFullYear() + '年' + (weekStart.getMonth() + 1) + '月'
+
+        if (weekStart.getTime() !== curWeek) {
+          if (weekMonth !== curMonth) {
+            html += '<div class="stats-month">📅 ' + weekMonth + '</div>'
+            curMonth = weekMonth
+            weekNum = 1
+          } else {
+            weekNum++
+          }
+          var wl = '第' + weekNum + '周（' + (weekStart.getMonth() + 1) + '/' + weekStart.getDate() + ' ~ ' + (weekEnd.getMonth() + 1) + '/' + weekEnd.getDate() + '）'
+          html += '<div class="stats-week-label">' + wl + '</div>'
+          curWeek = weekStart.getTime()
+        }
+
+        html += '<div class="stats-day' + (key === todayKey ? ' today' : '') + '">'
+        html += '<span class="stats-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dow] + '</span>'
+        if (e && (e.words > 0 || e.quizTotal > 0)) {
+          var parts = []
+          if (e.words > 0) parts.push('学了 ' + e.words + ' 词')
+          if (e.quizTotal > 0) {
+            var pct = Math.round(e.quizCorrect / e.quizTotal * 100)
+            parts.push('测验 ' + e.quizCorrect + '/' + e.quizTotal + '（' + pct + '%）')
+          }
+          html += '<span class="stats-info">' + parts.join(' · ') + '</span>'
+        } else {
+          html += '<span class="stats-info empty">没有学习</span>'
+        }
+        html += '</div>'
+
+        if (key === todayKey) break
+        ts += 24 * 60 * 60 * 1000
+      }
+
+      el.innerHTML = html
     }
 
     function goToQuizAnalysis() {
@@ -2177,6 +2345,7 @@
     var quizErrors = []
     var quizHistory = []
     var quizAnswered = false
+    var quizAnswers = []  // 每道题的作答记录：{ correct, selectedIdx } / { correct, submitted }，未答为 undefined
 
     function loadQuizHistory() {
       try { var v = lsGet('quiz-history', ''); quizHistory = v ? JSON.parse(v) : [] } catch(e) { quizHistory = [] }
@@ -2188,8 +2357,8 @@
       renderQuizHistory()
     }
 
-    function renderTodayAnalysis() {
-      var el = document.getElementById('quiz-today-analysis')
+    function renderTodayAnalysis(containerId) {
+      var el = document.getElementById(containerId || 'quiz-today-analysis')
       if (!el) return
 
       var today = getStudyDay()
@@ -2232,14 +2401,14 @@
 
       // 总体
       html += '<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px;">'
-      html += '共 <strong>' + todayRecords.length + '</strong> 轮 · <strong>' + totalScore + '/' + totalQ + '</strong> · 正确率 <strong style="color:' + (overallPct >= 80 ? 'var(--accent-green)' : overallPct >= 50 ? 'var(--star)' : 'var(--accent-pink)') + ';">' + overallPct + '%</strong>'
+      html += '共 <strong>' + todayRecords.length + '</strong> 轮 · 答对 <strong>' + totalScore + '/' + totalQ + '</strong> · 正确率 <strong style="color:' + (overallPct >= 80 ? 'var(--accent-green)' : overallPct >= 50 ? 'var(--star)' : 'var(--accent-pink)') + ';">' + overallPct + '%</strong>'
       html += '</div>'
 
       // 按时段
       var periodParts = []
-      if (morningTotal > 0) periodParts.push('🌅 上午 ' + morningScore + '/' + morningTotal + ' (' + Math.round(morningScore/morningTotal*100) + '%)')
-      if (afternoonTotal > 0) periodParts.push('☀️ 下午 ' + afternoonScore + '/' + afternoonTotal + ' (' + Math.round(afternoonScore/afternoonTotal*100) + '%)')
-      if (eveningTotal > 0) periodParts.push('🌙 晚上 ' + eveningScore + '/' + eveningTotal + ' (' + Math.round(eveningScore/eveningTotal*100) + '%)')
+      if (morningTotal > 0) periodParts.push('🌅 上午答对 ' + morningScore + '/' + morningTotal + ' · ' + Math.round(morningScore/morningTotal*100) + '%')
+      if (afternoonTotal > 0) periodParts.push('☀️ 下午答对 ' + afternoonScore + '/' + afternoonTotal + ' · ' + Math.round(afternoonScore/afternoonTotal*100) + '%')
+      if (eveningTotal > 0) periodParts.push('🌙 晚上答对 ' + eveningScore + '/' + eveningTotal + ' · ' + Math.round(eveningScore/eveningTotal*100) + '%')
       if (periodParts.length > 0) {
         html += '<div style="font-size:12px;color:var(--text-dim);line-height:1.7;">' + periodParts.join(' · ') + '</div>'
       }
@@ -2262,9 +2431,9 @@
       el.innerHTML = html
     }
 
-    function renderQuizHistory() {
-      renderTodayAnalysis()
-      var container = document.getElementById('quiz-history-list')
+    function renderQuizHistory(containerId, analysisId) {
+      renderTodayAnalysis(analysisId || 'quiz-today-analysis')
+      var container = document.getElementById(containerId || 'quiz-history-list')
       if (!container) return
       if (quizHistory.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
@@ -2349,6 +2518,7 @@
           else if (quizScope === 'unmastered' && !isMastered(w, lesson.num)) ok = true
           else if (quizScope === 'starred' && starred.has(key)) ok = true
           else if (quizScope === 'weak' && isWeak(key)) ok = true
+          else if (quizScope === 'mastered' && isMastered(w, lesson.num)) ok = true
           if (ok) count++
         })
         if (count === 0) return
@@ -2378,6 +2548,7 @@
             else if (quizScope === 'unmastered' && !isMastered(w, n)) ok = true
             else if (quizScope === 'starred' && starred.has(key)) ok = true
             else if (quizScope === 'weak' && isWeak(key)) ok = true
+            else if (quizScope === 'mastered' && isMastered(w, n)) ok = true
             if (ok) selTotal++
           })
         })
@@ -2404,6 +2575,7 @@
           else if (quizScope === 'unmastered' && !isMastered(w, l.num)) ok = true
           else if (quizScope === 'starred' && starred.has(key)) ok = true
           else if (quizScope === 'weak' && isWeak(key)) ok = true
+          else if (quizScope === 'mastered' && isMastered(w, l.num)) ok = true
           if (ok) pool.push(item)
         })
       })
@@ -2459,7 +2631,7 @@
       if (pool.length < 4) { alert('词汇不足，至少需要4个词才能测验'); return }
 
       quizQuestions = generateQuizQuestions(pool)
-      quizIndex = 0; quizScore = 0; quizErrors = []
+      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       document.getElementById('quiz-setup').style.display = 'none'
       document.getElementById('quiz-play').style.display = 'block'
       document.getElementById('quiz-result').style.display = 'none'
@@ -2473,7 +2645,9 @@
       markStudyDay()
       if (quizIndex >= quizQuestions.length) { showQuizResult(); return }
       var q = quizQuestions[quizIndex]
-      quizAnswered = false
+      // 已答过的题进入"回顾"态（锁定不可改），未答过才是正常作答
+      var prev = quizAnswers[quizIndex] || null
+      quizAnswered = prev ? true : false
 
       document.getElementById('quiz-progress-text').textContent = (quizIndex + 1) + '/' + quizQuestions.length
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
@@ -2481,11 +2655,11 @@
       document.getElementById('quiz-feedback').textContent = ''
       document.getElementById('quiz-feedback').style.color = 'var(--text-dim)'
 
-      // 上一题/下一题按钮
+      // 上一题/下一题按钮：回顾态始终显示"下一题"
       var prevBtn = document.getElementById('quiz-prev-btn')
       var nextBtn = document.getElementById('quiz-next-btn')
       prevBtn.style.display = quizIndex > 0 ? '' : 'none'
-      nextBtn.style.display = 'none'
+      nextBtn.style.display = prev ? '' : 'none'
 
       var area = document.getElementById('quiz-question-area')
       var word = q.word
@@ -2516,32 +2690,71 @@
       var optsEl = document.getElementById('quiz-options')
       var dictInput = document.getElementById('quiz-dict-input')
       var dictField = document.getElementById('quiz-dict-field')
+      var fb = document.getElementById('quiz-feedback')
+      var labels = ['A', 'B', 'C', 'D']
+
       if (quizMode === 'dict') {
         // 听写：隐藏选项，显示输入框
         optsEl.innerHTML = ''
         optsEl.style.display = 'none'
         if (dictInput) dictInput.style.display = 'block'
         if (dictField) {
-          dictField.disabled = false
-          dictField.value = ''
-          setTimeout(function() { dictField.focus() }, 350)
+          dictField.disabled = !!prev
+          if (prev) {
+            dictField.value = prev.submitted || ''
+          } else {
+            dictField.value = ''
+            setTimeout(function() { dictField.focus() }, 350)
+          }
         }
       } else {
         if (dictInput) dictInput.style.display = 'none'
         optsEl.style.display = ''
-        var labels = ['A', 'B', 'C', 'D']
         optsEl.innerHTML = ''
         q.options.forEach(function(opt, idx) {
           var div = document.createElement('div')
           div.className = 'quiz-option'
           div.textContent = labels[idx] + '. ' + opt
-          div.onclick = function() { quizAnswer(idx) }
+          if (prev) {
+            // 回顾态：锁定，标出正确和你选的
+            div.style.pointerEvents = 'none'
+            if (idx === q.correctIdx) div.classList.add('correct')
+            else if (prev.selectedIdx === idx && !prev.correct) div.classList.add('wrong')
+            else div.classList.add('dimmed')
+          } else {
+            div.onclick = function() { quizAnswer(idx) }
+          }
           optsEl.appendChild(div)
         })
       }
 
-      // 自动播放发音：韩→中、听音、听写模式
-      if (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'dict') {
+      // 回顾已答过的题：恢复正误反馈
+      if (prev) {
+        if (quizMode === 'dict') {
+          if (prev.correct) {
+            if (prev.close) {
+              fb.innerHTML = '✓ 正确（很接近）· 正确写法 <strong>' + q.word.kr + '</strong>'
+            } else {
+              fb.textContent = '✓ 正确！'
+            }
+            fb.style.color = 'var(--accent-green)'
+          } else {
+            fb.innerHTML = '✗ 正确答案是 <strong>' + q.word.kr + '</strong>'
+            fb.style.color = 'var(--accent-pink)'
+          }
+        } else {
+          if (prev.correct) {
+            fb.textContent = '✓ 正确！'
+            fb.style.color = 'var(--accent-green)'
+          } else {
+            fb.textContent = '✗ 正确答案是 ' + labels[q.correctIdx] + '. ' + q.options[q.correctIdx]
+            fb.style.color = 'var(--accent-pink)'
+          }
+        }
+      }
+
+      // 未答过的新题：自动播放发音
+      if (!prev && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'dict')) {
         setTimeout(function() { quizSpeakWord() }, 400)
       }
     }
@@ -2565,6 +2778,7 @@
       quizAnswered = true
       var q = quizQuestions[quizIndex]
       var correct = idx === q.correctIdx
+      quizAnswers[quizIndex] = { correct: correct, selectedIdx: idx }
       var labels = ['A', 'B', 'C', 'D']
 
       var opts = document.querySelectorAll('#quiz-options .quiz-option')
@@ -2606,16 +2820,25 @@
       if (field) field.disabled = true
       var input = normalizeForCompare(field ? field.value : '')
       var correct = normalizeForCompare(q.word.kr)
+      var dist = levenshtein(input, correct)
+      // 宽容规则：完全一致；或"距离 ≤1 且正确词 ≥3 字"（短词防变意，必须全对）
+      var isCorrect = input === correct
+      var isClose = !isCorrect && correct.length >= 3 && dist <= 1
+      quizAnswers[quizIndex] = { correct: isCorrect || isClose, close: isClose, submitted: field ? field.value : '' }
       var fb = document.getElementById('quiz-feedback')
-      if (input === correct) {
+      if (isCorrect || isClose) {
         quizScore++
-        fb.textContent = '✓ 正确！'
+        if (isClose) {
+          fb.innerHTML = '✓ 正确（很接近）· 正确写法 <strong>' + q.word.kr + '</strong>'
+        } else {
+          fb.textContent = '✓ 正确！'
+        }
         fb.style.color = 'var(--accent-green)'
-        // 答对自动下一题
+        // 答对自动下一题（接近时多停留一会儿，方便看清正确写法）
         setTimeout(function() {
           quizIndex++
           showQuizQuestion()
-        }, 800)
+        }, isClose ? 1200 : 800)
       } else {
         var w = q.word
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
@@ -2646,21 +2869,26 @@
       addQuizSummary(score, total)
       quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, partial: !!partial, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
       saveQuizHistory()
+      var demotedMastered = []
       quizErrors.forEach(function(e) {
         var d = srs[e.key] || { lv: 0, due: 0, ease: 2.5, n: 0 }
         d.badCount = (d.badCount || 0) + 1
         if (!d.lv) d.lv = 0
         // 已掌握词答错应降级，否则 isWeak() 过滤掉（lv>=4）
-        if (d.lv >= 4) d.lv = 3
+        if (d.lv >= 4) {
+          d.lv = 3
+          demotedMastered.push({ kr: e.kr, cn: e.cn })
+        }
         d.last = Date.now()
         srs[e.key] = d
       })
       saveUserData()
+      return demotedMastered
     }
 
     function showQuizResult() {
       document.getElementById('quiz-play').style.display = 'none'
-      persistQuizRecord(quizScore, quizQuestions.length, false)
+      var demotedMastered = persistQuizRecord(quizScore, quizQuestions.length, false)
 
       var resultEl = document.getElementById('quiz-result')
       resultEl.style.display = 'block'
@@ -2684,6 +2912,9 @@
           html += '<div class="quiz-error-item"><div><span class="qe-kr">' + e.kr + '</span> · <span class="qe-cn">' + e.cn + '</span></div><span style="font-size:11px;color:var(--text-subtle);">제' + e.lessonNum + '과</span></div>'
         })
         html += '</div>'
+        if (demotedMastered.length > 0) {
+          html += '<div style="font-size:12px;color:var(--accent-coral);background:var(--accent-coral-light);border-radius:10px;padding:10px 12px;margin-top:10px;line-height:1.6;">⚠️ ' + demotedMastered.length + ' 个已掌握的词在测验中答错，已移出「已掌握」进入复习</div>'
+        }
         html += '<button class="quiz-retry-btn" onclick="reviewQuizErrors()" style="border-color:var(--accent-pink);color:var(--accent-pink);">📖 复习这 ' + quizErrors.length + ' 个错题</button>'
       }
 
@@ -2711,7 +2942,7 @@
       if (nums.length > 0) pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 })
       if (pool.length < 4) { alert('词汇不足'); return }
       quizQuestions = generateQuizQuestions(pool)
-      quizIndex = 0; quizScore = 0; quizErrors = []
+      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
       document.getElementById('quiz-play').style.display = 'block'
@@ -2720,7 +2951,7 @@
     }
 
     function quizBackToSetup() {
-      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
@@ -2744,7 +2975,7 @@
         if (!confirm(answered > 0 ? '确定退出吗？已答的 ' + answered + ' 题会计入测验记录。' : '确定退出吗？')) return
         // 半途退出也保存已答部分的记录
         if (answered > 0) persistQuizRecord(quizScore, answered, true)
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       }
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
@@ -2757,7 +2988,7 @@
 
     function showQuiz() {
       quizMode = 'kr-cn'; quizScope = 'all'; quizCount = 10
-      quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+      quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       document.getElementById('quiz-setup').style.display = 'block'
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
@@ -2804,7 +3035,7 @@
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
         document.getElementById('quiz-play').style.display = 'none'
         document.getElementById('quiz-result').style.display = 'none'
         document.getElementById('quiz-result').innerHTML = ''
@@ -2824,7 +3055,7 @@
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
         document.getElementById('quiz-play').style.display = 'none'
         document.getElementById('quiz-result').style.display = 'none'
         document.getElementById('quiz-result').innerHTML = ''
@@ -2846,7 +3077,7 @@
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (id !== 'page-quiz' && id !== 'page-study') {
           if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-          quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []
+          quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
           document.getElementById('quiz-play').style.display = 'none'
           document.getElementById('quiz-result').style.display = 'none'
           document.getElementById('quiz-result').innerHTML = ''
@@ -3220,6 +3451,7 @@
       if (initHash === 'quiz') { renderQuizLessons(); renderQuizHistory() }
       if (initHash === 'starred') { showStarred() }
       if (initHash === 'weak') { renderWeakWords() }
+      if (initHash === 'stats') { renderStatsContent() }
       if (initHash === 'settings') { showSettings() }
       if (initHash === 'study') { resumeStudy() }
       if (initHash === 'words') {
