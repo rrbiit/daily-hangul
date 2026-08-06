@@ -58,12 +58,14 @@
           <div class="home-progress-bar">
             <div class="home-progress-fill" id="home-progress-fill" style="width:0%"></div>
           </div>
+          <div class="hp-hint">学习记录 ›</div>
         </div>
 
         <!-- 今日小结 -->
         <div class="today-summary" id="today-summary" style="display:none;">
           <span class="today-summary-icon">✨</span>
           <span class="today-summary-text" id="today-summary-text"></span>
+          <span class="today-summary-more" onclick="goToQuizAnalysis()">查看详情 ›</span>
         </div>
 
         <!-- 主操作行 -->
@@ -287,6 +289,8 @@
           </div>
         </div>
 
+        <div class="ui-hint" style="margin-bottom:12px;">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
+
         <!-- 开始复习按钮 -->
         <div id="weak-study-btn-area" style="margin-bottom:16px;">
           <button onclick="startStudyWeak()" style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--primary);color:white;font-family:var(--font-display);font-size:16px;font-weight:500;cursor:pointer;">▶ 开始复习薄弱词</button>
@@ -354,6 +358,7 @@
             <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
             <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">✍️ 听写</button>
           </div>
+          <div class="ui-hint" id="quiz-mode-hint" style="margin-bottom:12px;">看韩语，选正确的中文意思</div>
           <!-- 每轮题数 -->
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">每轮题数</span>
@@ -807,6 +812,7 @@
           if (grammarStarred.has(k)) grammarStarred.delete(k)
           else grammarStarred.add(k)
           this.textContent = grammarStarred.has(k) ? '★' : '☆'
+          popEl(this)
           saveUserData()
           updateStarredCount()
         }
@@ -824,6 +830,7 @@
           this.style.color = isM ? 'var(--primary)' : 'var(--text-subtle)'
           this.style.background = isM ? 'var(--primary-light)' : 'transparent'
           this.style.borderColor = isM ? 'var(--primary)' : 'var(--border)'
+          popEl(this)
         }
 
         // 整张卡片点击 → 滚动到此语法并高亮
@@ -1221,6 +1228,7 @@
       var html = ''
       html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
       html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;margin-bottom:6px;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
+      html += '<div class="ui-hint">每天学习就算打卡，中断会重新开始</div>'
       html += '<div style="font-size:13px;color:var(--text-dim);line-height:1.7;">'
       html += '📖 今天学了 <strong>' + today.studyWords + '</strong> 个词'
       if (today.quizRounds > 0) {
@@ -1712,6 +1720,7 @@
           var wasStarred = starred.has(starKey)
           if (wasStarred) starred.delete(starKey)
           else starred.add(starKey)
+          popEl(starEl)
           saveUserData()
           var wItem = starEl.closest('.word-item')
           // 收藏页取消收藏 → 从 DOM 移除卡片
@@ -1790,6 +1799,7 @@
       updateHomeStats()
       renderLessons()
       saveUserData()
+      popEl(document.getElementById('ctrl-check'))
     }
 
     // updateMasterBtn 已不再需要，由 updateSrsStatus 替代
@@ -2473,6 +2483,15 @@
       document.querySelectorAll('#quiz-mode-bar .tab-btn').forEach(function(b) {
         b.classList.toggle('active', b.getAttribute('data-mode') === mode)
       })
+      var modeHint = document.getElementById('quiz-mode-hint')
+      if (modeHint) {
+        modeHint.textContent = {
+          'kr-cn': '看韩语，选正确的中文意思',
+          'cn-kr': '看中文，选正确的韩语',
+          'listen': '听发音，选正确的中文意思',
+          'dict': '听发音，打出韩语'
+        }[mode] || ''
+      }
       renderQuizLessons()
     }
 
@@ -2789,7 +2808,7 @@
       })
       var fb = document.getElementById('quiz-feedback')
       if (!correct) {
-        opts[idx].classList.add('wrong')
+        opts[idx].classList.add('wrong', 'shake')
         var w = q.word
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
         fb.textContent = '✗ 正确答案是 ' + labels[q.correctIdx]
@@ -3201,8 +3220,16 @@
       `
       btn.onmouseover = function() { btn.style.opacity = '0.9' }
       btn.onmouseout = function() { btn.style.opacity = '1' }
-      btn.onclick = function() { startStudy(num) }
+      // 学当前筛选的词（_studyContextList 由 openLesson 设为过滤后的列表）
+      btn.onclick = function() { startStudyFromContext(null, '제' + num + '과', 'page-words') }
       btnArea.appendChild(btn)
+
+      // 说明当前筛选范围
+      var studyHint = document.createElement('div')
+      studyHint.className = 'ui-hint'
+      studyHint.style.cssText = 'text-align:center;margin-top:6px;'
+      studyHint.textContent = '学习当前筛选的 ' + (_studyContextList ? _studyContextList.length : 0) + ' 个词'
+      btnArea.appendChild(studyHint)
 
       // 全部标记/取消掌握按钮（智能切换）
       var allMastered = (VOCAB[num] || []).every(function(w) { return isMastered(w, num) })
@@ -3342,6 +3369,13 @@
       document.body.removeChild(a)
       setTimeout(function() { URL.revokeObjectURL(url) }, 1000)
       showToast('📤 下载中...')
+    }
+
+    // 给元素一个"弹一下"的视觉反馈
+    function popEl(el) {
+      if (!el) return
+      el.classList.add('pop')
+      setTimeout(function() { el.classList.remove('pop') }, 300)
     }
 
     function showToast(msg) {

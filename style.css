@@ -91,6 +91,15 @@
       height: 100%; border-radius: 3px; transition: width 0.6s ease;
       background: linear-gradient(90deg, #90c8b0, var(--primary), #7ea8c8);
     }
+    .hp-hint {
+      font-size: 11px; color: var(--text-subtle);
+      text-align: right; margin-top: 4px;
+    }
+    /* 界面说明小字：浅、小、不占地方 */
+    .ui-hint {
+      font-size: 11px; color: var(--text-dim);
+      line-height: 1.6; margin-top: 4px;
+    }
 
     /* ─── 今日小结（内联） ─── */
     .today-summary {
@@ -103,6 +112,10 @@
     .today-summary-icon { font-size: 18px; flex-shrink: 0; }
     .today-summary-text { flex: 1; }
     .today-summary-text strong { color: var(--primary); font-weight: 600; }
+    .today-summary-more {
+      font-size: 11px; color: var(--primary);
+      cursor: pointer; flex-shrink: 0; margin-left: 8px; white-space: nowrap;
+    }
 
     /* ─── 主操作行：CTA + 小入口 ─── */
     .home-action-row {
@@ -866,6 +879,33 @@
     .stats-date { color: var(--text); font-variant-numeric: tabular-nums; }
     .stats-info { color: var(--text-dim); }
     .stats-info.empty { color: var(--text-subtle); font-size: 12px; }
+
+    /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
+    button:active, .tab-btn:active, .quiz-option:active, .word-item:active,
+    .main-cta:active, .nav-item:active, .review-option:active, .lesson-item:active,
+    .home-lesson-item:active, .home-side-action:active, .back-btn:active,
+    .ctrl-btn:active, .word-learn-btn:active, .quiz-scope-btn:active,
+    .today-summary-more:active, .home-progress-bar-wrap:active, .grammar-card:active {
+      transform: scale(0.94);
+    }
+
+    /* 点击完成的"弹一下"（收藏/掌握/发音等状态切换） */
+    .pop { animation: pop 0.3s ease; }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    /* 测验答错的"看着震动" */
+    .quiz-option.wrong.shake { animation: shake 0.4s ease; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
 
     /* ─── 响应式适配：手机 / 平板 / 电脑 ─── */
 
