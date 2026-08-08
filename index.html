@@ -289,7 +289,7 @@
           </div>
         </div>
 
-        <div class="ui-hint" style="margin-bottom:8px;">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
+        <div class="ui-hint">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
 
         <!-- 开始复习按钮 -->
         <div id="weak-study-btn-area" style="margin-bottom:16px;">
@@ -310,12 +310,14 @@
     <!-- ═══════════ 学习记录页 ═══════════ -->
     <div id="page-stats" class="page">
       <div class="container">
-        <div class="page-header" style="margin-bottom:16px;">
+        <div class="page-header" style="margin-bottom:10px;">
           <button class="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
             <h1>学习记录</h1>
+            <!-- 页面说明小字：跟标题对齐、浅色小字、不占地方 -->
+            <div class="ui-hint" id="stats-page-hint" style="margin:2px 0 0;">每天学习就算打卡 · 次日 2:00 前为前一天</div>
           </div>
         </div>
 
@@ -340,7 +342,7 @@
         </div>
 
         <!-- 标签：测验 / 记录 -->
-        <div class="tab-bar" style="margin-bottom:14px;" id="quiz-tab-bar">
+        <div class="tab-bar" style="margin-bottom:0;" id="quiz-tab-bar">
           <button class="tab-btn active" data-qtab="quiz" onclick="switchQuizTab('quiz')">📝 测验</button>
           <button class="tab-btn" data-qtab="history" onclick="switchQuizTab('history')">📋 记录</button>
         </div>
@@ -349,13 +351,13 @@
           <!-- 设置区 -->
           <div id="quiz-setup">
           <!-- 模式 -->
+          <div class="ui-hint" id="quiz-mode-hint">看韩语，选正确的中文意思</div>
           <div class="tab-bar" id="quiz-mode-bar" style="margin-bottom:12px;">
             <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">韩→中</button>
             <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">中→韩</button>
             <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
             <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">✍️ 听写</button>
           </div>
-          <div class="ui-hint" id="quiz-mode-hint" style="margin-bottom:8px;">看韩语，选正确的中文意思</div>
           <!-- 每轮题数 -->
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">每轮题数</span>
@@ -412,7 +414,7 @@
         </div><!-- /quiz-tab-content -->
 
         <!-- 测验记录 -->
-        <div id="quiz-history-tab-content" style="display:none;">
+        <div id="quiz-history-tab-content" style="display:none;margin-top:14px;">
           <div id="quiz-today-analysis"></div>
           <div id="quiz-history-list"></div>
         </div>
@@ -1266,8 +1268,6 @@
 
       var html = ''
       html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
-      // 标注放卡片顶部（左对齐、紧凑），说明打卡规则与日界线
-      html += '<div class="ui-hint" style="margin:0 0 8px;">每天学习就算打卡 · 每天 02:00 翻篇</div>'
       // 连续打卡 + 累计已掌握（一行两端）
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
       html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
@@ -3281,6 +3281,12 @@
       btnArea.id = 'study-btn-area'
       btnArea.style.cssText = 'margin-bottom:16px;'
 
+      // 说明当前筛选范围（放按钮上方，左对齐）
+      var studyHint = document.createElement('div')
+      studyHint.className = 'ui-hint'
+      studyHint.textContent = '学习当前筛选的 ' + (_studyContextList ? _studyContextList.length : 0) + ' 个词'
+      btnArea.appendChild(studyHint)
+
       // 开始学习按钮
       const btn = document.createElement('button')
       btn.textContent = '▶ 开始学习'
@@ -3295,13 +3301,6 @@
       // 学当前筛选的词（_studyContextList 由 openLesson 设为过滤后的列表）
       btn.onclick = function() { startStudyFromContext(null, '제' + num + '과', 'page-words') }
       btnArea.appendChild(btn)
-
-      // 说明当前筛选范围
-      var studyHint = document.createElement('div')
-      studyHint.className = 'ui-hint'
-      studyHint.style.cssText = 'text-align:center;margin-top:6px;'
-      studyHint.textContent = '学习当前筛选的 ' + (_studyContextList ? _studyContextList.length : 0) + ' 个词'
-      btnArea.appendChild(studyHint)
 
       // 全部标记/取消掌握按钮（智能切换）
       var allMastered = (VOCAB[num] || []).every(function(w) { return isMastered(w, num) })

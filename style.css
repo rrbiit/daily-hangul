@@ -93,12 +93,12 @@
     }
     .hp-hint {
       font-size: 11px; color: var(--text-subtle);
-      text-align: right; margin-top: 4px;
+      text-align: left; margin-top: 4px;
     }
-    /* 界面说明小字：浅、小、不占地方（左对齐、紧凑） */
+    /* 界面说明小字：浅、小、不占地方（左对齐、上下等宽、紧凑） */
     .ui-hint {
       font-size: 11px; color: var(--text-dim);
-      line-height: 1.5; margin-top: 2px; text-align: left;
+      line-height: 1.4; margin: 4px 0; text-align: left;
     }
 
     /* ─── 今日小结（内联） ─── */
