@@ -95,10 +95,10 @@
       font-size: 11px; color: var(--text-subtle);
       text-align: right; margin-top: 4px;
     }
-    /* 界面说明小字：浅、小、不占地方 */
+    /* 界面说明小字：浅、小、不占地方（左对齐、紧凑） */
     .ui-hint {
       font-size: 11px; color: var(--text-dim);
-      line-height: 1.6; margin-top: 4px;
+      line-height: 1.5; margin-top: 2px; text-align: left;
     }
 
     /* ─── 今日小结（内联） ─── */

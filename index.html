@@ -289,7 +289,7 @@
           </div>
         </div>
 
-        <div class="ui-hint" style="margin-bottom:12px;">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
+        <div class="ui-hint" style="margin-bottom:8px;">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
 
         <!-- 开始复习按钮 -->
         <div id="weak-study-btn-area" style="margin-bottom:16px;">
@@ -355,7 +355,7 @@
             <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
             <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">✍️ 听写</button>
           </div>
-          <div class="ui-hint" id="quiz-mode-hint" style="margin-bottom:12px;">看韩语，选正确的中文意思</div>
+          <div class="ui-hint" id="quiz-mode-hint" style="margin-bottom:8px;">看韩语，选正确的中文意思</div>
           <!-- 每轮题数 -->
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">每轮题数</span>
@@ -1061,10 +1061,10 @@
     gs.textContent = pick
 
     /* ═══════════ 学习日 + 连续天数 ═══════════ */
-    // 凌晨 4:00 分界：0:00-3:59 算前一天
+    // 凌晨 2:00 分界：0:00-1:59 算前一天
     function getStudyDay(now) {
       var d = new Date(now || Date.now())
-      if (d.getHours() < 4) d.setDate(d.getDate() - 1)
+      if (d.getHours() < 2) d.setDate(d.getDate() - 1)
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
     }
 
@@ -1266,12 +1266,13 @@
 
       var html = ''
       html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
+      // 标注放卡片顶部（左对齐、紧凑），说明打卡规则与日界线
+      html += '<div class="ui-hint" style="margin:0 0 8px;">每天学习就算打卡 · 每天 02:00 翻篇</div>'
       // 连续打卡 + 累计已掌握（一行两端）
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
       html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
       html += '<div style="font-size:12px;color:var(--text-dim);">📊 累计已掌握 <strong>' + masteredCount + '</strong> / ' + totalWords + ' 词</div>'
       html += '</div>'
-      html += '<div class="ui-hint" style="margin-bottom:8px;">每天学习就算打卡，中断会重新开始</div>'
 
       // 今日掌握（主打，含具体词 chips 纯展示）
       html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">'
