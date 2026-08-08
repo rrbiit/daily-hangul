@@ -863,10 +863,6 @@
       font-family: var(--font-display); font-size: 15px; font-weight: 600;
       color: var(--text); margin: 18px 0 6px;
     }
-    .stats-week-label {
-      font-size: 11px; color: var(--text-subtle); margin: 8px 0 2px;
-      letter-spacing: 0.03em;
-    }
     .stats-day {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       padding: 7px 2px; border-bottom: 1px solid var(--border);
@@ -878,7 +874,6 @@
     }
     .stats-date { color: var(--text); font-variant-numeric: tabular-nums; }
     .stats-info { color: var(--text-dim); }
-    .stats-info.empty { color: var(--text-subtle); font-size: 12px; }
 
     /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
     button:active, .tab-btn:active, .quiz-option:active, .word-item:active,

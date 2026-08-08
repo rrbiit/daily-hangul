@@ -319,13 +319,10 @@
           </div>
         </div>
 
-        <!-- 坚持总览 -->
+        <!-- 今日总览 -->
         <div id="stats-overview"></div>
-        <!-- 每日学习记录（按周/月归组） -->
+        <!-- 每日学习记录（按自然月归组，只有学习过的日子） -->
         <div id="stats-list"></div>
-        <!-- 测验记录 -->
-        <div id="stats-analysis"></div>
-        <div id="stats-history"></div>
       </div>
     </div>
 
@@ -1137,15 +1134,15 @@
     function todayLogEntry() {
       var log = loadDailyLog()
       var day = getStudyDay()
-      if (!log[day]) log[day] = { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0 }
+      if (!log[day]) log[day] = { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [] }
       return { log: log, entry: log[day] }
     }
 
     function loadTodaySummary() {
       var today = getStudyDay()
       var log = loadDailyLog()
-      var e = log[today] || { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0 }
-      return { date: today, studyWords: e.words, quizRounds: e.quizRounds, quizTotal: e.quizTotal, quizCorrect: e.quizCorrect }
+      var e = log[today] || { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [] }
+      return { date: today, studyWords: e.words, quizRounds: e.quizRounds, quizTotal: e.quizTotal, quizCorrect: e.quizCorrect, mastered: e.mastered || 0, masteredKeys: e.masteredKeys || [] }
     }
 
     function addStudySummary(count) {
@@ -1162,12 +1159,23 @@
       saveDailyLog(t.log)
     }
 
-    // 统计：累计学习词数
-    function cumulativeWords() {
-      var log = loadDailyLog()
-      var sum = 0
-      for (var k in log) { if (log.hasOwnProperty(k)) sum += (log[k].words || 0) }
-      return sum
+    // 记录某词"成为已掌握"（成果事件：当天计入 mastered，词条盖日期戳）
+    function markMastered(key) {
+      var d = srs[key]
+      if (d) d.masteredAt = getStudyDay()
+      var t = todayLogEntry()
+      var keys = t.entry.masteredKeys || (t.entry.masteredKeys = [])
+      if (keys.indexOf(key) === -1) {
+        keys.push(key)
+        t.entry.mastered = (t.entry.mastered || 0) + 1
+        saveDailyLog(t.log)
+      }
+    }
+
+    // 清除某词的"已掌握日期"（测验降级等词条仍在的场合；手动取消掌握会直接删词条，无需调用）
+    function unmarkMastered(key) {
+      var d = srs[key]
+      if (d && d.masteredAt) delete d.masteredAt
     }
 
     function renderTodaySummary() {
@@ -1199,7 +1207,6 @@
     function renderStatsContent() {
       renderStatsOverview()
       renderStatsList()
-      renderQuizHistory('stats-history', 'stats-analysis')
     }
 
     function renderStatsOverview() {
@@ -1207,13 +1214,27 @@
       if (!el) return
       var streak = loadStreak()
       var today = loadTodaySummary()
-      var cum = cumulativeWords()
       var log = loadDailyLog()
       var cumQuiz = 0, cumCorrect = 0
       for (var k in log) { if (log.hasOwnProperty(k)) { cumQuiz += (log[k].quizTotal || 0); cumCorrect += (log[k].quizCorrect || 0) } }
 
+      // 是否有任何历史足迹（日志里有学习/测验/掌握，或 srs 里已有掌握词）
+      var hasHistory = false
+      for (var kh in log) {
+        if (log.hasOwnProperty(kh)) {
+          var eh = log[kh]
+          if ((eh.words || 0) > 0 || (eh.quizTotal || 0) > 0 || (eh.mastered || 0) > 0) { hasHistory = true; break }
+        }
+      }
+      if (!hasHistory) {
+        for (var ks in srs) {
+          if (srs.hasOwnProperty(ks) && srs[ks].lv >= 4) { hasHistory = true; break }
+        }
+      }
+
       // 完全没有记录时：友好的空状态，鼓励开始，而不是一屏的 0
-      if (cum === 0 && cumQuiz === 0 && streak.count === 0) {
+      var hasAny = hasHistory || streak.count > 0
+      if (!hasAny) {
         el.innerHTML =
           '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 20px;text-align:center;">' +
           '<div style="font-size:40px;line-height:1;">🌱</div>' +
@@ -1223,24 +1244,92 @@
         return
       }
 
-      var cumPct = cumQuiz > 0 ? Math.round(cumCorrect / cumQuiz * 100) : 0
+      // 累计已掌握（当前 srs 状态）+ 总词数
+      var masteredCount = 0, totalWords = 0
+      LESSONS.forEach(function(l) {
+        var words = VOCAB[l.num] || []
+        words.forEach(function(w) {
+          totalWords++
+          var d = srs[wk(w, l.num)]
+          if (d && d.lv >= 4) masteredCount++
+        })
+      })
+
+      // 本月掌握（日志里当月 mastered 之和）
+      var curMonth = getStudyDay().slice(0, 7)
+      var monthMastered = 0
+      for (var k2 in log) {
+        if (log.hasOwnProperty(k2) && k2.slice(0, 7) === curMonth) {
+          monthMastered += (log[k2].mastered || 0)
+        }
+      }
 
       var html = ''
       html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
-      html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;margin-bottom:6px;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
-      html += '<div class="ui-hint">每天学习就算打卡，中断会重新开始</div>'
-      html += '<div style="font-size:13px;color:var(--text-dim);line-height:1.7;">'
-      html += '📖 今天学了 <strong>' + today.studyWords + '</strong> 个词'
+      // 连续打卡 + 累计已掌握（一行两端）
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+      html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
+      html += '<div style="font-size:12px;color:var(--text-dim);">📊 累计已掌握 <strong>' + masteredCount + '</strong> / ' + totalWords + ' 词</div>'
+      html += '</div>'
+      html += '<div class="ui-hint" style="margin-bottom:8px;">每天学习就算打卡，中断会重新开始</div>'
+
+      // 今日掌握（主打，含具体词 chips 纯展示）
+      html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">'
+      html += '📈 今天掌握了 <strong>' + today.mastered + '</strong> 个词'
+      html += '</div>'
+      if (today.masteredKeys && today.masteredKeys.length > 0) {
+        var chips = []
+        for (var ci = 0; ci < today.masteredKeys.length; ci++) {
+          var kp = today.masteredKeys[ci].split('|')
+          chips.push('<span style="display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + (kp[1] || '') + '</span>')
+        }
+        html += '<div>' + chips.join('') + '</div>'
+      }
+
+      // 今日测验正确率
       if (today.quizRounds > 0) {
         var todayPct = today.quizTotal > 0 ? Math.round(today.quizCorrect / today.quizTotal * 100) : 0
-        html += ' · ✅ 测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）'
+        html += '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">✅ 今日测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）</div>'
       }
-      html += '</div>'
-      html += '<div style="font-size:13px;color:var(--text-dim);margin-top:4px;">'
-      html += '累计：学习 <strong>' + cum + '</strong> 词 · 测验 <strong>' + cumCorrect + '/' + cumQuiz + '</strong>（' + cumPct + '%）'
+      // 今日复习（背景信息，避免"只讲掌握"显得白学）
+      if (today.studyWords > 0) {
+        html += '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">✍️ 今日复习 <strong>' + today.studyWords + '</strong> 个词</div>'
+      }
+      // 今日错词（从今日测验记录取，纯展示，与"已掌握"同款 chips，珊瑚色区分）
+      var todayErrors = todayQuizErrors()
+      if (todayErrors.length > 0) {
+        html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">📕 今日错词：</div>'
+        var errChips = []
+        for (var ej = 0; ej < todayErrors.length; ej++) {
+          errChips.push('<span style="display:inline-block;background:var(--accent-coral-light);color:var(--accent-coral);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + todayErrors[ej] + '</span>')
+        }
+        html += '<div>' + errChips.join('') + '</div>'
+      }
+
+      // 底部：本月掌握 + 累计测验
+      var cumPct = cumQuiz > 0 ? Math.round(cumCorrect / cumQuiz * 100) : 0
+      html += '<div style="font-size:12px;color:var(--text-subtle);margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">'
+      html += '本月掌握 <strong>' + monthMastered + '</strong> 词 · 累计测验 <strong>' + cumCorrect + '/' + cumQuiz + '</strong>（' + cumPct + '%）'
       html += '</div>'
       html += '</div>'
       el.innerHTML = html
+    }
+
+    // 今日测验答错的词（去重，只显示韩语）
+    function todayQuizErrors() {
+      var today = getStudyDay()
+      var seen = {}
+      var out = []
+      for (var i = 0; i < quizHistory.length; i++) {
+        var h = quizHistory[i]
+        if (getStudyDay(new Date(h.date)) !== today) continue
+        var errs = h.errors || []
+        for (var j = 0; j < errs.length; j++) {
+          var kr = errs[j].kr
+          if (!seen[kr]) { seen[kr] = true; out.push(kr) }
+        }
+      }
+      return out
     }
 
     function renderStatsList() {
@@ -1250,66 +1339,45 @@
       var todayKey = getStudyDay()
       var weekNames = ['日', '一', '二', '三', '四', '五', '六']
 
-      // 起始学习日：最早有记录的一天，否则今天
-      var startTs = Date.now()
+      // 只收集"有记录的日子"（掌握/测验/学习任一），倒序（最新在前）
+      var days = []
       for (var k in log) {
-        if (log.hasOwnProperty(k)) {
-          var t = new Date(k + 'T12:00:00').getTime()
-          if (t < startTs) startTs = t
+        if (!log.hasOwnProperty(k)) continue
+        var e = log[k]
+        if ((e.words || 0) > 0 || (e.quizTotal || 0) > 0 || (e.mastered || 0) > 0) {
+          days.push(k)
         }
+      }
+      days.sort().reverse()
+
+      if (days.length === 0) {
+        el.innerHTML = ''
+        return
       }
 
       var html = ''
       var curMonth = null
-      var curWeek = null
-      var weekNum = 0
-      var ts = startTs
-      var guard = 0
-
-      while (guard < 4000) {
-        guard++
-        var key = getStudyDay(ts)
-        var dObj = new Date(ts)
-        var e = log[key] || null
-
-        // 周起点（周一），周归入其起点所在的月份
-        var dow = dObj.getDay()
-        var weekStart = new Date(dObj)
-        weekStart.setDate(dObj.getDate() - ((dow + 6) % 7))
-        var weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekStart.getDate() + 6)
-        var weekMonth = weekStart.getFullYear() + '年' + (weekStart.getMonth() + 1) + '月'
-
-        if (weekStart.getTime() !== curWeek) {
-          if (weekMonth !== curMonth) {
-            html += '<div class="stats-month">📅 ' + weekMonth + '</div>'
-            curMonth = weekMonth
-            weekNum = 1
-          } else {
-            weekNum++
-          }
-          var wl = '第' + weekNum + '周（' + (weekStart.getMonth() + 1) + '/' + weekStart.getDate() + ' ~ ' + (weekEnd.getMonth() + 1) + '/' + weekEnd.getDate() + '）'
-          html += '<div class="stats-week-label">' + wl + '</div>'
-          curWeek = weekStart.getTime()
+      for (var i = 0; i < days.length; i++) {
+        var key = days[i]
+        var dObj = new Date(key + 'T12:00:00')
+        var month = key.slice(0, 7)
+        if (month !== curMonth) {
+          curMonth = month
+          html += '<div class="stats-month">📅 ' + dObj.getFullYear() + '年' + (dObj.getMonth() + 1) + '月</div>'
         }
-
+        var e = log[key]
+        var parts = []
+        if ((e.mastered || 0) > 0) parts.push('掌握 <strong>' + e.mastered + '</strong> 词')
+        if ((e.quizTotal || 0) > 0) {
+          var pct = Math.round((e.quizCorrect || 0) / e.quizTotal * 100)
+          parts.push('测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）')
+        } else if ((e.words || 0) > 0) {
+          parts.push('复习 ' + (e.words || 0) + ' 词')
+        }
         html += '<div class="stats-day' + (key === todayKey ? ' today' : '') + '">'
-        html += '<span class="stats-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dow] + '</span>'
-        if (e && (e.words > 0 || e.quizTotal > 0)) {
-          var parts = []
-          if (e.words > 0) parts.push('学了 ' + e.words + ' 词')
-          if (e.quizTotal > 0) {
-            var pct = Math.round(e.quizCorrect / e.quizTotal * 100)
-            parts.push('测验 ' + e.quizCorrect + '/' + e.quizTotal + '（' + pct + '%）')
-          }
-          html += '<span class="stats-info">' + parts.join(' · ') + '</span>'
-        } else {
-          html += '<span class="stats-info empty">没有学习</span>'
-        }
+        html += '<span class="stats-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dObj.getDay()] + '</span>'
+        html += '<span class="stats-info">' + parts.join(' · ') + '</span>'
         html += '</div>'
-
-        if (key === todayKey) break
-        ts += 24 * 60 * 60 * 1000
       }
 
       el.innerHTML = html
@@ -1691,6 +1759,7 @@
             delete srs[badgeKey]
           } else {
             srs[badgeKey] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1), badCount: 0 }
+            markMastered(badgeKey)
           }
           saveUserData()
           updateHomeStats()
@@ -1794,6 +1863,7 @@
       } else {
         // 标记已掌握，badCount 清零 → 从易错本移除
         srs[key] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d ? d.n + 1 : 1), badCount: 0 }
+        markMastered(key)
       }
       updateSrsStatus()
       updateHomeStats()
@@ -2896,6 +2966,7 @@
         // 已掌握词答错应降级，否则 isWeak() 过滤掉（lv>=4）
         if (d.lv >= 4) {
           d.lv = 3
+          unmarkMastered(e.key)
           demotedMastered.push({ kr: e.kr, cn: e.cn })
         }
         d.last = Date.now()
@@ -3258,6 +3329,7 @@
             var key2 = wk(w2, num)
             var d2 = srs[key2]
             srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
+            markMastered(key2)
           })
           saveUserData()
           updateHomeStats()
