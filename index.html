@@ -122,6 +122,7 @@
             <h1 id="words-title">제1과 - 소개</h1>
             <p class="word-count" id="words-count">加载中...</p>
           </div>
+          <button class="header-search-btn" onclick="showSearch()" title="搜索单词">🔍</button>
         </div>
         <!-- 标签切换：单词 / 语法 -->
         <div class="tab-bar">
@@ -254,6 +255,7 @@
             <h1>收藏</h1>
             <p id="starred-count">共 0 项</p>
           </div>
+          <button class="header-search-btn" onclick="showSearch()" title="搜索单词">🔍</button>
         </div>
 
         <div class="tab-bar" style="margin-bottom:20px;">
@@ -283,6 +285,7 @@
             <h1>⚠️ 易错本</h1>
             <p class="word-count" id="weak-words-count">加载中...</p>
           </div>
+          <button class="header-search-btn" onclick="showSearch()" title="搜索单词">🔍</button>
         </div>
 
         <div class="ui-hint">测验或闪卡中答错、还没掌握的词会出现在这里，重点复习</div>
@@ -596,6 +599,9 @@
       return (VOCAB[num] || []).filter(function(w) { return isMastered(w, num) }).length
     }
 
+    // 首页随机 emoji 池（只此一份，回到首页 / 启动共用，避免两处维护）
+    var HOME_EMOJIS = ['🍨','🥯','🥐','🧇','🛁','💭','🏝️','🌿','🍂','🪺','🐌','💝','🤲🏻','🥹','😸','😺','🩷','💖','💕','💗','🐰','🥺','🎀','✨','☁️','🌷','🧸','🍮','🌙','🕊️','💫','🫶🏻','🐢','🫧','🐽','💤','🥟','🐶','🐰','😵','😴','🥰','🧁','🍕','🍩','🍤','🫨','😽','😼','🐾','🪸','🪽','🌱','🍃','🌵','🍀','🪴','🍔','🍓','🍟','🍦','🍧','🍣','🍰','🧁','🥥','🥑','🧋','🫐','🙌🏻','🫳🏻','🫶🏻','🫰🏻','🩵','🤍','🩶','💞','☃️','❄️','⛈️']
+
     /* ═══════════════════════════════════════════
        渲染函数
        ═══════════════════════════════════════════ */
@@ -852,6 +858,9 @@
       document.getElementById('tab-grammar').classList.toggle('active', tab === 'grammar')
       document.getElementById('lesson-vocab').style.display = tab === 'vocab' ? 'block' : 'none'
       document.getElementById('lesson-grammar').style.display = tab === 'grammar' ? 'block' : 'none'
+      // 掌握状态过滤栏只属于单词 Tab；语法 Tab 下隐藏，避免误导（点了还会跳回单词页）
+      var fb = document.getElementById('word-filter-bar')
+      if (fb) fb.style.display = tab === 'vocab' ? '' : 'none'
     }
 
     // 更新首页统计
@@ -875,9 +884,8 @@
           if (isWeak(key)) weakCount++
         })
       })
-      // 进度条：复习过的词都算进度
-      var reviewed = masteredCount + learningCount
-      var pct = totalWords > 0 ? Math.round((reviewed / totalWords) * 100) : 0
+      // 进度条：只算已掌握（与每课进度条口径一致，数字与条形完全对应）
+      var pct = totalWords > 0 ? Math.round((masteredCount / totalWords) * 100) : 0
 
       // 更新首页元素
       var el
@@ -932,9 +940,8 @@
       }
       // 回到首页时刷新统计数据 + 随机 emoji
       if (id === 'page-home') {
-        var homeEmojis = ['🍨','🥯','🥐','🧇','🛁','💭','🏝️','🌿','🍂','🪺','🐌','💝','🤲🏻','🥹','😸','😺','🩷','💖','💕','💗','🐰','🥺','🎀','✨','☁️','🌷','🧸','🍮','🌙','🕊️','💫','🫶🏻','🐢','🫧','🐽','💤','🥟','🐶','🐰','😵','😴','🥰','🧁','🍕','🍩','🍤','🫨','😽','😼','🐾','🪸','🪽','🌱','🍃','🌵','🍀','🪴','🍔','🍓','🍟','🍦','🍧','🍣','🍰','🧁','🥥','🥑','🧋','🫐','🙌🏻','🫳🏻','🫶🏻','🫰🏻','🩵','🤍','🩶','💞','☃️','❄️','⛈️']
         var he = document.getElementById('home-emoji')
-        if (he) he.textContent = homeEmojis[Math.floor(Math.random() * homeEmojis.length)]
+        if (he) he.textContent = HOME_EMOJIS[Math.floor(Math.random() * HOME_EMOJIS.length)]
         // 刷新时段问候和鼓励语
         var now = new Date(); var hh = now.getHours()
         var gtEl = document.getElementById('greeting-text')
@@ -1410,9 +1417,8 @@
 
 
     // 先加载用户数据，再渲染页面
-    var _homeEmojis = ['🍨','🥯','🥐','🧇','🛁','💭','🏝️','🌿','🍂','🪺','🐌','💝','🤲🏻','🥹','😸','😺','🩷','💖','💕','💗','🐰','🥺','🎀','✨','☁️','🌷','🧸','🍮','🌙','🕊️','💫','🫶🏻','🐢','🫧','🐽','💤','🥟','🐶','🐰','😵','😴','🥰','🧁','🍕','🍩','🍤','🫨','😽','😼','🐾','🪸','🪽','🌱','🍃','🌵','🍀','🪴','🍔','🍓','🍟','🍦','🍧','🍣','🍰','🧁','🥥','🥑','🧋','🫐','🙌🏻','🫳🏻','🫶🏻','🫰🏻','🩵','🤍','🩶','💞','☃️','❄️','⛈️']
     var _he = document.getElementById('home-emoji')
-    if (_he) _he.textContent = _homeEmojis[Math.floor(Math.random() * _homeEmojis.length)]
+    if (_he) _he.textContent = HOME_EMOJIS[Math.floor(Math.random() * HOME_EMOJIS.length)]
     try {
       loadUserData()
       renderLessons()
@@ -2306,6 +2312,12 @@
       var ov = document.getElementById('study-done-overlay')
       if (ov) ov.style.display = 'none'
     }
+    // 学完收尾：停止发音、关闭弹窗、回到首页（学习进度已清空，首页是自然的下一站）
+    function finishStudyDone() {
+      if (window.speechSynthesis) { try { window.speechSynthesis.cancel() } catch(e) {} }
+      closeStudyDone()
+      navigateRoot('page-home')
+    }
 
     // 打开易错本列表页
     function showWeakWords() {
@@ -2744,7 +2756,8 @@
 
       document.getElementById('quiz-progress-text').textContent = (quizIndex + 1) + '/' + quizQuestions.length
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
-      document.getElementById('quiz-progress-fill').style.width = ((quizIndex) / quizQuestions.length * 100) + '%'
+      // 进度按"已到第几题"算：第一题 1/10，最后一道题满格 100%
+      document.getElementById('quiz-progress-fill').style.width = ((quizIndex + 1) / quizQuestions.length * 100) + '%'
       document.getElementById('quiz-feedback').textContent = ''
       document.getElementById('quiz-feedback').style.color = 'var(--text-dim)'
 
@@ -3063,14 +3076,19 @@
       }
     }
 
-    function confirmExitQuiz() {
+    // ─── 退出测验统一逻辑 ───
+    // 所有"测验进行中退出"路径共用：已答过的题会计入测验记录（与 ✕ 退出 一致），
+    // 不再出现「会计入测验记录 / 进度将丢失」前后矛盾的文案与行为。
+    // 返回 true = 已退出并重置到设置页；false = 用户取消。
+    function exitQuizWithConfirm() {
+      var answered = quizScore + quizErrors.length
       if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        var answered = quizScore + quizErrors.length
-        if (!confirm(answered > 0 ? '确定退出吗？已答的 ' + answered + ' 题会计入测验记录。' : '确定退出吗？')) return
+        if (!confirm(answered > 0 ? '确定退出吗？已答的 ' + answered + ' 题会计入测验记录。' : '确定退出吗？')) return false
         // 半途退出也保存已答部分的记录
         if (answered > 0) persistQuizRecord(quizScore, answered, true)
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       }
+      // 重置测验会话回设置页
+      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
@@ -3078,6 +3096,11 @@
       document.getElementById('quiz-tab-bar').style.display = ''
       switchQuizTab('quiz')
       renderQuizLessons()
+      return true
+    }
+
+    function confirmExitQuiz() {
+      exitQuizWithConfirm()
     }
 
     function showQuiz() {
@@ -3123,60 +3146,25 @@
       }
     }
 
-    // 底部导航测验按钮 —— 如果测验进行中则先确认
-    function quizNavGuard() {
-      var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
-        document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
-      if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
-        document.getElementById('quiz-play').style.display = 'none'
-        document.getElementById('quiz-result').style.display = 'none'
-        document.getElementById('quiz-result').innerHTML = ''
-        document.getElementById('quiz-setup').style.display = 'block'
-        document.getElementById('quiz-tab-bar').style.display = ''
-        switchQuizTab('quiz')
-        renderQuizLessons()
-        renderQuizHistory()
-      } else {
-        showQuiz()
-      }
-    }
-
-    // 底部导航测验按钮（带页面栈重置）
+    // 底部导航测验按钮（带页面栈重置）—— 测验进行中先统一确认（已答的会计入记录）
     function navQuiz() {
       var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-        quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
-        document.getElementById('quiz-play').style.display = 'none'
-        document.getElementById('quiz-result').style.display = 'none'
-        document.getElementById('quiz-result').innerHTML = ''
-        document.getElementById('quiz-setup').style.display = 'block'
-        document.getElementById('quiz-tab-bar').style.display = ''
-        switchQuizTab('quiz')
-        renderQuizLessons()
-        renderQuizHistory()
+        if (!exitQuizWithConfirm()) return
       }
       navigateRoot('page-quiz')
       showQuiz()
     }
 
-    // 拦截测验中底部导航跳转
+    // 拦截测验中底部导航跳转 —— 测验进行中先统一确认（已答的会计入记录）
     var origShowPage = showPage
     showPage = function(id) {
       var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (id !== 'page-quiz' && id !== 'page-study') {
-          if (!confirm('确定退出吗？当前测验进度将丢失。')) return
-          quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
-          document.getElementById('quiz-play').style.display = 'none'
-          document.getElementById('quiz-result').style.display = 'none'
-          document.getElementById('quiz-result').innerHTML = ''
-          document.getElementById('quiz-setup').style.display = 'block'
-          document.getElementById('quiz-tab-bar').style.display = ''
+          if (!exitQuizWithConfirm()) return
         }
       }
       origShowPage(id)
@@ -3601,7 +3589,8 @@
       <div class="study-done-emoji">🎉</div>
       <div class="study-done-title">学完啦！</div>
       <div class="study-done-stats" id="study-done-stats"></div>
-      <button class="study-done-btn" onclick="closeStudyDone()">完成</button>
+      <button class="study-done-btn" onclick="finishStudyDone()">🏠 返回首页</button>
+      <button class="study-done-btn study-done-btn-ghost" onclick="closeStudyDone()">留在本页</button>
     </div>
   </div>
 </body>

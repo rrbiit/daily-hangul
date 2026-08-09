@@ -36,6 +36,12 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; }
     input, textarea { -webkit-user-select: auto; user-select: auto; }
+    /* 允许选中学习内容文本（单词/例句/语法/卡片），方便长按复制去查词；其余界面元素保持不可选中，防快速点按时误选 */
+    .kr, .cn, .pos, .pattern, .meaning, .formula, .explanation,
+    .example-item, .example-item-cn, .lesson-tag, .grammar-notes,
+    .quiz-q-word, .card-front, .card-back {
+      -webkit-user-select: text; user-select: text;
+    }
     html, body {
       width: 100%; overflow-x: hidden; position: relative;
     }
@@ -812,6 +818,11 @@
       font-family: var(--font-display); transition: all 0.2s;
     }
     .study-done-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+    .study-done-btn-ghost {
+      margin-top: 8px; background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); font-weight: 500;
+    }
+    .study-done-btn-ghost:hover { background: var(--surface); opacity: 1; transform: none; }
 
     /* ─── 易错本手风琴 ─── */
     /* ─── 标记全部掌握按钮 ─── */
