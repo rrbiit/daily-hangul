@@ -55,7 +55,7 @@ self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) {
-        // 已命中 → 后台更新（只更新本站资源，跨源如 Google Fonts 直接用缓存，不再重复请求）
+        // 已命中 → 后台更新（只更新本站资源，跨源资源直接用缓存，不再重复请求）
         if (e.request.url.indexOf(self.location.origin) === 0) {
           fetch(e.request).then(function(r) {
             if (r && r.ok) {

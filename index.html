@@ -1132,21 +1132,26 @@
     function todayLogEntry() {
       var log = loadDailyLog()
       var day = getStudyDay()
-      if (!log[day]) log[day] = { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [] }
+      if (!log[day]) log[day] = { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [], studiedKeys: [] }
       return { log: log, entry: log[day] }
     }
 
     function loadTodaySummary() {
       var today = getStudyDay()
       var log = loadDailyLog()
-      var e = log[today] || { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [] }
+      var e = log[today] || { words: 0, quizRounds: 0, quizTotal: 0, quizCorrect: 0, mastered: 0, masteredKeys: [], studiedKeys: [] }
       return { date: today, studyWords: e.words, quizRounds: e.quizRounds, quizTotal: e.quizTotal, quizCorrect: e.quizCorrect, mastered: e.mastered || 0, masteredKeys: e.masteredKeys || [] }
     }
 
-    function addStudySummary(count) {
+    // 记录某词"今天学过"（去重：今天只看过一遍的词算 1 个，反复看不重复累加）
+    function markWordStudied(key) {
       var t = todayLogEntry()
-      t.entry.words += count
-      saveDailyLog(t.log)
+      var keys = t.entry.studiedKeys || (t.entry.studiedKeys = [])
+      if (keys.indexOf(key) === -1) {
+        keys.push(key)
+        t.entry.words = (t.entry.words || 0) + 1
+        saveDailyLog(t.log)
+      }
     }
 
     function addQuizSummary(score, total) {
@@ -1462,8 +1467,6 @@
       }
 
       studyWords = list
-      // 进入学习即记录当天学习词数（与退出方式无关，滑动/系统返回也不会漏记）
-      addStudySummary(list.length)
       studyIndex = (startIdx >= 0 && startIdx < list.length) ? startIdx : 0
       isFlipped = false
       studyFromPage = fromPage
@@ -1498,6 +1501,8 @@
       markStudyDay()
       const w = studyWords[studyIndex]
       if (!w) return
+      // 看过这张卡即算"今天学过这个词"（去重：反复看不重复计，与退出方式无关）
+      markWordStudied(wk(w, w.lessonNum))
 
       // 切换动画
       const card = document.getElementById('flashcard')
