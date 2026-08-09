@@ -25,6 +25,7 @@
   - `--font-body`（正文/中文）：`PingFang SC → Microsoft YaHei → Apple SD Gothic Neo → Malgun Gothic → Noto Sans KR → sans-serif`
   - Android 系统自带的就是 Noto Sans KR 本体，iOS/macOS 用 Apple SD Gothic Neo、Windows 用 Malgun Gothic，观感差异极小。
 - **代码修复**：`sw.js` 缓存优先的回退逻辑修正——跨域/资源请求失败时不再返回 `index.html`（会把 HTML 当 CSS/JS 解析），改为**仅导航请求回退首页**、其余资源失败就失败。
+- **代码修复**：`sw.js` 导航请求（index.html 应用入口）由「缓存优先」改为「网络优先」——每次打开先取最新版、断网才回退缓存，保证版本更新刷新一次即生效，不再出现用户反复刷新仍停留在旧版；CSS/JS/data.js 等资源保持缓存优先（秒开不受影响）。缓存号 hangul-v21→**v22**，强制已安装 PWA 清理一次旧缓存。
 - **版本号同步**：`APP_CONFIG.version` 1.10.1→1.10.2；`sw.js` 缓存 hangul-v20→**v21**，确保已安装 PWA / 桌面应用能刷新缓存。
 - **功能修复**：学习词数统计时机从「退出学习」提前到「进入学习」——此前只有点左上角返回箭头退出才会记录，手机上用侧滑/系统返回退出会漏记，导致学习记录页的"今日学习词数"缺失或偏小（打卡不受影响，因为打卡在看卡片时就记录）。
 - **UI·UX 优化**：学习记录页打卡框新增一行「📖 今天学习了 X 个单词」（始终显示、与"今天掌握"同款字号颜色），替换原先靠后、字小偏暗、仅在有学习时才出现的「✍️ 今日复习」行。

@@ -1,4 +1,4 @@
-var CACHE = 'hangul-v21';
+var CACHE = 'hangul-v22';
 var FILES = [
   '.',
   'index.html',
@@ -32,7 +32,26 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  // 缓存优先：命中缓存立即返回（秒开），后台静默更新本站资源
+  // 导航请求（index.html 应用入口）走网络优先：每次打开先取最新版，断网才回退缓存
+  // ——保证版本更新刷新一次即生效，不会像纯缓存优先那样长期停留在旧版
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then(function(r) {
+        if (r && r.ok) {
+          var clone = r.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+        }
+        return r;
+      }).catch(function() {
+        return caches.match(e.request).then(function(cached) {
+          return cached || caches.match('.');
+        });
+      })
+    );
+    return;
+  }
+
+  // 其它资源（CSS/JS/data.js 等）保持缓存优先：命中秒回（秒开），后台静默更新
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) {
@@ -47,7 +66,7 @@ self.addEventListener('fetch', function(e) {
         }
         return cached;
       }
-      // 缓存未命中 → 走网络，成功才写入缓存；失败回退首页
+      // 缓存未命中 → 走网络，成功才写入缓存；失败仅导航回退首页
       return fetch(e.request).then(function(r) {
         if (r && r.ok) {
           var clone = r.clone();
