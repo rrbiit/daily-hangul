@@ -26,10 +26,6 @@
     })()
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -1274,6 +1270,11 @@
       html += '<div style="font-size:12px;color:var(--text-dim);">📊 累计已掌握 <strong>' + masteredCount + '</strong> / ' + totalWords + ' 词</div>'
       html += '</div>'
 
+      // 今天学习了多少词（始终显示，与"今天掌握"同款样式）
+      html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">'
+      html += '📖 今天学习了 <strong>' + today.studyWords + '</strong> 个单词'
+      html += '</div>'
+
       // 今日掌握（主打，含具体词 chips 纯展示）
       html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">'
       html += '📈 今天掌握了 <strong>' + today.mastered + '</strong> 个词'
@@ -1291,10 +1292,6 @@
       if (today.quizRounds > 0) {
         var todayPct = today.quizTotal > 0 ? Math.round(today.quizCorrect / today.quizTotal * 100) : 0
         html += '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">✅ 今日测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）</div>'
-      }
-      // 今日复习（背景信息，避免"只讲掌握"显得白学）
-      if (today.studyWords > 0) {
-        html += '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">✍️ 今日复习 <strong>' + today.studyWords + '</strong> 个词</div>'
       }
       // 今日错词（从今日测验记录取，纯展示，与"已掌握"同款 chips，珊瑚色区分）
       var todayErrors = todayQuizErrors()
@@ -1465,6 +1462,8 @@
       }
 
       studyWords = list
+      // 进入学习即记录当天学习词数（与退出方式无关，滑动/系统返回也不会漏记）
+      addStudySummary(list.length)
       studyIndex = (startIdx >= 0 && startIdx < list.length) ? startIdx : 0
       isFlipped = false
       studyFromPage = fromPage
@@ -1884,7 +1883,6 @@
     function exitStudy() {
       window.speechSynthesis && window.speechSynthesis.cancel()
       saveStudyProgress()
-      addStudySummary(studyWords.length)
       showNav()
       goBack()
     }

@@ -20,8 +20,8 @@
       --border: #edf0f5;
       --star: #f6a973;
       --shadow: 0 1px 3px rgba(0,0,0,0.05);
-      --font-display: 'Noto Sans KR', 'Noto Sans SC', sans-serif;
-      --font-body: 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+      --font-display: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-body: 'PingFang SC', 'Microsoft YaHei', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
     }
     :root[data-theme="dark"] {
       --bg: #1a1a2e; --surface: rgb(30,30,50);

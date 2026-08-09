@@ -1,4 +1,4 @@
-var CACHE = 'hangul-v20';
+var CACHE = 'hangul-v21';
 var FILES = [
   '.',
   'index.html',
@@ -55,7 +55,10 @@ self.addEventListener('fetch', function(e) {
         }
         return r;
       }).catch(function() {
-        return caches.match('.');
+        // 仅导航请求回退首页；其他资源（CSS/JS/跨域字体等）失败就失败，
+        // 避免把 index.html 当 CSS/JS 返回导致解析错误
+        if (e.request.mode === 'navigate') { return caches.match('.'); }
+        return Response.error();
       });
     })
   );
