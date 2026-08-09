@@ -1,10 +1,11 @@
-var CACHE = 'hangul-v23';
+var CACHE = 'hangul-v24';
 var FILES = [
   '.',
   'index.html',
   'style.css',
   'data.js',
   'utils.js',
+  'quiz.js',
   'manifest.json'
 ];
 
