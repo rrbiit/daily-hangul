@@ -875,21 +875,28 @@
       font-family: var(--font-display); font-size: 15px; font-weight: 600;
       color: var(--text); margin: 18px 0 6px;
     }
-    /* 每日记录：每天一张卡片，与顶部"今日总览"同风格；竖排卡片天然放得下长内容，小屏不换行不挤 */
-    .stats-day-card {
-      background: var(--surface); border: 1px solid var(--text-subtle);
-      border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
+    /* 历史列表的分区标题：与上方"今日总览"主角卡之间画一道清晰的层级边界 */
+    .stats-section-title {
+      font-family: var(--font-display); font-size: 13px; font-weight: 600;
+      color: var(--text-dim); margin: 16px 0 4px;
     }
+    /* 每日记录：与上方"今日总览"主角卡形成主次——总览是页面上唯一一张带边框的卡片，这里是安静的无边框列表；内容缩进在日期行下方，小屏不换行不挤 */
+    .stats-day-card {
+      background: transparent; border: none; border-radius: 0;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .stats-day-card:last-child { border-bottom: none; }
+    .stats-day-card .sdc-line,
+    .stats-day-card .sdc-chips { padding-left: 16px; }
     .sdc-head {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px;
     }
     .sdc-date {
       font-family: var(--font-display); font-size: 14px; font-weight: 500; color: var(--text);
     }
-    .sdc-tag {
-      font-size: 11px; color: var(--primary); background: var(--primary-light);
-      border-radius: 6px; padding: 1px 8px;
+    .sdc-today-text {
+      font-size: 13px; font-weight: 500; color: var(--primary);
     }
     .sdc-line { font-size: 13px; color: var(--text); line-height: 1.7; }
     .sdc-chips { margin-top: 2px; }
@@ -910,7 +917,7 @@
       margin: 3px 0 0; vertical-align: middle; border-radius: 6px;
     }
     .sdc-toggle:hover, .sdc-toggle:active { color: var(--text-dim); background: var(--border); }
-    .sdc-err-label { font-size: 13px; color: var(--text); line-height: 1.7; margin-top: 2px; }
+    .sdc-err-prefix { font-size: 12px; color: var(--text-dim); }
 
     /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
     button:active, .tab-btn:active, .quiz-option:active, .word-item:active,

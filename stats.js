@@ -75,7 +75,7 @@
       }
 
       var html = ''
-      html += '<div class="quiz-analysis-card" style="background:var(--primary-faint);border:1px solid var(--primary);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
+      html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
       // 连续打卡 + 累计已掌握（一行两端）
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
       html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
@@ -166,7 +166,7 @@
         return
       }
 
-      var html = ''
+      var html = '<div class="stats-section-title">📅 每日记录</div>'
       var curMonth = null
       for (var i = 0; i < days.length; i++) {
         var key = days[i]
@@ -179,18 +179,27 @@
         var e = log[key]
         var isToday = key === todayKey
 
-        // 每天一张卡片：日期 + 学习/掌握(+掌握词标签)/测验/错词，无 emoji，没有的数据不显示
+        // 每天一条紧凑流水：日期行（今天加「· 今天」）+ 「·」连接的统计行 + 词条标签行
         html += '<div class="stats-day-card' + (isToday ? ' today' : '') + '">'
         html += '<div class="sdc-head">'
         html += '<span class="sdc-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dObj.getDay()] + '</span>'
-        if (isToday) html += '<span class="sdc-tag">今天</span>'
+        if (isToday) html += '<span class="sdc-today-text">· 今天</span>'
         html += '</div>'
 
-        if ((e.words || 0) > 0) {
-          html += '<div class="sdc-line">学习了 <strong>' + e.words + '</strong> 个单词</div>'
+        // 统计行：这一天有哪几项，用 · 连成一行（有才显示，无则整行不显示）
+        var parts = []
+        if ((e.words || 0) > 0) parts.push('学习了 <strong>' + e.words + '</strong> 个单词')
+        if ((e.mastered || 0) > 0) parts.push('掌握了 <strong>' + e.mastered + '</strong> 个词')
+        if ((e.quizTotal || 0) > 0) {
+          var pct = Math.round((e.quizCorrect || 0) / e.quizTotal * 100)
+          parts.push('测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）')
         }
+        if (parts.length > 0) {
+          html += '<div class="sdc-line">' + parts.join(' · ') + '</div>'
+        }
+
+        // 掌握词标签（可点听发音）
         if ((e.mastered || 0) > 0) {
-          html += '<div class="sdc-line">掌握了 <strong>' + e.mastered + '</strong> 个词</div>'
           var mKeys = e.masteredKeys || []
           if (mKeys.length > 0) {
             var mWords = []
@@ -201,14 +210,10 @@
             html += '<div class="sdc-chips">' + buildChipRow(mWords, 'mastered') + '</div>'
           }
         }
-        if ((e.quizTotal || 0) > 0) {
-          var pct = Math.round((e.quizCorrect || 0) / e.quizTotal * 100)
-          html += '<div class="sdc-line">测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）</div>'
-        }
+        // 错词标签（可点听发音），行首加小字「错词：」区分
         var dayErrors = dayQuizErrors(key)
         if (dayErrors.length > 0) {
-          html += '<div class="sdc-err-label">错词：</div>'
-          html += '<div class="sdc-chips">' + buildChipRow(dayErrors, 'error') + '</div>'
+          html += '<div class="sdc-chips">' + '<span class="sdc-err-prefix">错词：</span>' + buildChipRow(dayErrors, 'error') + '</div>'
         }
         html += '</div>'
       }
