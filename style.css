@@ -875,7 +875,8 @@
       color: var(--text); margin: 18px 0 6px;
     }
     .stats-day {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      display: grid; grid-template-columns: 96px 1fr;
+      align-items: center; gap: 10px;
       padding: 7px 2px; border-bottom: 1px solid var(--border);
       font-size: 13px;
     }
@@ -884,7 +885,7 @@
       padding: 7px 10px; margin: 0 -10px;
     }
     .stats-date { color: var(--text); font-variant-numeric: tabular-nums; }
-    .stats-info { color: var(--text-dim); }
+    .stats-info { color: var(--text-dim); min-width: 0; }
 
     /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
     button:active, .tab-btn:active, .quiz-option:active, .word-item:active,
