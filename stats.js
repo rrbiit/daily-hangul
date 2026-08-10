@@ -15,7 +15,8 @@
     function renderStatsContent() {
       renderStatsOverview()
       renderStatsList()
-      bindStatsListClick()
+      bindSpeakChips(document.getElementById('stats-overview'))
+      bindSpeakChips(document.getElementById('stats-list'))
     }
 
     function renderStatsOverview() {
@@ -95,7 +96,7 @@
         for (var ci = 0; ci < today.masteredKeys.length; ci++) {
           var kp = today.masteredKeys[ci].split('|')
           // 取最后一段即韩语词：兼容旧格式「3|가족」与新格式「yonsei1|3|가족」
-          chips.push('<span style="display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + (kp[kp.length - 1] || '') + '</span>')
+          chips.push('<span class="sdc-chip mastered">' + (kp[kp.length - 1] || '') + '</span>')
         }
         html += '<div>' + chips.join('') + '</div>'
       }
@@ -111,7 +112,7 @@
         html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">📕 今日错词：</div>'
         var errChips = []
         for (var ej = 0; ej < todayErrors.length; ej++) {
-          errChips.push('<span style="display:inline-block;background:var(--accent-coral-light);color:var(--accent-coral);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + todayErrors[ej] + '</span>')
+          errChips.push('<span class="sdc-chip error">' + todayErrors[ej] + '</span>')
         }
         html += '<div>' + errChips.join('') + '</div>'
       }
@@ -243,12 +244,11 @@
       btn.textContent = expanded ? '▴' : '▾'
     }
 
-    // 词条点击监听（事件委托，只绑一次）：点词条 → 播放该词韩语发音（快速复习读音）
-    var _statsListBound = false
-    function bindStatsListClick() {
-      var el = document.getElementById('stats-list')
-      if (!el || _statsListBound) return
-      _statsListBound = true
+    // 词条点击 → 播放韩语发音（顶部今日总览 + 每日卡片共用；事件委托，每个容器只绑一次）
+    var _speakChipBound = {}
+    function bindSpeakChips(el) {
+      if (!el || _speakChipBound[el.id]) return
+      _speakChipBound[el.id] = true
       el.addEventListener('click', function(e) {
         var t = e.target
         var chip = t && t.closest ? t.closest('.sdc-chip') : null
