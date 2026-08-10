@@ -166,7 +166,7 @@
         return
       }
 
-      var html = '<div class="stats-section-title">📅 每日记录</div>'
+      var html = ''
       var curMonth = null
       for (var i = 0; i < days.length; i++) {
         var key = days[i]

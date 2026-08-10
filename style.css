@@ -875,17 +875,11 @@
       font-family: var(--font-display); font-size: 15px; font-weight: 600;
       color: var(--text); margin: 18px 0 6px;
     }
-    /* 历史列表的分区标题：与上方"今日总览"主角卡之间画一道清晰的层级边界 */
-    .stats-section-title {
-      font-family: var(--font-display); font-size: 13px; font-weight: 600;
-      color: var(--text-dim); margin: 16px 0 4px;
-    }
-    /* 每日记录：与上方"今日总览"主角卡形成主次——总览是页面上唯一一张带边框的卡片，这里是安静的无边框列表；内容缩进在日期行下方，小屏不换行不挤 */
+    /* 每日记录：每天一个浅灰边框的透明小盒子（背景不变色），与上方白底总览卡靠「填色卡 vs 描边框」区分 */
     .stats-day-card {
-      background: transparent; border: none; border-radius: 0;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
+      background: transparent; border: 1px solid var(--text-subtle);
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
     }
-    .stats-day-card:last-child { border-bottom: none; }
     .stats-day-card .sdc-line,
     .stats-day-card .sdc-chips { padding-left: 16px; }
     .sdc-head {
