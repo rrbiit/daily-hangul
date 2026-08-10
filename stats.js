@@ -15,6 +15,7 @@
     function renderStatsContent() {
       renderStatsOverview()
       renderStatsList()
+      bindStatsListClick()
     }
 
     function renderStatsOverview() {
@@ -73,7 +74,7 @@
       }
 
       var html = ''
-      html += '<div class="quiz-analysis-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
+      html += '<div class="quiz-analysis-card" style="background:var(--primary-faint);border:1px solid var(--primary);border-radius:12px;padding:14px 16px;margin-bottom:12px;">'
       // 连续打卡 + 累计已掌握（一行两端）
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
       html += '<div style="font-family:var(--font-display);font-size:16px;font-weight:500;">🔥 连续打卡 <strong style="color:var(--accent-coral);">' + (streak.count > 0 ? streak.count : 0) + '</strong> 天</div>'
@@ -102,7 +103,7 @@
       // 今日测验正确率
       if (today.quizRounds > 0) {
         var todayPct = today.quizTotal > 0 ? Math.round(today.quizCorrect / today.quizTotal * 100) : 0
-        html += '<div style="font-size:13px;color:var(--text-dim);margin-top:2px;">✅ 今日测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）</div>'
+        html += '<div style="font-size:13px;color:var(--text);margin-top:2px;">✅ 今日测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）</div>'
       }
       // 今日错词（从今日测验记录取，纯展示，与"已掌握"同款 chips，珊瑚色区分）
       var todayErrors = todayQuizErrors()
@@ -124,14 +125,13 @@
       el.innerHTML = html
     }
 
-    // 今日测验答错的词（去重，只显示韩语）
-    function todayQuizErrors() {
-      var today = getStudyDay()
+    // 某天测验答错的词（去重，只显示韩语）；顶部"今日错词"复用同一天逻辑
+    function dayQuizErrors(dayKey) {
       var seen = {}
       var out = []
       for (var i = 0; i < quizHistory.length; i++) {
         var h = quizHistory[i]
-        if (getStudyDay(new Date(h.date)) !== today) continue
+        if (getStudyDay(new Date(h.date)) !== dayKey) continue
         var errs = h.errors || []
         for (var j = 0; j < errs.length; j++) {
           var kr = errs[j].kr
@@ -140,6 +140,7 @@
       }
       return out
     }
+    function todayQuizErrors() { return dayQuizErrors(getStudyDay()) }
 
     function renderStatsList() {
       var el = document.getElementById('stats-list')
@@ -175,24 +176,86 @@
           html += '<div class="stats-month">📅 ' + dObj.getFullYear() + '年' + (dObj.getMonth() + 1) + '月</div>'
         }
         var e = log[key]
-        // 三列固定：日期 | 掌握 | 测验，全部左对齐、各列起点每天一致（掌握对齐掌握、测验对齐测验）
-        var masteredHtml = ''
-        if ((e.mastered || 0) > 0) {
-          masteredHtml = '掌握 <strong>' + e.mastered + '</strong> 词'
+        var isToday = key === todayKey
+
+        // 每天一张卡片：日期 + 学习/掌握(+掌握词标签)/测验/错词，无 emoji，没有的数据不显示
+        html += '<div class="stats-day-card' + (isToday ? ' today' : '') + '">'
+        html += '<div class="sdc-head">'
+        html += '<span class="sdc-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dObj.getDay()] + '</span>'
+        if (isToday) html += '<span class="sdc-tag">今天</span>'
+        html += '</div>'
+
+        if ((e.words || 0) > 0) {
+          html += '<div class="sdc-line">学习了 <strong>' + e.words + '</strong> 个单词</div>'
         }
-        var quizHtml = ''
+        if ((e.mastered || 0) > 0) {
+          html += '<div class="sdc-line">掌握了 <strong>' + e.mastered + '</strong> 个词</div>'
+          var mKeys = e.masteredKeys || []
+          if (mKeys.length > 0) {
+            var mWords = []
+            for (var mi = 0; mi < mKeys.length; mi++) {
+              var mp = String(mKeys[mi]).split('|')
+              mWords.push(mp[mp.length - 1] || '')
+            }
+            html += '<div class="sdc-chips">' + buildChipRow(mWords, 'mastered') + '</div>'
+          }
+        }
         if ((e.quizTotal || 0) > 0) {
           var pct = Math.round((e.quizCorrect || 0) / e.quizTotal * 100)
-          quizHtml = '测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）'
+          html += '<div class="sdc-line">测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）</div>'
         }
-        html += '<div class="stats-day' + (key === todayKey ? ' today' : '') + '">'
-        html += '<span class="stats-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dObj.getDay()] + '</span>'
-        html += '<span class="stats-info">' + masteredHtml + '</span>'
-        html += '<span class="stats-quiz">' + quizHtml + '</span>'
+        var dayErrors = dayQuizErrors(key)
+        if (dayErrors.length > 0) {
+          html += '<div class="sdc-err-label">错词：</div>'
+          html += '<div class="sdc-chips">' + buildChipRow(dayErrors, 'error') + '</div>'
+        }
         html += '</div>'
       }
 
       el.innerHTML = html
+    }
+
+    // 词条标签行：掌握词 / 错词最多各显示 8 个，更多的折叠到「▾ 展开」里，避免卡片被撑高
+    var DAY_CHIP_MAX = 8
+    function buildChipRow(words, kind) {
+      var shown = words.slice(0, DAY_CHIP_MAX)
+      var rest = words.slice(DAY_CHIP_MAX)
+      var html = ''
+      function chipSpan(w) {
+        return '<span class="sdc-chip ' + kind + '">' + w + '</span>'
+      }
+      for (var i = 0; i < shown.length; i++) {
+        html += chipSpan(shown[i])
+      }
+      if (rest.length > 0) {
+        var extra = ''
+        for (var j = 0; j < rest.length; j++) {
+          extra += chipSpan(rest[j])
+        }
+        html += '<span class="sdc-chips-extra">' + extra + '</span>'
+        html += '<button class="sdc-toggle" onclick="toggleDayChips(this)" title="展开 / 收起">▾</button>'
+      }
+      return html
+    }
+    function toggleDayChips(btn) {
+      var extra = btn.previousElementSibling
+      var expanded = extra.classList.toggle('expanded')
+      btn.textContent = expanded ? '▴' : '▾'
+    }
+
+    // 词条点击监听（事件委托，只绑一次）：点词条 → 播放该词韩语发音（快速复习读音）
+    var _statsListBound = false
+    function bindStatsListClick() {
+      var el = document.getElementById('stats-list')
+      if (!el || _statsListBound) return
+      _statsListBound = true
+      el.addEventListener('click', function(e) {
+        var t = e.target
+        var chip = t && t.closest ? t.closest('.sdc-chip') : null
+        if (!chip) return
+        var word = chip.textContent.trim()
+        if (word) speak(word, 'ko')
+      })
     }
 
     function goToQuizAnalysis() {

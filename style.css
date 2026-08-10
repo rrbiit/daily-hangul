@@ -4,6 +4,7 @@
       --primary: #7eb8da;
       --primary-dim: #5fa3c7;
       --primary-light: #dceef7;
+      --primary-faint: rgba(126, 184, 218, 0.05);
       --accent-green: #81c784;
       --accent-green-light: #e8f5e9;
       --accent-pink: #f48fb1;
@@ -25,7 +26,7 @@
     }
     :root[data-theme="dark"] {
       --bg: #1a1a2e; --surface: rgb(30,30,50);
-      --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a;
+      --primary: #7eb8da; --primary-dim: #5fa3c7; --primary-light: #1a2a3a; --primary-faint: rgba(126, 184, 218, 0.05);
       --accent-green: #81c784; --accent-green-light: #1b2e1b;
       --accent-pink: #f48fb1; --accent-pink-light: #2e1b24;
       --accent-yellow: #ffcc80; --accent-yellow-light: #2e2418;
@@ -874,19 +875,42 @@
       font-family: var(--font-display); font-size: 15px; font-weight: 600;
       color: var(--text); margin: 18px 0 6px;
     }
-    .stats-day {
-      display: grid; grid-template-columns: 96px 88px 1fr;
-      align-items: center; gap: 10px;
-      padding: 7px 2px; border-bottom: 1px solid var(--border);
-      font-size: 13px;
+    /* 每日记录：每天一张卡片，与顶部"今日总览"同风格；竖排卡片天然放得下长内容，小屏不换行不挤 */
+    .stats-day-card {
+      background: var(--surface); border: 1px solid var(--text-subtle);
+      border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
     }
-    .stats-day.today {
-      background: var(--primary-light); border-radius: 8px;
-      padding: 7px 10px; margin: 0 -10px;
+    .sdc-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px;
     }
-    .stats-date { color: var(--text); font-variant-numeric: tabular-nums; }
-    .stats-info { color: var(--text-dim); font-variant-numeric: tabular-nums; }
-    .stats-quiz { color: var(--text-dim); font-variant-numeric: tabular-nums; min-width: 0; overflow: hidden; }
+    .sdc-date {
+      font-family: var(--font-display); font-size: 14px; font-weight: 500; color: var(--text);
+    }
+    .sdc-tag {
+      font-size: 11px; color: var(--primary); background: var(--primary-light);
+      border-radius: 6px; padding: 1px 8px;
+    }
+    .sdc-line { font-size: 13px; color: var(--text); line-height: 1.7; }
+    .sdc-chips { margin-top: 2px; }
+    .sdc-chip {
+      display: inline-block; border-radius: 6px; padding: 0 8px;
+      font-size: 12px; margin: 3px 4px 0 0; line-height: 1.7;
+      cursor: pointer;
+    }
+    .sdc-chip:active { opacity: 0.65; }
+    .sdc-chip.mastered { background: var(--primary-light); color: var(--primary); }
+    .sdc-chip.error { background: var(--accent-coral-light); color: var(--accent-coral); }
+    /* 超过上限的词折叠起来，点 ▾ 展开 */
+    .sdc-chips-extra { display: none; }
+    .sdc-chips-extra.expanded { display: inline; }
+    .sdc-toggle {
+      border: none; background: transparent; color: var(--text-subtle);
+      font-size: 13px; line-height: 1; cursor: pointer; padding: 4px 6px;
+      margin: 3px 0 0; vertical-align: middle; border-radius: 6px;
+    }
+    .sdc-toggle:hover, .sdc-toggle:active { color: var(--text-dim); background: var(--border); }
+    .sdc-err-label { font-size: 13px; color: var(--text); line-height: 1.7; margin-top: 2px; }
 
     /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
     button:active, .tab-btn:active, .quiz-option:active, .word-item:active,
