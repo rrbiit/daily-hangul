@@ -966,7 +966,7 @@
       document.getElementById('settings-word-count').textContent = total + ' 词'
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
       // 版本行显示项目名 + 版本号（版本属于应用而非教材，书名在首页/课程/单词页展示）
-      document.getElementById('settings-version').textContent = 'Daily Hangul (每日韩语) · v' + APP_CONFIG.version
+      document.getElementById('settings-version').textContent = 'Daily Hangul · v' + APP_CONFIG.version
       showPage('page-settings')
     }
 

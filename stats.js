@@ -153,7 +153,7 @@
       for (var k in log) {
         if (!log.hasOwnProperty(k)) continue
         var e = log[k]
-        if ((e.words || 0) > 0 || (e.quizTotal || 0) > 0 || (e.mastered || 0) > 0) {
+        if ((e.quizTotal || 0) > 0 || (e.mastered || 0) > 0) {
           days.push(k)
         }
       }
@@ -175,17 +175,20 @@
           html += '<div class="stats-month">📅 ' + dObj.getFullYear() + '年' + (dObj.getMonth() + 1) + '月</div>'
         }
         var e = log[key]
-        var parts = []
-        if ((e.mastered || 0) > 0) parts.push('掌握 <strong>' + e.mastered + '</strong> 词')
+        // 三列固定：日期 | 掌握 | 测验，全部左对齐、各列起点每天一致（掌握对齐掌握、测验对齐测验）
+        var masteredHtml = ''
+        if ((e.mastered || 0) > 0) {
+          masteredHtml = '掌握 <strong>' + e.mastered + '</strong> 词'
+        }
+        var quizHtml = ''
         if ((e.quizTotal || 0) > 0) {
           var pct = Math.round((e.quizCorrect || 0) / e.quizTotal * 100)
-          parts.push('测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）')
-        } else if ((e.words || 0) > 0) {
-          parts.push('复习 ' + (e.words || 0) + ' 词')
+          quizHtml = '测验 <strong>' + (e.quizCorrect || 0) + '/' + e.quizTotal + '</strong>（' + pct + '%）'
         }
         html += '<div class="stats-day' + (key === todayKey ? ' today' : '') + '">'
         html += '<span class="stats-date">' + (dObj.getMonth() + 1) + '/' + dObj.getDate() + ' 周' + weekNames[dObj.getDay()] + '</span>'
-        html += '<span class="stats-info">' + parts.join(' · ') + '</span>'
+        html += '<span class="stats-info">' + masteredHtml + '</span>'
+        html += '<span class="stats-quiz">' + quizHtml + '</span>'
         html += '</div>'
       }
 
