@@ -93,7 +93,8 @@
         var chips = []
         for (var ci = 0; ci < today.masteredKeys.length; ci++) {
           var kp = today.masteredKeys[ci].split('|')
-          chips.push('<span style="display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + (kp[1] || '') + '</span>')
+          // 取最后一段即韩语词：兼容旧格式「3|가족」与新格式「yonsei1|3|가족」
+          chips.push('<span style="display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:0 8px;font-size:12px;margin:3px 4px 0 0;">' + (kp[kp.length - 1] || '') + '</span>')
         }
         html += '<div>' + chips.join('') + '</div>'
       }

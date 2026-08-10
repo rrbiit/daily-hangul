@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="referrer" content="no-referrer" />
-  <title>每日韩语</title>
+  <title>Daily Hangul</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><text x='60' y='60' text-anchor='middle' dominant-baseline='central' font-size='88'>🐶</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><text x='60' y='60' text-anchor='middle' dominant-baseline='central' font-size='88'>🐶</text></svg>">
   <meta name="theme-color" content="#7eb8da">
@@ -88,7 +88,7 @@
         </div>
 
         <!-- 课程列表 -->
-        <div class="home-section-title">📚 연세 한국어 1</div>
+        <div class="home-section-title" id="home-book-title">📚 연세 한국어 1</div>
         <div class="home-lesson-list" id="home-lesson-list"></div>
 
       </div>
@@ -103,7 +103,7 @@
             <svg viewBox="0 0 24 24" class="icon-chevron" width="20" height="20"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div class="title-area">
-            <h1>연세 한국어 1</h1>
+            <h1 id="course-book-title">연세 한국어 1</h1>
             <p>延世韩国语1 · <span id="course-count">0</span>课 · <span id="course-words">0</span>个词汇</p>
           </div>
         </div>
@@ -557,8 +557,10 @@
 
     // Set → 数组 兼容
     function setKeys(s) { var a = []; s.forEach(function(v) { a.push(v) }); return a }
-    // 单词唯一标识：课号|韩语（同词跨课不冲突）
-    function wk(w, num) { return num + '|' + w.kr }
+    // 单词唯一标识：书ID|课号|韩语（同词跨课不冲突，跨书也隔离）
+    function wk(w, num) { return APP_CONFIG.bookId + '|' + num + '|' + w.kr }
+    // 语法唯一标识：书ID|课号-序号（如 yonsei1|3-0）
+    function gk(num, idx) { return APP_CONFIG.bookId + '|' + num + '-' + idx }
 
     // 判断单词是否已掌握（SRS lv >= 4）
     function isMastered(w, num) {
@@ -605,6 +607,9 @@
       loadUserData()
       renderLessons()
       updateHomeStats()
+      // 书名统一读配置（显示与之前一致，加第二本书时自动跟随当前书）
+      var _hb = document.getElementById('home-book-title'); if (_hb) _hb.textContent = '📚 ' + APP_CONFIG.textbook
+      var _cb = document.getElementById('course-book-title'); if (_cb) _cb.textContent = APP_CONFIG.textbook
     } catch(e) {
       if (window._showError) window._showError('初始化失败: ' + (e.message || e))
     }

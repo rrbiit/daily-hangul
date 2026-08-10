@@ -220,11 +220,11 @@
           descEl.textContent = p.title || '恢复上次进度'
         } catch(e) {
           titleEl.textContent = '开始学习'
-          descEl.textContent = '연세 한국어 1'
+          descEl.textContent = APP_CONFIG.textbook
         }
       } else {
         titleEl.textContent = '开始学习'
-        descEl.textContent = '연세 한국어 1'
+        descEl.textContent = APP_CONFIG.textbook
       }
     }
 
@@ -341,8 +341,6 @@
         if (badgeKey) {
           // 记住当前位置：刷新列表会触发 scrollTo(0)，先记下再还原，避免跳回顶部
           var savedScrollY = window.scrollY
-          var parts = badgeKey.split('|')
-          var ln = parseInt(parts[0])
           var d = srs[badgeKey]
           var now = Date.now()
           if (d && d.lv >= 4) {
@@ -513,7 +511,7 @@
       LESSONS.forEach(lesson => {
         const gs = GRAMMAR[lesson.num] || []
         gs.forEach((g, idx) => {
-          if (grammarStarred.has(`${lesson.num}-${idx}`)) {
+          if (grammarStarred.has(gk(lesson.num, idx))) {
             if (!gramGroups[lesson.num]) gramGroups[lesson.num] = []
             gramGroups[lesson.num].push({ ...g, lessonNum: lesson.num, grammarIdx: idx })
           }

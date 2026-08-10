@@ -1307,5 +1307,7 @@
 
     const APP_CONFIG = {
       textbook: '연세 한국어 1',
-      version: '1.10.7',
+      bookTag: '연세1',     // 页面上的短书名（单词列表页顶部）
+      bookId: 'yonsei1',    // 内部书编号：单词/语法 key 的前缀（加第二本书时如 yonsei2）
+      version: '1.10.8',
     }

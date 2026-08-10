@@ -1,4 +1,4 @@
-var CACHE = 'hangul-v26';
+var CACHE = 'hangul-v27';
 var FILES = [
   '.',
   'index.html',

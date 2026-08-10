@@ -107,8 +107,8 @@
         filtered = words.filter(function(w) { return isMastered(w, num) })
       }
 
-      // 标题 + 进度
-      document.getElementById('words-title').textContent = `제${num}과 - ${LESSONS[num-1].title}`
+      // 标题 + 进度（顶部带短书名，如「연세1 · 제1과 - 소개」）
+      document.getElementById('words-title').textContent = APP_CONFIG.bookTag + ' · 제' + num + '과 - ' + LESSONS[num-1].title
       var mc = masteryCount(num)
       document.getElementById('words-count').textContent = `共 ${rawWords.length} 个词汇 · 已掌握 ${mc}/${rawWords.length}`
 
@@ -187,7 +187,7 @@
         return
       }
       gs.forEach((g, idx) => {
-        const gkey = `${num}-${idx}`
+        const gkey = gk(num, idx)
         const div = document.createElement('div')
         div.className = 'grammar-card'
         div.id = `grammar-${num}-${idx}`
@@ -649,6 +649,9 @@
       try {
         const raw = lsGet('yonsei-study-data', null)
         if (raw) {
+          // 迁移前备份一份原始数据（仅首次备份，不覆盖，便于异常时还原）
+          if (!lsGet('yonsei-study-data-backup', null)) lsSet('yonsei-study-data-backup', raw)
+
           const data = JSON.parse(raw)
           starred = new Set(data.starred || [])
           grammarStarred = new Set(data.grammarStarred || [])
@@ -667,8 +670,37 @@
           } else {
             srs = {}
           }
+
+          // 书 ID 迁移：早期编号没带书前缀（如 3|가족），统一升级为 yonsei1|3|가족
+          migrateBookIdKeys()
         }
       } catch(e) {}
+    }
+
+    // 幂等迁移：已是「书ID|…」开头的 key 直接保留，否则补上书前缀
+    // 覆盖四块数据：掌握进度 srs / 单词收藏 starred / 语法收藏 grammarStarred / 语法掌握 grammarMastered
+    function migrateBookIdKeys() {
+      var prefix = APP_CONFIG.bookId + '|'
+      var changed = false
+      function fix(k) {
+        if (typeof k === 'string' && k.indexOf(prefix) === 0) return k
+        changed = true
+        return prefix + k
+      }
+      var nsrs = {}
+      for (var k in srs) nsrs[fix(k)] = srs[k]
+      srs = nsrs
+      function fixAll(set) {
+        var out = []
+        set.forEach(function(k) { out.push(fix(k)) })
+        return new Set(out)
+      }
+      if (changed) {
+        starred = fixAll(starred)
+        grammarStarred = fixAll(grammarStarred)
+        grammarMastered = fixAll(grammarMastered)
+        saveUserData()
+      }
     }
 
     // 在单词列表加"开始学习"按钮
@@ -886,6 +918,8 @@
                 srs[key] = { lv: 3, due: now, ease: 2.5, n: 3 }
               })
             }
+            // 导入的备份若是不带书前缀的旧格式，同样自动升级（与启动迁移一致）
+            migrateBookIdKeys()
             saveUserData()
             if (data.cardDirection) lsSet('ys-carddir', data.cardDirection)
             updateHomeStats()
@@ -931,7 +965,8 @@
       })
       document.getElementById('settings-word-count').textContent = total + ' 词'
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'
-      document.getElementById('settings-version').textContent = APP_CONFIG.textbook + ' · v' + APP_CONFIG.version
+      // 版本行显示项目名 + 版本号（版本属于应用而非教材，书名在首页/课程/单词页展示）
+      document.getElementById('settings-version').textContent = 'Daily Hangul (每日韩语) · v' + APP_CONFIG.version
       showPage('page-settings')
     }
 
