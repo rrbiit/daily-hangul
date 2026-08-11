@@ -133,6 +133,76 @@
       const [a, b] = p.split('/')
       return hasBatchim(word) ? word + a : word + (b || a)
     }
+    // ㄹ받침으로 끝나는 어간인지（걸/알/살/들…：ㄹ불규칙 활용）
+    function hasLFinal(s) {
+      if (!s || s.length === 0) return false
+      const c = s.charCodeAt(s.length - 1) - 0xAC00
+      return c >= 0 && c <= 11171 && (c % 28) === 8
+    }
+    // ㄷ불규칙 어간인지（걷/듣/묻/싣/깨닫…：걷다→걸어요, 들으세요）
+    const D_IRREG = ['걷','듣','묻','싣','깨닫']
+    function hasDFinal(s) { return D_IRREG.indexOf(s) !== -1 }
+    // ㄷ받침을 ㄹ로 교체（걷→걸, 듣→들）
+    function dropDFinal(s) {
+      const c = s.charCodeAt(s.length - 1) - 0xAC00
+      const init = Math.floor(c / 588), vow = Math.floor((c % 588) / 28)
+      return s.slice(0, -1) + String.fromCharCode(0xAC00 + init * 588 + vow * 28 + 8)
+    }
+    // 把 ㅂ/ㄹ 合成进末尾音节的终声：가다+ㅂ→갑니다, 가다+ㄹ→갈 수 있습니다
+    // ㄹ받침 어간은 ㄹ을 탈락시킨 뒤 합성：알다→압니다, 알다→알 수 있습니다
+    function mergeFinal(s, ch) {
+      const c = s.charCodeAt(s.length - 1) - 0xAC00
+      if (c < 0 || c > 11171) return s + ch
+      const init = Math.floor(c / 588)
+      const vow = Math.floor((c % 588) / 28)
+      const fin = (c % 28) === 8 ? 0 : (c % 28)
+      if (fin !== 0) return s + ch
+      const f = ch === 'ㅂ' ? 17 : 8
+      return s.slice(0, -1) + String.fromCharCode(0xAC00 + init * 588 + vow * 28 + f)
+    }
+    // 어간의 '-아/어' 연결형（가다→가, 오다→와, 배우다→배워, 알다→알아, 닫다→닫아, 걷다→걸어）
+    function aeoStem(s) {
+      if (hasDFinal(s)) {
+        const vi = lastVowelIdx(s)
+        return dropDFinal(s) + (vi === 0 || vi === 8 || vi === 12 ? '아' : '어')
+      }
+      if (hasBatchim(s)) {
+        // 받침 있음：어간 말음이 ㅏ/ㅗ/ㅛ → 아, 그 외 → 어
+        const vi = lastVowelIdx(s)
+        return s + (vi === 0 || vi === 8 || vi === 12 ? '아' : '어')
+      }
+      const c = s.charCodeAt(s.length - 1) - 0xAC00
+      const init = Math.floor(c / 588)
+      const vi = Math.floor((c % 588) / 28)
+      const make = (vow) => String.fromCharCode(0xAC00 + init * 588 + vow * 28)
+      if (vi === 0 || vi === 1 || vi === 4 || vi === 5) return s
+      if (vi === 8) return s.slice(0, -1) + make(9)      // ㅗ→ㅘ（오다→와）
+      if (vi === 11) return s.slice(0, -1) + make(10)    // ㅚ→ㅙ（되다→돼）
+      if (vi === 12) return s.slice(0, -1) + make(14)    // ㅛ→ㅝ（희귀）
+      if (vi === 13) return s.slice(0, -1) + make(14)    // ㅜ→ㅝ（배우다→배워）
+      if (vi === 18) return s.slice(0, -1) + make(4)     // ㅡ→ㅓ（크다→커）
+      if (vi === 20) return s.slice(0, -1) + make(6)     // ㅣ→ㅕ（치다→쳐）
+      return s + '어'
+    }
+    // ㅂ불규칙 어간：맵다→매워, 돕다→도와（끝 모음 ㅗ→와, 그 외→워）
+    function bipStem(s) {
+      const code = s.charCodeAt(s.length - 1) - 0xAC00
+      const init = Math.floor(code / 588), vow = Math.floor((code % 588) / 28)
+      const clean = String.fromCharCode(0xAC00 + init * 588 + vow * 28)
+      return s.slice(0, -1) + clean + (vow === 8 ? '와' : '워')
+    }
+    // 末尾音节的 종성 ㄹ 제거（알→아, 만들→만드）
+    function dropLFinal(s) {
+      const c = s.charCodeAt(s.length - 1) - 0xAC00
+      const init = Math.floor(c / 588), vow = Math.floor((c % 588) / 28)
+      return s.slice(0, -1) + String.fromCharCode(0xAC00 + init * 588 + vow * 28)
+    }
+    // '-아/어' 연결형에 과거 ㅆ 합성：가→갔, 와→왔, 배워→배웠
+    function pastStem(a) {
+      const c = a.charCodeAt(a.length - 1) - 0xAC00
+      const init = Math.floor(c / 588), vow = Math.floor((c % 588) / 28)
+      return a.slice(0, -1) + String.fromCharCode(0xAC00 + init * 588 + vow * 28 + 20)
+    }
     function stem(v) { return v.endsWith('다') ? v.slice(0, -1) : v }
     function lastVowelIdx(str) {
       const c = str.charCodeAt(str.length - 1)
@@ -147,7 +217,8 @@
     function presentForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '합니다'
-      return hasBatchim(s) ? s + '습니다' : s + 'ㅂ니다'
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '습니다'
+      return mergeFinal(s, 'ㅂ') + '니다'
     }
     function wantForm(v) { return stem(v) + '고 싶습니다' }
     function negForm(v) { return stem(v) + '지 않습니다' }
@@ -163,9 +234,9 @@
 
     // 过去式（处理常见不规则变化）
     const PAST_IRREG = {
-      '듣':'들었','걷':'걸었','깨닫':'깨달았',
+      '듣':'들었','걷':'걸었','묻':'물었','싣':'실었','깨닫':'깨달았',
       '돕':'도왔','곱':'고왔','이르':'이르렀',
-      '부르':'불렀','모르':'몰랐','고르':'골랐',
+      '부르':'불렀','모르':'몰랐','고르':'골랐','서두르':'서둘렀','다르':'달랐','누르':'눌렀','오르':'올랐',
       '기쁘':'기뻤','나쁘':'나빴','바쁘':'바빴',
       '슬프':'슬펐','아프':'아팠','예쁘':'예뻤',
     }
@@ -173,26 +244,9 @@
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '했습니다'
       if (PAST_IRREG[s]) return PAST_IRREG[s] + '습니다'
-      // ㅂ irregular: 맵다 → 매웠, 덥다 → 더웠
-      if (lastFinalIdx(s) === 17) {
-        const code = s.charCodeAt(s.length - 1) - 0xAC00
-        const init = Math.floor(code / 588), vow = Math.floor((code % 588) / 28)
-        const clean = String.fromCharCode(0xAC00 + init * 588 + vow * 28)
-        return s.slice(0, -1) + clean + '웠습니다'
-      }
-      if (!hasBatchim(s)) {
-        const vi = lastVowelIdx(s), code = s.charCodeAt(s.length - 1) - 0xAC00
-        const init = Math.floor(code / 588)
-        const make = (vow, fin=5) => String.fromCharCode(0xAC00 + init * 588 + vow * 28 + fin)
-        if (vi === 0 || vi === 1) return s.slice(0,-1) + make(vi) + '습니다'
-        if (vi === 4 || vi === 5) return s.slice(0,-1) + make(vi) + '습니다'
-        if (vi === 8) return s.slice(0,-1) + make(9) + '습니다'
-        if (vi === 12) return s.slice(0,-1) + make(14) + '습니다'
-        if (vi === 18) return s.slice(0,-1) + make(4) + '습니다'
-        if (vi === 20) return s.slice(0,-1) + make(6) + '습니다'
-        return s + '었습니다'
-      }
-      return s + '었습니다'
+      // ㅂ irregular: 맵다 → 매웠, 돕다 → 도왔
+      if (lastFinalIdx(s) === 17) return pastStem(bipStem(s)) + '습니다'
+      return pastStem(aeoStem(s)) + '습니다'
     }
 
     // ─── 更多活用辅助函数 ───
@@ -205,52 +259,57 @@
     function canForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '할 수 있습니다'
-      return hasBatchim(s) ? s + '을 수 있습니다' : s + 'ㄹ 수 있습니다'
+      if (hasDFinal(s)) return dropDFinal(s) + '을 수 있습니다'   // 걷다→걸을 수
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '을 수 있습니다'
+      return mergeFinal(s, 'ㄹ') + ' 수 있습니다'
     }
     function canFormQ(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '할 수 있습니까?'
-      return hasBatchim(s) ? s + '을 수 있습니까?' : s + 'ㄹ 수 있습니까?'
+      if (hasDFinal(s)) return dropDFinal(s) + '을 수 있습니까?'
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '을 수 있습니까?'
+      return mergeFinal(s, 'ㄹ') + ' 수 있습니까?'
     }
     function cantForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '할 수 없습니다'
-      return hasBatchim(s) ? s + '을 수 없습니다' : s + 'ㄹ 수 없습니다'
+      if (hasDFinal(s)) return dropDFinal(s) + '을 수 없습니다'
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '을 수 없습니다'
+      return mergeFinal(s, 'ㄹ') + ' 수 없습니다'
     }
     function letsForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '합시다'
-      return hasBatchim(s) ? s + '읍시다' : s + 'ㅂ시다'
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '읍시다'
+      return mergeFinal(s, 'ㅂ') + '시다'
     }
     function pleaseForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '하세요'
+      if (hasDFinal(s)) return dropDFinal(s) + '으세요'   // 걷다→걸으세요
+      if (hasLFinal(s)) return dropLFinal(s) + '세요'   // 알다→아세요
       return hasBatchim(s) ? s + '으세요' : s + '세요'
     }
     function futureForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '할 겁니다'
-      return hasBatchim(s) ? s + '을 겁니다' : s + 'ㄹ 겁니다'
+      if (hasDFinal(s)) return dropDFinal(s) + '을 겁니다'   // 걷다→걸을 겁니다
+      if (hasBatchim(s) && !hasLFinal(s)) return s + '을 겁니다'
+      return mergeFinal(s, 'ㄹ') + ' 겁니다'
     }
     function condForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '하면'
+      if (hasDFinal(s)) return dropDFinal(s) + '으면'   // 걷다→걸으면
+      if (hasLFinal(s)) return s + '면'   // 알다→알면
       return hasBatchim(s) ? s + '으면' : s + '면'
     }
     // -아/어서 连接
     function aSeoForm(v) {
       const s = stem(v)
       if (s.endsWith('하')) return s.slice(0, -1) + '해서'
-      const vi = stemVowel(v)
-      if (!hasBatchim(s)) {
-        if (vi === 0 || vi === 1) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + vi*28) + '서'
-        if (vi === 4 || vi === 5) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + vi*28) + '서'
-        if (vi === 8) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 9*28) + '서'
-        if (vi === 12) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 14*28) + '서'
-        if (vi === 18) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 4*28) + '서'
-        if (vi === 20) return s.slice(0,-1) + String.fromCharCode(0xAC00 + ((s.charCodeAt(s.length-1)-0xAC00) - ((s.charCodeAt(s.length-1)-0xAC00)%28)) + 6*28) + '서'
-      }
-      return s + '어서'
+      if (lastFinalIdx(s) === 17) return bipStem(s) + '서'   // 맵다→매워서
+      return aeoStem(s) + '서'
     }
     // -지만 (但是)
     function jimanForm(v) {
@@ -307,6 +366,11 @@
           add('실례합니다, 지금 몇 시예요?', '不好意思，现在几点？')
           add('실례합니다, 잠깐만요.', '失礼了，请稍等。')
           add('실례합니다, 먼저 가겠습니다.', '失陪了，我先走了。')
+        } else if (kr === '늦어서 죄송합니다') {
+          add('늦어서 죄송합니다.', '抱歉来晚了。')
+          add('많이 늦어서 정말 죄송합니다.', '迟到了很多，真的很抱歉。')
+          add('교통이 복잡해서 늦었어요. 죄송합니다.', '路上堵车来晚了，抱歉。')
+          add('늦어서 죄송합니다. 오래 기다렸어요?', '抱歉来晚了。等很久了吗？')
         }
         return list
       }
@@ -451,11 +515,11 @@
           g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
         } else if (ntype === 'person') {
           const g = [
-            [ [attach(kr, '이/가') + ' 되고 싶어요.', '想成为' + cn + '。'], [kr + '는 제 꿈이에요.', cn + '是我的梦想。'] ],
-            [ ['어제 ' + kr + '를 만났어요.', '昨天见了' + cn + '。'], [kr + '가 도와줬어요.', cn + '帮了我。'] ],
-            [ [kr + '가 보고 싶어요.', '想念' + cn + '。'], [kr + '에게 선물을 줬어요.', '给' + cn + '送了礼物。'] ],
-            [ [kr + '는 어디에 계세요?', cn + '在哪里？'], ['제 ' + kr + '는 중국에 있어요.', '我的' + cn + '在中国。'] ],
-            [ [kr + '랑 같이 살아요.', '和' + cn + '一起住。'], [kr + '께 안부 전해 주세요.', '代我向' + cn + '问好。'] ],
+            [ [attach(kr, '이/가') + ' 되고 싶어요.', '想成为' + cn + '。'], [attach(kr, '은/는') + ' 제 꿈이에요.', cn + '是我的梦想。'] ],
+            [ ['어제 ' + attach(kr, '을/를') + ' 만났어요.', '昨天见了' + cn + '。'], [attach(kr, '이/가') + ' 도와줬어요.', cn + '帮了我。'] ],
+            [ [attach(kr, '이/가') + ' 보고 싶어요.', '想念' + cn + '。'], [attach(kr, '에게') + ' 선물을 줬어요.', '给' + cn + '送了礼物。'] ],
+            [ [attach(kr, '은/는') + ' 어디에 계세요?', cn + '在哪里？'], ['제 ' + attach(kr, '은/는') + ' 중국에 있어요.', '我的' + cn + '在中国。'] ],
+            [ [attach(kr, '이랑/랑') + ' 같이 살아요.', '和' + cn + '一起住。'], [attach(kr, '께') + ' 안부 전해 주세요.', '代我向' + cn + '问好。'] ],
           ]
           g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
         } else if (ntype === 'food') {
@@ -463,14 +527,14 @@
             [ [attach(kr, '이/가') + ' 정말 맛있어요.', cn + '真的很好吃。'], ['저는 ' + attach(kr, '을/를') + ' 진짜 좋아해요.', '我很喜欢' + cn + '。'] ],
             [ ['어제 처음 ' + attach(kr, '을/를') + ' 먹어 봤어요.', '昨天第一次吃' + cn + '。'], ['한국에서 ' + attach(kr, '을/를') + ' 먹어 봤어요.', '在韩国吃过' + cn + '。'] ],
             [ [attach(kr, '을/를') + ' 만들어 볼 거예요.', '打算做' + cn + '。'], ['내일 ' + attach(kr, '을/를') + ' 먹으러 갈래요?', '明天去吃' + cn + '吗？'] ],
-            [ [attach(kr, '이/가') + ' 조금 매워요.', cn + '有点辣。'], [kr + '는 무슨 맛이에요?', cn + '是什么味道？'] ],
-            [ [kr + ' 한 그릇 더 주세요!', '再来一碗' + cn + '！'], ['이 집 ' + kr + '가 제일 유명해요.', '这家的' + cn + '最有名。'] ],
+            [ [attach(kr, '이/가') + ' 조금 매워요.', cn + '有点辣。'], [attach(kr, '은/는') + ' 무슨 맛이에요?', cn + '是什么味道？'] ],
+            [ [kr + ' 한 그릇 더 주세요!', '再来一碗' + cn + '！'], ['이 집 ' + attach(kr, '이/가') + ' 제일 유명해요.', '这家的' + cn + '最有名。'] ],
           ]
           g.forEach(gg => { const t = gg[Math.floor(Math.random() * gg.length)]; add(t[0], t[1]) })
         } else {
           const g = [
             [ [attach(kr, '이/가') + ' 있어요?', '有' + cn + '吗？'], ['새 ' + attach(kr, '을/를') + ' 샀어요.', '买了新的' + cn + '。'] ],
-            [ ['어제 ' + attach(kr, '을/를') + ' 잃어버렸어요.', '昨天把' + cn + '弄丢了。'], [kr + '를 찾았어요!', '找到' + cn + '了！'] ],
+            [ ['어제 ' + attach(kr, '을/를') + ' 잃어버렸어요.', '昨天把' + cn + '弄丢了。'], [attach(kr, '을/를') + ' 찾았어요!', '找到' + cn + '了！'] ],
             [ [attach(kr, '이/가') + ' 필요해요.', '需要' + cn + '。'], [attach(kr, '을/를') + ' 빌릴 수 있을까요?', '能借一下' + cn + '吗？'] ],
             [ [attach(kr, '이/가') + ' 너무 비싸요.', cn + '太贵了。'], ['이 ' + attach(kr, '은/는') + ' 얼마예요?', '这个' + cn + '多少钱？'] ],
             [ [attach(kr, '을/를') + ' 선물로 받았어요.', cn + '是收到的礼物。'], [attach(kr, '을/를') + ' 어떻게 사용해요?', cn + '怎么用？'] ],
