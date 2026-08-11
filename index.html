@@ -87,9 +87,9 @@
           </div>
         </div>
 
-        <!-- 课程列表 -->
-        <div class="home-section-title" id="home-book-title">📚 연세 한국어 1</div>
-        <div class="home-lesson-list" id="home-lesson-list"></div>
+        <!-- 我的教材（书架：已加入教材可学，规划中的占位显示"敬请期待"） -->
+        <div class="home-section-title" id="home-book-title">📚 我的教材</div>
+        <div class="home-book-list" id="home-book-list"></div>
 
       </div>
     </div>
@@ -612,8 +612,7 @@
       loadUserData()
       renderLessons()
       updateHomeStats()
-      // 书名统一读当前教材（显示与之前一致，加第二本书时自动跟随当前书）
-      var _hb = document.getElementById('home-book-title'); if (_hb) _hb.textContent = '📚 ' + getCurrentBook().textbook
+      // 课程页标题统一读当前教材（首页书架标题是静态的"我的教材"，由 renderHomeBooks 渲染）
       var _cb = document.getElementById('course-book-title'); if (_cb) _cb.textContent = getCurrentBook().textbook
     } catch(e) {
       if (window._showError) window._showError('初始化失败: ' + (e.message || e))

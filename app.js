@@ -34,24 +34,57 @@
       var s = ''; for (var i = 0; i < 5; i++) { s += i < n ? '<span class="star-on">★</span>' : '<span class="star-off">☆</span>' }; return s
     }
 
-    // 渲染课程列表
-    function renderHomeLessons() {
-      var list = document.getElementById('home-lesson-list')
+    // 渲染首页「我的教材」书架（已加入教材可学 + 规划中的占位）
+    function renderHomeBooks() {
+      var list = document.getElementById('home-book-list')
       if (!list) return
       list.innerHTML = ''
-      LESSONS.forEach(function(l) {
-        var words = VOCAB[l.num] || []
-        var total = words.length
-        var done = words.filter(function(x) { var d = srs[wk(x, l.num)]; return d && d.lv >= 4 }).length
-        var pct = total > 0 ? Math.round((done / total) * 100) : 0
+      // ① 已加入的教材：可点击进入课程列表
+      BOOKS.forEach(function(b) {
+        var isCurrent = b.bookId === APP_STATE.currentBookId
+        var lessons = b.lessons || []
+        var words = 0
+        Object.keys(b.vocab || {}).forEach(function(k) { words += (b.vocab[k] || []).length })
         var item = document.createElement('div')
-        item.className = 'home-lesson-item'
-        item.onclick = function() { openLesson(l.num) }
-        item.innerHTML = '<span class="hli-num">제' + l.num + '과</span>' +
-          '<div class="hli-info"><div class="hli-title">' + l.title + '</div><div class="hli-meta">' + total + ' 个词 · 掌握 ' + done + ' 个</div></div>' +
-          '<div class="hli-stats"><div class="hli-bar-wrap"><div class="hli-bar-fill" style="width:' + pct + '%"></div></div><span class="hli-count">' + done + '/' + total + '</span></div>'
+        item.className = 'home-book-item' + (isCurrent ? ' current' : '')
+        item.onclick = function() { onBookClick(b.bookId) }
+        item.innerHTML =
+          '<span class="hbi-cover">📗</span>' +
+          '<div class="hbi-info"><div class="hbi-title">' + b.textbook + '</div>' +
+          '<div class="hbi-meta">' + (b.cn || b.textbook) + ' · ' + lessons.length + ' 课 · ' + words + ' 个词</div></div>' +
+          (isCurrent ? '<span class="hbi-badge">✓ 学习中</span>' : '<span class="hbi-badge">切换</span>')
         list.appendChild(item)
       })
+      // ② 规划中的教材：书架占位，内容未加入
+      // 已注册进 BOOKS 的跳过（防止忘记从 PLANNED_BOOKS 移除时重复显示）
+      var realIds = {}
+      BOOKS.forEach(function(b) { realIds[b.bookId] = true })
+      PLANNED_BOOKS.forEach(function(p) {
+        if (realIds[p.bookId]) return
+        var item = document.createElement('div')
+        item.className = 'home-book-item planned'
+        item.onclick = function() { showToast(p.textbook + ' 即将加入，敬请期待') }
+        item.innerHTML =
+          '<span class="hbi-cover">🔒</span>' +
+          '<div class="hbi-info"><div class="hbi-title">' + p.textbook + '</div>' +
+          '<div class="hbi-meta">' + p.cn + ' · 内容准备中</div></div>' +
+          '<span class="hbi-badge planned">敬请期待</span>'
+        list.appendChild(item)
+      })
+    }
+
+    // 点击书架上的教材：当前教材 → 进课程列表；其他教材 → 切换后进课程列表
+    function onBookClick(bookId) {
+      if (!getBook(bookId)) return
+      if (bookId === APP_STATE.currentBookId) {
+        renderLessons()
+        navigateTo('page-course')
+        return
+      }
+      // 有未完成学习进度 → 先确认，避免误切丢失进度
+      if (hasStudyProgress() && !confirm('当前有未完成的学习进度，切换教材会清空它。确定切换吗？')) return
+      setCurrentBook(bookId)
+      navigateTo('page-course')
     }
 
     function renderLessons() {
@@ -314,7 +347,7 @@
       el = document.getElementById('home-mastered'); if (el) el.textContent = masteredCount
       el = document.getElementById('home-pct'); if (el) el.textContent = pct + '%'
       el = document.getElementById('home-progress-fill'); if (el) el.style.width = pct + '%'
-      renderHomeLessons()
+      renderHomeBooks()
       updateContinueBtn()
       updateStarredCount()
     }
@@ -753,9 +786,15 @@
       lsSet('ys-current-book', bookId)
       bindBookGlobals()
       clearBookSessionState()
-      // 刷新与教材相关的首页 / 课程页内容（阶段2 接入教材入口后再统一跳转）
+      refreshBookTitles()
       renderLessons()
       updateHomeStats()
+    }
+
+    // 刷新显示书名的元素（课程页标题；首页书架由 renderHomeBooks 渲染）
+    function refreshBookTitles() {
+      var cb = getCurrentBook(); if (!cb) return
+      var cbt = document.getElementById('course-book-title'); if (cbt) cbt.textContent = cb.textbook
     }
 
     // 在单词列表加"开始学习"按钮

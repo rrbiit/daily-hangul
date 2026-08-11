@@ -1310,6 +1310,7 @@
     registerBook({
       bookId: 'yonsei1',
       textbook: '연세 한국어 1',
+      cn: '延世韩国语1',     // 中文书名（首页书架副标题）
       bookTag: '연세1',     // 页面上的短书名（单词列表页顶部）
       lessons: YONSEI1_LESSONS,
       vocab: YONSEI1_VOCAB,

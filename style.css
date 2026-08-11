@@ -170,27 +170,6 @@
 
     /* ─── 首页课程列表 ─── */
     .home-section-title { font-size: 13px; color: var(--text-dim); font-weight: 500; margin-bottom: 8px; }
-    .home-lesson-list { display: flex; flex-direction: column; gap: 8px; }
-    .home-lesson-item {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
-    }
-    .home-lesson-item:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-    .home-lesson-item .hli-num { width: 36px; font-family: var(--font-display); font-size: 13px; font-weight: 500; flex-shrink: 0; }
-    .home-lesson-item:nth-child(5n+1) .hli-num { color: #7eb8da; }
-    .home-lesson-item:nth-child(5n+2) .hli-num { color: var(--accent-pink); }
-    .home-lesson-item:nth-child(5n+3) .hli-num { color: var(--accent-green); }
-    .home-lesson-item:nth-child(5n+4) .hli-num { color: var(--accent-purple); }
-    .home-lesson-item:nth-child(5n+5) .hli-num { color: var(--accent-coral); }
-    .home-lesson-item .hli-info { flex: 1; }
-    .home-lesson-item .hli-info .hli-title { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
-    .home-lesson-item .hli-info .hli-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
-    .home-lesson-item .hli-stats { display: flex; align-items: center; gap: 6px; }
-    .home-lesson-item .hli-stats .hli-bar-wrap { width: 40px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-    .home-lesson-item .hli-stats .hli-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
-    .home-lesson-item .hli-stats .hli-count { font-size: 11px; color: var(--text-dim); min-width: 24px; text-align: right; white-space: nowrap; }
-
     /* ─── 底部导航 ─── */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
@@ -825,6 +804,24 @@
     }
     .study-done-btn-ghost:hover { background: var(--surface); opacity: 1; transform: none; }
 
+    /* ─── 首页书架（我的教材）─── */
+    .home-book-list { display: flex; flex-direction: column; gap: 10px; }
+    .home-book-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 16px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .home-book-item:hover { border-color: var(--primary); }
+    .home-book-item.current { border-color: var(--primary); background: var(--primary-light); }
+    .home-book-item .hbi-cover { font-size: 24px; line-height: 1; flex-shrink: 0; }
+    .home-book-item .hbi-info { flex: 1; min-width: 0; }
+    .home-book-item .hbi-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); }
+    .home-book-item .hbi-meta { font-size: 12px; color: var(--text-subtle); margin-top: 2px; }
+    .home-book-item .hbi-badge { font-size: 12px; font-weight: 600; color: var(--primary); white-space: nowrap; flex-shrink: 0; }
+    .home-book-item.planned { opacity: 0.6; }
+    .home-book-item.planned:hover { border-color: var(--border); }
+    .home-book-item .hbi-badge.planned { color: var(--text-dim); }
+
     /* ─── 易错本手风琴 ─── */
     /* ─── 标记全部掌握按钮 ─── */
     #mark-all-mastered-btn {
@@ -916,7 +913,7 @@
     /* ─── 视觉反馈：按压微缩（全站统一手感） ─── */
     button:active, .tab-btn:active, .quiz-option:active, .word-item:active,
     .main-cta:active, .nav-item:active, .review-option:active, .lesson-item:active,
-    .home-lesson-item:active, .home-side-action:active, .back-btn:active,
+    .home-book-item:active, .home-side-action:active, .back-btn:active,
     .ctrl-btn:active, .word-learn-btn:active, .quiz-scope-btn:active,
     .today-summary-more:active, .home-progress-bar-wrap:active, .grammar-card:active {
       transform: scale(0.94);
