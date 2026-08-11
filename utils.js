@@ -1,3 +1,37 @@
+    /* ═══════════ 多教材唯一标识（书感知）═══════════ */
+    // 单词唯一标识：书ID|课号|韩语（同词跨课不冲突，跨书也隔离）
+    // 优先级：显式 bookId 参数（跨书收集时传）> 词条自带 bookId > 当前教材，
+    // ——保证全局搜索/收藏/易错本把跨书条目归到正确的书。
+    function wk(w, num, bookId) {
+      return (bookId || (w && w.bookId) || getCurrentBook().bookId) + '|' + num + '|' + (w ? w.kr : '')
+    }
+    // 语法唯一标识：书ID|课号-序号（如 yonsei1|3-0）；bookId 缺省用当前书
+    function gk(num, idx, bookId) {
+      return (bookId || getCurrentBook().bookId) + '|' + num + '-' + idx
+    }
+    // 判断单词是否已掌握（SRS lv >= 4）
+    function isMastered(w, num) {
+      var d = srs[wk(w, num)]
+      return !!(d && d.lv >= 4)
+    }
+    // 判断是否是薄弱词（累计失败 >= 1 次且未掌握）
+    function isWeak(key) {
+      var d = srs[key]
+      return !!(d && (d.badCount || 0) >= 1 && d.lv < 4)
+    }
+    // 按唯一标识反查单词（跨书）：key = "书ID|课号|韩语"
+    function findWordByKey(key) {
+      var parts = String(key).split('|')
+      if (parts.length < 3) return null
+      var bid = parts[0], num = parts[1]
+      var kr = parts.slice(2).join('|')
+      var b = getBook(bid)
+      if (!b) return null
+      var ws = b.vocab[num] || []
+      for (var i = 0; i < ws.length; i++) if (ws[i].kr === kr) return ws[i]
+      return null
+    }
+
     /* ═══════════ SRS 间隔重复系统 ═══════════ */
     function srsInterval(lv) {
       // lv 0: 10分钟(首次), lv 1: 1天, lv 2: 3天, lv 3: 7天, lv 4: 21天, lv 5: 60天, lv 6: 120天

@@ -406,16 +406,11 @@
               vlist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的单词</div>'
             }
           } else if (wItem) {
-            // 其他页面：局部刷新星标
+            // 其他页面：局部刷新星标（跨书反查，findWordByKey 按 key 里的书ID定位）
             var isStar = starred.has(starKey)
             var starsSpan = wItem.querySelector('.word-stars-clickable')
             if (starsSpan) {
-              var origLesson = parseInt(wItem.getAttribute('data-lesson'))
-              var origWords = VOCAB[origLesson] || []
-              var foundW = null
-              for (var wi = 0; wi < origWords.length; wi++) {
-                if (wk(origWords[wi], origLesson) === starKey) { foundW = origWords[wi]; break }
-              }
+              var foundW = findWordByKey(starKey)
               var starCount = foundW ? foundW.stars : 5
               starsSpan.querySelector('.stars').innerHTML = isStar ? renderStars(5) : renderStars(starCount)
               starsSpan.style.color = isStar ? 'var(--star)' : ''
@@ -538,109 +533,123 @@
       const vlist = document.getElementById('starred-list')
       const glist = document.getElementById('starred-glist')
 
-      // 收集收藏的词（按课分组）
-      const wordGroups = {} // { lessonNum: [words] }
-      LESSONS.forEach(lesson => {
-        const ws = VOCAB[lesson.num] || []
-        ws.forEach((w, idx) => {
-          if (starred.has(wk(w, lesson.num))) {
-            if (!wordGroups[lesson.num]) wordGroups[lesson.num] = []
-            wordGroups[lesson.num].push({ ...w, lessonNum: lesson.num, wordIdx: idx })
-          }
+      // 收集收藏的词（全局：遍历所有教材，按 书|课 分组）
+      const wordGroups = {} // { "书ID|课号": [words] }
+      BOOKS.forEach(book => {
+        (book.lessons || []).forEach(lesson => {
+          const ws = book.vocab[lesson.num] || []
+          ws.forEach((w, idx) => {
+            if (starred.has(wk(w, lesson.num, book.bookId))) {
+              const gkey = book.bookId + '|' + lesson.num
+              if (!wordGroups[gkey]) wordGroups[gkey] = []
+              wordGroups[gkey].push({ ...w, bookId: book.bookId, bookTag: book.bookTag, lessonNum: lesson.num, wordIdx: idx })
+            }
+          })
         })
       })
-      // 排序
-      const sortedLessonNums = Object.keys(wordGroups).map(Number).sort((a,b)=>a-b)
+      // 排序：先按教材顺序，再按课号
+      const sortedGroupKeys = Object.keys(wordGroups).sort((a, b) => {
+        const [bidA, numA] = a.split('|'), [bidB, numB] = b.split('|')
+        const oa = BOOKS.findIndex(x => x.bookId === bidA), ob = BOOKS.findIndex(x => x.bookId === bidB)
+        if (oa !== ob) return oa - ob
+        return Number(numA) - Number(numB)
+      })
       let totalWordCount = 0
-      sortedLessonNums.forEach(n => { totalWordCount += wordGroups[n].length })
+      sortedGroupKeys.forEach(k => { totalWordCount += wordGroups[k].length })
 
-      // 收集收藏的语法（按课分组）
+      // 收集收藏的语法（全局）
       const gramGroups = {}
-      LESSONS.forEach(lesson => {
-        const gs = GRAMMAR[lesson.num] || []
-        gs.forEach((g, idx) => {
-          if (grammarStarred.has(gk(lesson.num, idx))) {
-            if (!gramGroups[lesson.num]) gramGroups[lesson.num] = []
-            gramGroups[lesson.num].push({ ...g, lessonNum: lesson.num, grammarIdx: idx })
-          }
+      BOOKS.forEach(book => {
+        (book.lessons || []).forEach(lesson => {
+          const gs = book.grammar[lesson.num] || []
+          gs.forEach((g, idx) => {
+            if (grammarStarred.has(gk(lesson.num, idx, book.bookId))) {
+              const gkey = book.bookId + '|' + lesson.num
+              if (!gramGroups[gkey]) gramGroups[gkey] = []
+              gramGroups[gkey].push({ ...g, bookId: book.bookId, bookTag: book.bookTag, lessonNum: lesson.num, grammarIdx: idx })
+            }
+          })
         })
       })
-      const sortedGramNums = Object.keys(gramGroups).map(Number).sort((a,b)=>a-b)
+      const sortedGramKeys = Object.keys(gramGroups).sort((a, b) => {
+        const [bidA, numA] = a.split('|'), [bidB, numB] = b.split('|')
+        const oa = BOOKS.findIndex(x => x.bookId === bidA), ob = BOOKS.findIndex(x => x.bookId === bidB)
+        if (oa !== ob) return oa - ob
+        return Number(numA) - Number(numB)
+      })
       let totalGramCount = 0
-      sortedGramNums.forEach(n => { totalGramCount += gramGroups[n].length })
+      sortedGramKeys.forEach(k => { totalGramCount += gramGroups[k].length })
 
       const total = totalWordCount + totalGramCount
       count.textContent = `共 ${total} 项`
 
       // 构建学习上下文列表（所有收藏词的扁平列表）
       var starredCtxList = []
-      sortedLessonNums.forEach(function(n) {
-        (wordGroups[n] || []).forEach(function(sw) { starredCtxList.push(sw) })
+      sortedGroupKeys.forEach(function(k) {
+        (wordGroups[k] || []).forEach(function(sw) { starredCtxList.push(sw) })
       })
       _studyContextList = starredCtxList
 
-      // 渲染单词（按课分组，带标题）
+      // 渲染单词（与易错本一致的扁平列表：每张卡片带「书 + 课」小标签）
       vlist.innerHTML = ''
       if (totalWordCount === 0) {
         vlist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的单词</div>'
       } else {
-        sortedLessonNums.forEach(lessonNum => {
-          const ws = wordGroups[lessonNum]
-          const lesson = LESSONS[lessonNum - 1]
-          // 分组标题
-          const header = document.createElement('div')
-          header.style.cssText = 'font-size:13px;font-weight:500;color:var(--primary);margin:16px 0 8px 4px;'
-          header.textContent = `제${lessonNum}과 · ${lesson.title} (${ws.length}个)`
-          vlist.appendChild(header)
-          ws.forEach(w => {
-            var key2 = wk(w, w.lessonNum)
-            var mastered2 = isMastered(w, w.lessonNum)
-            var safeKr2 = w.kr.replace(/"/g, '&quot;')
+        starredCtxList.forEach(w => {
+          var key2 = wk(w, w.lessonNum)
+          var mastered2 = isMastered(w, w.lessonNum)
+          var safeKr2 = w.kr.replace(/"/g, '&quot;')
 
-            const div = document.createElement('div')
-            div.className = 'word-item'
-            div.setAttribute('data-key', key2)
-            div.setAttribute('data-lesson', String(w.lessonNum))
-            div.onclick = function(e) {
-              if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
-              speak(w.kr, 'ko')
-              div.classList.add('speaking')
-              setTimeout(function() { div.classList.remove('speaking') }, 350)
-            }
-            div.innerHTML =
-              '<div class="left-col">' +
-                '<div class="kr">' + w.kr + '</div>' +
+          const div = document.createElement('div')
+          div.className = 'word-item'
+          div.setAttribute('data-key', key2)
+          div.setAttribute('data-lesson', String(w.lessonNum))
+          div.setAttribute('data-book', w.bookId || '')
+          div.onclick = function(e) {
+            if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
+            speak(w.kr, 'ko')
+            div.classList.add('speaking')
+            setTimeout(function() { div.classList.remove('speaking') }, 350)
+          }
+          div.innerHTML =
+            '<div class="left-col">' +
+              '<div class="kr">' + w.kr + '</div>' +
+              '<div style="display:flex;align-items:center;gap:4px;">' +
                 '<span class="pos">' + (w.pos || '') + '</span>' +
-                '<div class="cn">' + w.cn + '</div>' +
+                '<span class="lesson-tag">' + (w.bookTag || '') + ' 제' + w.lessonNum + '과</span>' +
               '</div>' +
-              '<div class="right-col">' +
-                '<span class="word-stars-clickable" data-key="' + key2 + '" title="点击切换收藏" style="color:var(--star);">' +
-                  '<span class="stars">' + renderStars(5) + '</span>' +
+              '<div class="cn">' + w.cn + '</div>' +
+            '</div>' +
+            '<div class="right-col">' +
+              '<span class="word-stars-clickable" data-key="' + key2 + '" title="点击切换收藏" style="color:var(--star);">' +
+                '<span class="stars">' + renderStars(5) + '</span>' +
+              '</span>' +
+              '<div class="word-actions-under-stars">' +
+                '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+                '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
+                  (mastered2 ? '✓' : '○') +
                 '</span>' +
-                '<div class="word-actions-under-stars">' +
-                  '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
-                  '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
-                    (mastered2 ? '✓' : '○') +
-                  '</span>' +
-                '</div>' +
-                '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key2 + '\',\'收藏\',\'page-starred\')">▶ 学习</button>' +
-              '</div>'
-            vlist.appendChild(div)
-          })
+              '</div>' +
+              '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key2 + '\',\'收藏\',\'page-starred\')">▶ 学习</button>' +
+            '</div>'
+          vlist.appendChild(div)
         })
       }
 
-      // 渲染语法（按课分组，带标题）
+      // 渲染语法（按 书|课 分组）
       glist.innerHTML = ''
       if (totalGramCount === 0) {
         glist.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-dim);font-size:14px;">还没有收藏的语法</div>'
       } else {
-        sortedGramNums.forEach(lessonNum => {
-          const gs = gramGroups[lessonNum]
-          const lesson = LESSONS[lessonNum - 1]
+        sortedGramKeys.forEach(gkey => {
+          const [bid, numStr] = gkey.split('|')
+          const gs = gramGroups[gkey]
+          const book = getBook(bid)
+          const lesson = book && book.lessons.find(l => l.num === Number(numStr))
+          if (!book || !lesson) return
           const header = document.createElement('div')
           header.style.cssText = 'font-size:13px;font-weight:500;color:var(--primary);margin:16px 0 8px 4px;'
-          header.textContent = `제${lessonNum}과 · ${lesson.title} (${gs.length}个)`
+          header.textContent = `${book.bookTag} 제${lesson.num}과 · ${lesson.title} (${gs.length}个)`
           glist.appendChild(header)
           gs.forEach(g => {
             const div = document.createElement('div')
@@ -676,10 +685,10 @@
           </div>
         `
 
-        // 星星收藏点击
+        // 星星收藏点击（跨书语法也归到正确书）
         div.querySelector('.grammar-star').onclick = function(e) {
           e.stopPropagation()
-          const k = gk(g.lessonNum, g.grammarIdx)
+          const k = gk(g.lessonNum, g.grammarIdx, g.bookId)
           if (grammarStarred.has(k)) grammarStarred.delete(k)
           else grammarStarred.add(k)
           saveUserData()
@@ -764,14 +773,16 @@
         return
       }
 
-      // 搜索所有词汇（韩语 + 中文 + 词性）
+      // 搜索所有词汇（韩语 + 中文 + 词性）—— 遍历所有教材
       const hits = []
-      LESSONS.forEach(function(lesson) {
-        const words = VOCAB[lesson.num] || []
-        words.forEach(function(w) {
-          if (w.kr.includes(q) || w.cn.toLowerCase().includes(q) || w.pos.toLowerCase().includes(q)) {
-            hits.push({ kr: w.kr, cn: w.cn, pos: w.pos, stars: w.stars, lessonNum: lesson.num, lessonTitle: lesson.title })
-          }
+      BOOKS.forEach(function(book) {
+        (book.lessons || []).forEach(function(lesson) {
+          const words = book.vocab[lesson.num] || []
+          words.forEach(function(w, wi) {
+            if (w.kr.includes(q) || w.cn.toLowerCase().includes(q) || w.pos.toLowerCase().includes(q)) {
+              hits.push({ kr: w.kr, cn: w.cn, pos: w.pos, stars: w.stars, bookId: book.bookId, bookTag: book.bookTag, lessonNum: lesson.num, lessonTitle: lesson.title, wIdx: wi })
+            }
+          })
         })
       })
 
@@ -815,16 +826,14 @@
         var starsText = isStar ? renderStars(5) : renderStars(w.stars)
         var starsStyle = isStar ? 'color:var(--star);' : ''
         var safeKr = w.kr.replace(/"/g, '&quot;')
-        // 找到该词在课程中的原始索引
-        var origWords = VOCAB[w.lessonNum] || []
-        var sIdx = origWords.findIndex(function(ow) { return ow.kr === w.kr && ow.cn === w.cn })
+        // 原始索引在收集时已记录（跨书查询不再依赖当前教材 VOCAB）
 
         div.innerHTML =
           '<div class="left-col">' +
             '<div class="kr">' + krHtml + '</div>' +
             '<span class="pos">' + w.pos + '</span>' +
             '<div class="cn">' + cnHtml + '</div>' +
-            '<span class="lesson-tag">제' + w.lessonNum + '과</span>' +
+            '<span class="lesson-tag">' + w.bookTag + ' 제' + w.lessonNum + '과</span>' +
           '</div>' +
           '<div class="right-col">' +
             '<span class="word-stars-clickable" data-key="' + key + '" title="点击切换收藏" style="' + starsStyle + '">' +
@@ -956,19 +965,34 @@
       renderWeakWords()
     }
 
-    function renderWeakWords() {
-      // 收集所有薄弱词（未掌握 + 有错误记录）
+    // 收集所有教材的薄弱词（全局易错本）
+    function collectWeakItemsAllBooks() {
       var items = []
-      LESSONS.forEach(function(l) {
-        var ws = VOCAB[l.num] || []
-        for (var i = 0; i < ws.length; i++) {
-          var w = ws[i]
-          var key = wk(w, l.num)
-          if (isWeak(key)) {
-            items.push({ kr: w.kr, cn: w.cn, pos: w.pos, stars: w.stars, lessonNum: l.num, key: key, origIdx: i })
+      BOOKS.forEach(function(book) {
+        (book.lessons || []).forEach(function(l) {
+          var ws = book.vocab[l.num] || []
+          for (var i = 0; i < ws.length; i++) {
+            var w = ws[i]
+            var key = wk(w, l.num, book.bookId)
+            if (isWeak(key)) {
+              var item = {}
+              for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }
+              item.bookId = book.bookId
+              item.bookTag = book.bookTag
+              item.lessonNum = l.num
+              item.key = key
+              item.origIdx = i
+              items.push(item)
+            }
           }
-        }
+        })
       })
+      return items
+    }
+
+    function renderWeakWords() {
+      // 收集所有薄弱词（全局：遍历所有教材）
+      var items = collectWeakItemsAllBooks()
 
       // 更新计数
       document.getElementById('weak-words-count').textContent = '共 ' + items.length + ' 个薄弱词'
@@ -1001,6 +1025,7 @@
         div.className = 'word-item'
         div.setAttribute('data-key', key)
         div.setAttribute('data-lesson', String(num))
+        div.setAttribute('data-book', w.bookId || '')
 
         div.onclick = function(e) {
           if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
@@ -1017,7 +1042,7 @@
             '<div class="kr">' + w.kr + '</div>' +
             '<div style="display:flex;align-items:center;gap:4px;">' +
               '<span class="pos">' + w.pos + '</span>' +
-              '<span class="lesson-tag">제' + num + '과</span>' +
+              '<span class="lesson-tag">' + (w.bookTag || '') + ' 제' + num + '과</span>' +
             '</div>' +
             '<div class="cn">' + w.cn + '</div>' +
           '</div>' +
@@ -1038,9 +1063,9 @@
       })
     }
 
-    // 易错本进入复习
+    // 易错本进入复习（全局：覆盖所有教材的薄弱词）
     function startStudyWeak() {
-      var pool = buildReviewPool('weak', LESSONS.map(function(l) { return l.num }))
+      var pool = collectWeakItemsAllBooks()
       if (pool.length === 0) { alert('还没有薄弱词！'); return }
       startStudyPool(pool, '薄弱词·易错本')
     }

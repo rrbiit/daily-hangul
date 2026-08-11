@@ -62,7 +62,6 @@
           ? '<div class="hbi-progress"><div class="hbi-progress-fill" style="width:' + pct + '%"></div></div>'
           : ''
         item.innerHTML =
-          '<span class="hbi-cover">📗</span>' +
           '<div class="hbi-info"><div class="hbi-title">' + b.textbook + '</div>' +
           '<div class="hbi-meta">' + metaText + '</div>' + progressHTML + '</div>' +
           (isCurrent ? '<span class="hbi-badge">✓ 学习中</span>' : '<span class="hbi-badge">切换</span>')
@@ -78,7 +77,6 @@
         item.className = 'home-book-item planned'
         item.onclick = function() { showToast(p.textbook + ' 即将加入，敬请期待') }
         item.innerHTML =
-          '<span class="hbi-cover">🔒</span>' +
           '<div class="hbi-info"><div class="hbi-title">' + p.textbook + '</div>' +
           '<div class="hbi-meta">' + p.cn + ' · 内容准备中</div></div>' +
           '<span class="hbi-badge planned">敬请期待</span>'
@@ -802,6 +800,7 @@
       quizQuestions = []
       quizIndex = 0
       quizScore = 0
+      if (typeof quizSelectedLessons !== 'undefined' && quizSelectedLessons) quizSelectedLessons.clear()
     }
 
     // 设置当前教材：更新状态 → 持久化 → 重绑数据 → 清理会话 → 刷新相关页面
@@ -816,10 +815,11 @@
       updateHomeStats()
     }
 
-    // 刷新显示书名的元素（课程页标题；首页书架由 renderHomeBooks 渲染）
+    // 刷新显示书名的元素（课程页标题/副标题；首页书架由 renderHomeBooks 渲染）
     function refreshBookTitles() {
       var cb = getCurrentBook(); if (!cb) return
       var cbt = document.getElementById('course-book-title'); if (cbt) cbt.textContent = cb.textbook
+      var cbc = document.getElementById('course-book-cn'); if (cbc) cbc.textContent = cb.cn || ''
     }
 
     // 在单词列表加"开始学习"按钮
@@ -976,14 +976,38 @@
     }
 
     // ─── 数据导出/导入/清除 ───
+    // 收集本应用相关的全部本地存储 key（原始字符串，保证跨教材完整还原）
+    function collectAppStorageKeys() {
+      var keys = []
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i)
+          if (k && (k === 'quiz-history' || k === 'yonsei-study-data' || k === 'yonsei-study-data-backup' || k.indexOf('ys-') === 0)) {
+            keys.push(k)
+          }
+        }
+      } catch(e) {}
+      return keys
+    }
+
     function exportData() {
+      // 全量备份：所有相关 key 的原始内容（学习/测验/打卡/连续/设置/进度快照，含各教材）
+      var store = {}
+      collectAppStorageKeys().forEach(function(k) {
+        try { store[k] = localStorage.getItem(k) } catch(e) {}
+      })
       var data = {
+        app: 'daily-hangul-backup',
+        format: 1,
+        version: APP_CONFIG.version,
+        exportedAt: new Date().toISOString(),
+        store: store,
+        // 兼容字段：老版本导入器仍能读取
         starred: setKeys(starred),
         srs: srs,
         grammarStarred: setKeys(grammarStarred),
         grammarMastered: setKeys(grammarMastered),
         cardDirection: cardDirection,
-        exportedAt: new Date().toISOString(),
       }
       var jsonStr = JSON.stringify(data, null, 2)
       var blob = new Blob([jsonStr], { type: 'application/json' })
@@ -1023,6 +1047,21 @@
         reader.onload = function(e) {
           try {
             var data = JSON.parse(e.target.result)
+            if (data.store && typeof data.store === 'object') {
+              // 新格式全量备份：覆盖所有本地数据后整页刷新（各模块从 localStorage 重新读取）
+              if (!confirm('导入会覆盖当前所有学习数据（两本教材的进度、收藏、测验历史、打卡记录等）。\n确定继续吗？')) return
+              var keys = Object.keys(data.store)
+              keys.forEach(function(k) {
+                if (k === 'quiz-history' || k === 'yonsei-study-data' || k === 'yonsei-study-data-backup' || k.indexOf('ys-') === 0) {
+                  lsSet(k, data.store[k])
+                }
+              })
+              alert('✅ 导入成功！数据已恢复，正在刷新…')
+              setTimeout(function() { location.reload() }, 300)
+              return
+            }
+            // 旧格式（只有记忆字段的备份）：兼容导入
+            if (!confirm('导入会覆盖当前所有学习数据。确定继续吗？')) return
             if (data.starred) starred = new Set(data.starred)
             if (data.grammarStarred) grammarStarred = new Set(data.grammarStarred)
             if (data.grammarMastered) grammarMastered = new Set(data.grammarMastered)
@@ -1057,17 +1096,22 @@
     }
 
     function resetAllData() {
-      if (!confirm('确定要清除所有学习记录吗？\n\n包括：收藏、SRS进度、语法进度\n\n此操作无法撤销。')) return
-      starred.clear()
-      srs = {}
-      grammarStarred.clear()
-      grammarMastered.clear()
-      try { localStorage.removeItem('yonsei-study-data') } catch(e) {}
-      lsSet('yonsei-study-data', '')
-      saveUserData()
-      updateHomeStats()
-      renderLessons()
-      alert('所有记录已清除。')
+      // 全部清光（用户确认）：清掉两本教材的所有学习数据，用确认框防止误点
+      if (!confirm('确定要清除所有学习数据吗？\n\n包括：\n· 两本教材的进度、收藏、易错记录\n· 测验历史\n· 打卡 / 连续学习记录\n· 学习偏好设置\n\n此操作无法撤销！')) return
+      // 删除本应用相关的全部本地存储 key
+      var delKeys = collectAppStorageKeys()
+      try {
+        delKeys.forEach(function(k) { localStorage.removeItem(k) })
+      } catch(e) {}
+      // 内存同步清空
+      try {
+        starred.clear()
+        grammarStarred.clear()
+        grammarMastered.clear()
+        srs = {}
+      } catch(e) {}
+      alert('所有学习数据已清除。正在刷新…')
+      setTimeout(function() { location.reload() }, 300)
     }
 
     // ─── 显示设置 ───
@@ -1076,11 +1120,16 @@
       updateTtsRate(rate)
       document.getElementById('tts-rate').value = rate
       setCardDir(cardDirection)
-      // 关于统计
+      // 关于统计（跨全部教材合计；keys 带书前缀，各书不串数据）
       let total = 0, mCount = 0
-      LESSONS.forEach(l => {
-        const ws = VOCAB[l.num] || []
-        ws.forEach(w => { total++; var d = srs[wk(w, l.num)]; if (d && d.lv >= 4) mCount++ })
+      BOOKS.forEach(b => {
+        Object.keys(b.vocab || {}).forEach(k => {
+          (b.vocab[k] || []).forEach(w => {
+            total++
+            var d = srs[b.bookId + '|' + k + '|' + w.kr]
+            if (d && d.lv >= 4) mCount++
+          })
+        })
       })
       document.getElementById('settings-word-count').textContent = total + ' 词'
       document.getElementById('settings-mastered-count').textContent = mCount + ' 词'

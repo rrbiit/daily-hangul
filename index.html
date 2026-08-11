@@ -104,7 +104,7 @@
           </button>
           <div class="title-area">
             <h1 id="course-book-title">연세 한국어 1</h1>
-            <p>延世韩国语1 · <span id="course-count">0</span>课 · <span id="course-words">0</span>个词汇</p>
+            <p><span id="course-book-cn">延世韩国语1</span> · <span id="course-count">0</span>课 · <span id="course-words">0</span>个词汇</p>
           </div>
         </div>
         <div class="lesson-list" id="lesson-list"></div>
@@ -557,21 +557,7 @@
 
     // Set → 数组 兼容
     function setKeys(s) { var a = []; s.forEach(function(v) { a.push(v) }); return a }
-    // 单词唯一标识：书ID|课号|韩语（同词跨课不冲突，跨书也隔离）
-    function wk(w, num) { return getCurrentBook().bookId + '|' + num + '|' + w.kr }
-    // 语法唯一标识：书ID|课号-序号（如 yonsei1|3-0）
-    function gk(num, idx) { return getCurrentBook().bookId + '|' + num + '-' + idx }
-
-    // 判断单词是否已掌握（SRS lv >= 4）
-    function isMastered(w, num) {
-      var d = srs[wk(w, num)]
-      return !!(d && d.lv >= 4)
-    }
-    // 判断是否是薄弱词（累计失败 >= 1 次且未掌握）
-    function isWeak(key) {
-      var d = srs[key]
-      return !!(d && (d.badCount || 0) >= 1 && d.lv < 4)
-    }
+    // wk/gk/isMastered/isWeak 已迁至 utils.js（书感知版本）
 
     // localStorage 安全包装
     function lsGet(key, fallback) {
@@ -613,8 +599,8 @@
       loadUserData()
       renderLessons()
       updateHomeStats()
-      // 课程页标题统一读当前教材（首页书架标题是静态的"我的教材"，由 renderHomeBooks 渲染）
-      var _cb = document.getElementById('course-book-title'); if (_cb) _cb.textContent = getCurrentBook().textbook
+      // 课程页标题/副标题统一读当前教材（首页书架标题是静态的"我的教材"，由 renderHomeBooks 渲染）
+      refreshBookTitles()
     } catch(e) {
       if (window._showError) window._showError('初始化失败: ' + (e.message || e))
     }
