@@ -427,11 +427,43 @@
       }
     })
 
-    // 生成语法例句 HTML，整行可点读
-    function renderGrammarExampleRow(ex) {
+    // 从语法卡片的 pattern/formula 提取可安全高亮的标记（-에 / -부터 / -고 等）
+    // 规则：只取「-」前缀的韩文标记；过滤含 / 或 ~ 的多选/变体（아/어요、은/는），
+    //      避免把单字到处点亮；超长整句（>6字）不参与，仅作兜底不误伤。
+    function grammarHighlightTokens(g) {
+      var src = (g.pattern || '') + ' ' + (g.formula || '')
+      var m = src.match(/-+[가-힣]+/g) || []
+      var out = []
+      m.forEach(function(t) {
+        var tok = t.replace(/^-+/, '')
+        if (!tok || tok.length > 6) return
+        if (tok.indexOf('/') >= 0 || tok.indexOf('~') >= 0) return
+        if (out.indexOf(tok) < 0) out.push(tok)
+      })
+      return out
+    }
+
+    // 在例句中高亮标记：只命中「韩文词末尾」的标记
+    // （학교에 的 -에 ✓，이에요 里不亮；운동하고 的 -고 ✓，학교/포도 里不亮）
+    function highlightKR(str, toks) {
+      var out = str
+      toks.forEach(function(tok) {
+        var re = new RegExp('(' + tok + ')(?![가-힣])', 'g')
+        out = out.replace(re, '<mark class="grammar-hl">$1</mark>')
+      })
+      return out
+    }
+
+    // 生成语法例句 HTML，整行可点读；有语法卡片时高亮其标记
+    function renderGrammarExampleRow(ex, g) {
       var safe = ex.kr.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       var safeCN = ex.cn.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      return '<div class="ex-item ex-clickable" data-speak="' + safe + '"><div class="kr">' + safe + ' 🔊</div><div class="cn">' + safeCN + '</div></div>'
+      var display = safe
+      if (g) {
+        var toks = grammarHighlightTokens(g)
+        if (toks.length) display = highlightKR(safe, toks)
+      }
+      return '<div class="ex-item ex-clickable" data-speak="' + safe + '"><div class="kr">' + display + ' 🔊</div><div class="cn">' + safeCN + '</div></div>'
     }
 
     // 收藏切换
@@ -621,7 +653,7 @@
         if (g.examples) {
           exHtml2 += '<div class="grammar-examples"><div class="ex-title">📝 例句</div>'
           g.examples.forEach(function(ex) {
-            exHtml2 += renderGrammarExampleRow(ex)
+            exHtml2 += renderGrammarExampleRow(ex, g)
           })
           exHtml2 += '</div>'
         }

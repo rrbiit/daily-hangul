@@ -356,6 +356,10 @@
       font-family: var(--font-display);
       font-size: 15px; color: var(--text);
     }
+    .grammar-card .grammar-examples .grammar-hl {
+      background: var(--primary-light); color: var(--primary);
+      border-radius: 3px; padding: 0 2px; font-weight: 600;
+    }
     .grammar-card .grammar-examples .cn {
       font-size: 13px; color: var(--text-dim); margin-top: 1px;
     }

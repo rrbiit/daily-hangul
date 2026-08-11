@@ -244,7 +244,7 @@
         if (g.examples) {
           exHtml += '<div class="grammar-examples"><div class="ex-title">📝 例句</div>'
           g.examples.forEach(function(ex) {
-            exHtml += renderGrammarExampleRow(ex)
+            exHtml += renderGrammarExampleRow(ex, g)
           })
           exHtml += '</div>'
         }

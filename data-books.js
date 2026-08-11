@@ -24,7 +24,7 @@ const APP_STATE = {
 
 const APP_CONFIG = {
   defaultBookId: 'yonsei1',   // 默认教材（老数据无书号，一律归属此书）
-  version: '1.15.7',
+  version: '1.15.8',
 }
 
 // 兼容全局：当前教材的数据指针（普通变量 + 重绑，非 getter，避免词法遮蔽陷阱）
