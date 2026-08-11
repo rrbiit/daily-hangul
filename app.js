@@ -87,6 +87,7 @@
     }
 
     // 点击书架上的教材：当前教材 → 进课程列表；其他教材 → 切换后进课程列表
+    // 切书不再弹确认：学习快照按书保存，切换不丢任何一本书的进度
     function onBookClick(bookId) {
       if (!getBook(bookId)) return
       if (bookId === APP_STATE.currentBookId) {
@@ -94,8 +95,6 @@
         navigateTo('page-course')
         return
       }
-      // 有未完成学习进度 → 先确认，避免误切丢失进度
-      if (hasStudyProgress() && !confirm('当前有未完成的学习进度，切换教材会清空它。确定切换吗？')) return
       setCurrentBook(bookId)
       navigateTo('page-course')
     }
@@ -767,25 +766,38 @@
           if (qChanged) lsSet('quiz-history', JSON.stringify(qh))
         } catch(e) {}
       }
-      // ③ 学习进度快照补书号：旧快照默认属延世1
+      // ③ 学习进度快照：旧格式（单个快照）→ 按书映射 { [bookId]: 快照 }（旧快照归属默认书）
       var rawP = lsGet('ys-study-progress', '')
       if (rawP) {
         try {
           var sp = JSON.parse(rawP)
-          if (sp && !sp.bookId) { sp.bookId = APP_CONFIG.defaultBookId; lsSet('ys-study-progress', JSON.stringify(sp)) }
+          if (sp && Array.isArray(sp.words)) {
+            var snapMap = {}
+            snapMap[sp.bookId || APP_CONFIG.defaultBookId] = {
+              words: sp.words,
+              index: sp.index || 0,
+              title: sp.title || '',
+              fromPage: sp.fromPage || 'page-home'
+            }
+            lsSet('ys-study-progress', JSON.stringify(snapMap))
+          }
         } catch(e) {}
+      }
+      // ④ 上次所学按书隔离：旧单键 `ys-last-lesson` → `ys-last-lesson-<默认书号>`（老记录归属延世1）
+      var oldLast = lsGet('ys-last-lesson', null)
+      if (oldLast !== null && lsGet('ys-last-lesson-' + APP_CONFIG.defaultBookId, null) === null) {
+        lsSet('ys-last-lesson-' + APP_CONFIG.defaultBookId, oldLast)
       }
     }
 
-    // 切书状态清理协议：切换教材时清空当前学习/测验会话，避免旧书数据污染新书
+    // 切书状态清理协议：切换教材时清空"内存中的"学习/测验会话
+    // （磁盘上的学习快照按书保存，切书不删——回来自动恢复，换书零丢失）
     function clearBookSessionState() {
       // 学习会话（study.js 会话状态，运行时才访问）
       _studyContextList = null
       studyWords = []
       studyIndex = 0
       studyFromPage = 'page-home'
-      // 学习进度快照：切书后旧书快照不可恢复 → 移除（后续快照带 bookId 时按书清理）
-      try { if (lsGet('ys-study-progress', null) !== null) localStorage.removeItem('ys-study-progress') } catch(e) {}
       // 测验会话（quiz.js 会话状态）
       quizQuestions = []
       quizIndex = 0
@@ -814,7 +826,7 @@
     const origOpenLesson = openLesson
     openLesson = function(num) {
       origOpenLesson(num)
-      lsSet('ys-last-lesson', String(num))
+      lsSet('ys-last-lesson-' + getCurrentBook().bookId, String(num))
       // 在单词列表顶部加学习按钮 + 全部标记掌握
       const header = document.querySelector('#page-words .page-header')
       const existing = document.getElementById('study-btn-area')

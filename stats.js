@@ -130,9 +130,11 @@
     function dayQuizErrors(dayKey) {
       var seen = {}
       var out = []
+      var bookId = getCurrentBook().bookId
       for (var i = 0; i < quizHistory.length; i++) {
         var h = quizHistory[i]
         if (getStudyDay(new Date(h.date)) !== dayKey) continue
+        if (h.bookId && h.bookId !== bookId) continue  // 只看当前教材的测验
         var errs = h.errors || []
         for (var j = 0; j < errs.length; j++) {
           var kr = errs[j].kr

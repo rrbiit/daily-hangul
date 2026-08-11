@@ -24,6 +24,12 @@
       try { var v = lsGet('quiz-history', ''); quizHistory = v ? JSON.parse(v) : [] } catch(e) { quizHistory = [] }
     }
 
+    // 当前教材的测验记录；多教材前的老记录没有 bookId，视为当前教材（启动迁移已把它们归入默认书）
+    function quizHistoryForBook() {
+      var bookId = getCurrentBook().bookId
+      return quizHistory.filter(function(h) { return !h.bookId || h.bookId === bookId })
+    }
+
     function saveQuizHistory() {
       if (quizHistory.length > 300) quizHistory = quizHistory.slice(-300)
       lsSet('quiz-history', JSON.stringify(quizHistory))
@@ -35,7 +41,7 @@
       if (!el) return
 
       var today = getStudyDay()
-      var todayRecords = quizHistory.filter(function(h) {
+      var todayRecords = quizHistoryForBook().filter(function(h) {
         return getStudyDay(new Date(h.date)) === today
       })
 
@@ -108,15 +114,16 @@
       renderTodayAnalysis(analysisId || 'quiz-today-analysis')
       var container = document.getElementById(containerId || 'quiz-history-list')
       if (!container) return
-      if (quizHistory.length === 0) {
+      var history = quizHistoryForBook()
+      if (history.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
         return
       }
       var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音', 'dict': '✍️ 听写' }
       var html = ''
       // 倒序显示，最新的在前面
-      for (var i = quizHistory.length - 1; i >= 0; i--) {
-        var h = quizHistory[i]
+      for (var i = history.length - 1; i >= 0; i--) {
+        var h = history[i]
         var d = new Date(h.date)
         var dateStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
         var pct = Math.round(h.score / h.total * 100)
@@ -550,7 +557,7 @@
     // 保存一笔测验记录（含错词进易错本），完整完成和半途退出共用
     function persistQuizRecord(score, total, partial) {
       addQuizSummary(score, total)
-      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, partial: !!partial, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
+      quizHistory.push({ date: new Date().toISOString(), mode: quizMode, score: score, total: total, partial: !!partial, bookId: getCurrentBook().bookId, errors: quizErrors.map(function(e) { return { kr: e.kr, cn: e.cn, pos: e.pos, lessonNum: e.lessonNum } }) })
       saveQuizHistory()
       var demotedMastered = []
       quizErrors.forEach(function(e) {

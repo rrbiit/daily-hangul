@@ -146,44 +146,66 @@
     }
 
     // 上一张
-    // ─── 保存/恢复学习进度 ───
+    // ─── 保存/恢复学习进度（按书隔离）───
+    // 存储格式：ys-study-progress = { [bookId]: { words, index, title, fromPage } }
+    // 每本书的快照各自保存，切换教材不丢任何一本书的进行中学习
+    function getStudySnapshot(bookId) {
+      var raw = lsGet('ys-study-progress', '')
+      if (!raw) return null
+      try { var m = JSON.parse(raw); return (m && m[bookId]) || null } catch(e) { return null }
+    }
+    function setStudySnapshot(bookId, snap) {
+      var m = {}
+      var raw = lsGet('ys-study-progress', '')
+      try { if (raw) { m = JSON.parse(raw); if (!m || Array.isArray(m.words)) m = {} } } catch(e) { m = {} }
+      m[bookId] = snap
+      lsSet('ys-study-progress', JSON.stringify(m))
+    }
+    function clearStudySnapshot(bookId) {
+      var m = {}
+      var raw = lsGet('ys-study-progress', '')
+      try { if (raw) { m = JSON.parse(raw); if (Array.isArray(m.words)) m = {} } } catch(e) { m = {} }
+      if (m[bookId]) delete m[bookId]
+      var keys = Object.keys(m)
+      if (keys.length === 0) localStorage.removeItem('ys-study-progress')
+      else lsSet('ys-study-progress', JSON.stringify(m))
+    }
+
     function saveStudyProgress() {
       if (!studyWords || studyWords.length === 0) return
-      lsSet('ys-study-progress', JSON.stringify({
+      setStudySnapshot(getCurrentBook().bookId, {
         words: studyWords,
         index: studyIndex,
         title: document.getElementById('study-title').textContent,
         fromPage: studyFromPage
-      }))
+      })
       updateContinueBtn()
     }
 
     function clearStudyProgress() {
-      localStorage.removeItem('ys-study-progress')
+      clearStudySnapshot(getCurrentBook().bookId)
       updateContinueBtn()
     }
 
     function hasStudyProgress() {
-      return !!lsGet('ys-study-progress', '')
+      var s = getStudySnapshot(getCurrentBook().bookId)
+      return !!(s && s.words && s.words.length > 0)
     }
 
     function resumeStudy() {
-      var raw = lsGet('ys-study-progress', '')
-      if (!raw) return
-      try {
-        var p = JSON.parse(raw)
-        if (!p.words || p.words.length === 0) return
-        _studyContextList = p.words
-        studyWords = p.words
-        studyIndex = Math.min(p.index, p.words.length - 1)
-        studyFromPage = p.fromPage || 'page-home'
-        resetSessionStats()
-        isFlipped = false
-        document.getElementById('study-title').textContent = p.title || '继续学习'
-        hideNav()
-        showCard()
-        navigateTo('page-study')
-      } catch(e) {}
+      var p = getStudySnapshot(getCurrentBook().bookId)
+      if (!p) return
+      if (!p.words || p.words.length === 0) return
+      _studyContextList = p.words
+      studyWords = p.words
+      studyIndex = Math.min(p.index, p.words.length - 1)
+      studyFromPage = p.fromPage || 'page-home'
+      resetSessionStats()
+      isFlipped = false
+      document.getElementById('study-title').textContent = p.title || '继续学习'
+      hideNav()
+      showCard()
+      navigateTo('page-study')
     }
 
     function startMainStudy() {
@@ -213,15 +235,9 @@
       }
       if (iconEl) iconEl.textContent = '📖'
       if (hasStudyProgress()) {
-        var raw = lsGet('ys-study-progress', '')
-        try {
-          var p = JSON.parse(raw)
-          titleEl.textContent = '继续学习'
-          descEl.textContent = p.title || '恢复上次进度'
-        } catch(e) {
-          titleEl.textContent = '开始学习'
-          descEl.textContent = getCurrentBook().textbook
-        }
+        var p = getStudySnapshot(getCurrentBook().bookId)
+        titleEl.textContent = '继续学习'
+        descEl.textContent = (p && p.title) || '恢复上次进度'
       } else {
         titleEl.textContent = '开始学习'
         descEl.textContent = getCurrentBook().textbook

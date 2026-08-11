@@ -629,7 +629,7 @@
       if (initHash === 'settings') { showSettings() }
       if (initHash === 'study') { resumeStudy() }
       if (initHash === 'words') {
-        var lastLesson = parseInt(lsGet('ys-last-lesson', '1'))
+        var lastLesson = parseInt(lsGet('ys-last-lesson-' + getCurrentBook().bookId, '1'))
         openLesson(lastLesson)
       }
       // 设置页已由 showSettings() 处理
