@@ -39,19 +39,32 @@
       var list = document.getElementById('home-book-list')
       if (!list) return
       list.innerHTML = ''
-      // ① 已加入的教材：可点击进入课程列表
+      // ① 已加入的教材：可点击进入课程列表，卡上显示每本书的掌握进度
       BOOKS.forEach(function(b) {
         var isCurrent = b.bookId === APP_STATE.currentBookId
         var lessons = b.lessons || []
-        var words = 0
-        Object.keys(b.vocab || {}).forEach(function(k) { words += (b.vocab[k] || []).length })
+        var words = 0, done = 0
+        // 进度按"这本书自己的 bookId"算（非当前书时不能用全局 wk()，否则 key 会串到当前书）
+        Object.keys(b.vocab || {}).forEach(function(k) {
+          (b.vocab[k] || []).forEach(function(w) {
+            words++
+            var d = srs[b.bookId + '|' + k + '|' + w.kr]
+            if (d && d.lv >= 4) done++
+          })
+        })
+        var pct = words > 0 ? Math.round((done / words) * 100) : 0
         var item = document.createElement('div')
         item.className = 'home-book-item' + (isCurrent ? ' current' : '')
         item.onclick = function() { onBookClick(b.bookId) }
+        var metaText = (b.cn || b.textbook) + ' · ' + lessons.length + '课'
+        if (words > 0) metaText += ' · 已掌握 ' + done + '/' + words
+        var progressHTML = words > 0
+          ? '<div class="hbi-progress"><div class="hbi-progress-fill" style="width:' + pct + '%"></div></div>'
+          : ''
         item.innerHTML =
           '<span class="hbi-cover">📗</span>' +
           '<div class="hbi-info"><div class="hbi-title">' + b.textbook + '</div>' +
-          '<div class="hbi-meta">' + (b.cn || b.textbook) + ' · ' + lessons.length + ' 课 · ' + words + ' 个词</div></div>' +
+          '<div class="hbi-meta">' + metaText + '</div>' + progressHTML + '</div>' +
           (isCurrent ? '<span class="hbi-badge">✓ 学习中</span>' : '<span class="hbi-badge">切换</span>')
         list.appendChild(item)
       })
