@@ -1,9 +1,10 @@
-var CACHE = 'hangul-v34';
+var CACHE = 'hangul-v35';
 var FILES = [
   '.',
   'index.html',
   'style.css',
-  'data.js',
+  'data-books.js',
+  'data-yonsei1.js',
   'utils.js',
   'app.js',
   'study.js',
@@ -55,7 +56,7 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // 其它资源（CSS/JS/data.js 等）保持缓存优先：命中秒回（秒开），后台静默更新
+  // 其它资源（CSS/JS/data-books.js 等）保持缓存优先：命中秒回（秒开），后台静默更新
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) {

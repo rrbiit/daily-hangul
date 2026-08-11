@@ -2,7 +2,7 @@
    app.js · 核心层
    全局状态 / 页面导航 / 首页 / 单词列表 / 设置 / 数据持久化 / 打卡统计
    从 index.html 拆出（v1.10.6）
-   依赖：data.js / utils.js / 基础工具脚本（setKeys/lsGet/wk 等）
+   依赖：data-books.js / data-yonsei1.js / utils.js / 基础工具脚本（setKeys/lsGet/wk 等）
    加载：须在 study.js / stats.js / quiz.js 之前
    ═══════════════════════════════════════════ */
 
@@ -108,7 +108,7 @@
       }
 
       // 标题 + 进度（顶部带短书名，如「연세1 · 제1과 - 소개」）
-      document.getElementById('words-title').textContent = APP_CONFIG.bookTag + ' · 제' + num + '과 - ' + LESSONS[num-1].title
+      document.getElementById('words-title').textContent = getCurrentBook().bookTag + ' · 제' + num + '과 - ' + LESSONS[num-1].title
       var mc = masteryCount(num)
       document.getElementById('words-count').textContent = `共 ${rawWords.length} 个词汇 · 已掌握 ${mc}/${rawWords.length}`
 
@@ -673,6 +673,8 @@
 
           // 书 ID 迁移：早期编号没带书前缀（如 3|가족），统一升级为 yonsei1|3|가족
           migrateBookIdKeys()
+          // 多教材迁移：为新旧数据补全"所属教材"信息（幂等，不删任何数据）
+          migrateMultiBook()
         }
       } catch(e) {}
     }
@@ -680,7 +682,7 @@
     // 幂等迁移：已是「书ID|…」开头的 key 直接保留，否则补上书前缀
     // 覆盖四块数据：掌握进度 srs / 单词收藏 starred / 语法收藏 grammarStarred / 语法掌握 grammarMastered
     function migrateBookIdKeys() {
-      var prefix = APP_CONFIG.bookId + '|'
+      var prefix = APP_CONFIG.defaultBookId + '|'   // 早期数据无书号，一律归属默认书（延世1）
       var changed = false
       function fix(k) {
         if (typeof k === 'string' && k.indexOf(prefix) === 0) return k
@@ -701,6 +703,59 @@
         grammarMastered = fixAll(grammarMastered)
         saveUserData()
       }
+    }
+
+    // 多教材迁移（幂等）：为老数据补全"所属教材"信息，老数据一律归属默认书（延世1）
+    function migrateMultiBook() {
+      // ① 当前教材：首次无记录 → 默认书
+      if (!lsGet('ys-current-book', null)) lsSet('ys-current-book', APP_CONFIG.defaultBookId)
+      // ② 测验历史补书号：旧记录默认属延世1
+      var rawQ = lsGet('quiz-history', '')
+      if (rawQ) {
+        try {
+          var qh = JSON.parse(rawQ)
+          var qChanged = false
+          for (var i = 0; i < qh.length; i++) {
+            if (qh[i] && !qh[i].bookId) { qh[i].bookId = APP_CONFIG.defaultBookId; qChanged = true }
+          }
+          if (qChanged) lsSet('quiz-history', JSON.stringify(qh))
+        } catch(e) {}
+      }
+      // ③ 学习进度快照补书号：旧快照默认属延世1
+      var rawP = lsGet('ys-study-progress', '')
+      if (rawP) {
+        try {
+          var sp = JSON.parse(rawP)
+          if (sp && !sp.bookId) { sp.bookId = APP_CONFIG.defaultBookId; lsSet('ys-study-progress', JSON.stringify(sp)) }
+        } catch(e) {}
+      }
+    }
+
+    // 切书状态清理协议：切换教材时清空当前学习/测验会话，避免旧书数据污染新书
+    function clearBookSessionState() {
+      // 学习会话（study.js 会话状态，运行时才访问）
+      _studyContextList = null
+      studyWords = []
+      studyIndex = 0
+      studyFromPage = 'page-home'
+      // 学习进度快照：切书后旧书快照不可恢复 → 移除（后续快照带 bookId 时按书清理）
+      try { if (lsGet('ys-study-progress', null) !== null) localStorage.removeItem('ys-study-progress') } catch(e) {}
+      // 测验会话（quiz.js 会话状态）
+      quizQuestions = []
+      quizIndex = 0
+      quizScore = 0
+    }
+
+    // 设置当前教材：更新状态 → 持久化 → 重绑数据 → 清理会话 → 刷新相关页面
+    function setCurrentBook(bookId) {
+      if (!getBook(bookId) || bookId === APP_STATE.currentBookId) return
+      APP_STATE.currentBookId = bookId
+      lsSet('ys-current-book', bookId)
+      bindBookGlobals()
+      clearBookSessionState()
+      // 刷新与教材相关的首页 / 课程页内容（阶段2 接入教材入口后再统一跳转）
+      renderLessons()
+      updateHomeStats()
     }
 
     // 在单词列表加"开始学习"按钮

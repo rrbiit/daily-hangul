@@ -2,7 +2,7 @@
    stats.js · 统计层
    学习记录页 / 今日分析 / 每日列表
    从 index.html 拆出（v1.10.6）
-   依赖：data.js / utils.js / app.js / quiz.js（quizHistory 运行时读取）
+   依赖：data-books.js / data-yonsei1.js / utils.js / app.js / quiz.js（quizHistory 运行时读取）
    加载：在 app.js 之后即可
    ═══════════════════════════════════════════ */
 

@@ -558,9 +558,9 @@
     // Set → 数组 兼容
     function setKeys(s) { var a = []; s.forEach(function(v) { a.push(v) }); return a }
     // 单词唯一标识：书ID|课号|韩语（同词跨课不冲突，跨书也隔离）
-    function wk(w, num) { return APP_CONFIG.bookId + '|' + num + '|' + w.kr }
+    function wk(w, num) { return getCurrentBook().bookId + '|' + num + '|' + w.kr }
     // 语法唯一标识：书ID|课号-序号（如 yonsei1|3-0）
-    function gk(num, idx) { return APP_CONFIG.bookId + '|' + num + '-' + idx }
+    function gk(num, idx) { return getCurrentBook().bookId + '|' + num + '-' + idx }
 
     // 判断单词是否已掌握（SRS lv >= 4）
     function isMastered(w, num) {
@@ -593,7 +593,8 @@
     }
 
     </script>
-    <script src="data.js"></script>
+    <script src="data-books.js"></script>
+    <script src="data-yonsei1.js"></script>
     <script src="utils.js"></script>
     <script src="app.js"></script>
     <script src="study.js"></script>
@@ -604,12 +605,16 @@
     var _he = document.getElementById('home-emoji')
     if (_he) _he.textContent = HOME_EMOJIS[Math.floor(Math.random() * HOME_EMOJIS.length)]
     try {
+      // 恢复上次选择的教材 → 重新绑定数据（默认延世1，后续切书后自动跟随）
+      var _savedBook = lsGet('ys-current-book', null)
+      if (_savedBook && getBook(_savedBook)) APP_STATE.currentBookId = _savedBook
+      bindBookGlobals()
       loadUserData()
       renderLessons()
       updateHomeStats()
-      // 书名统一读配置（显示与之前一致，加第二本书时自动跟随当前书）
-      var _hb = document.getElementById('home-book-title'); if (_hb) _hb.textContent = '📚 ' + APP_CONFIG.textbook
-      var _cb = document.getElementById('course-book-title'); if (_cb) _cb.textContent = APP_CONFIG.textbook
+      // 书名统一读当前教材（显示与之前一致，加第二本书时自动跟随当前书）
+      var _hb = document.getElementById('home-book-title'); if (_hb) _hb.textContent = '📚 ' + getCurrentBook().textbook
+      var _cb = document.getElementById('course-book-title'); if (_cb) _cb.textContent = getCurrentBook().textbook
     } catch(e) {
       if (window._showError) window._showError('初始化失败: ' + (e.message || e))
     }

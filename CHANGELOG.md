@@ -5,6 +5,47 @@
 
 ---
 
+## 📅 2026-08-11 17:09 · v1.11.0
+
+### 📝 一句话总结
+为支持多教材做准备：数据层升级为「教材注册表 + 当前教材」架构（阶段1 打地基），页面体验完全不变。
+
+### 🎯 本次更新目标
+- 为什么修改？原架构只有延世1 一套 VOCAB/GRAMMAR/LESSONS 全局数据，直接加第二本教材（延世2）会导致结构混乱。先打地基，后面加教材才安全、不碰已有数据。
+- 解决了哪些问题？
+  1. 数据只有一份、写死在 data.js，未来无法并存多套教材
+  2. 没有统一的切教材入口，学习/测验会话、进度快照可能跨书串数据
+  3. 老数据的 localStorage 记录没有"所属教材"信息，换书后无法区分归属
+- 本阶段只做内部升级，不新增任何用户可见功能，页面与学习流程与 v1.10.15 完全一致。
+
+### ✨ 本次更新
+**代码重构（多教材架构 · 阶段1 打地基）**
+- 新增 data-books.js：教材注册表 BOOKS + 全局状态 APP_STATE（当前教材）+ 应用配置 APP_CONFIG + getCurrentBook / getBook / bindBookGlobals
+- data.js 更名为 data-yonsei1.js：数据改名 YONSEI1_VOCAB / GRAMMAR / LESSONS，末尾 registerBook 注册为延世1 教材并 bindBookGlobals
+- 全局 LESSONS / VOCAB / GRAMMAR 改为可重绑变量，始终指向当前教材（全站 45 处原有引用零改动）
+- index.html：加载顺序改为 data-books.js → data-yonsei1.js → …；启动脚本恢复上次选择的教材并重绑数据；wk / gk / 书名改读 getCurrentBook()
+- app.js：新增 setCurrentBook()（切书入口）、clearBookSessionState()（切书状态清理协议）、migrateMultiBook()（数据迁移，幂等）；migrateBookIdKeys 前缀改用默认书号
+- sw.js：FILES 更新为 data-books.js + data-yonsei1.js，缓存号 hangul-v34 → v35
+
+### 👤 用户体验变化
+- 修改前 / 修改后：页面、交互、学习流程**没有任何变化**。本阶段是"装修打地基"，用户不会感知任何不同。
+- 学习数据完全保留：进度、收藏、掌握、SRS、打卡、测验历史原样不动；迁移只做"补全所属教材标记 + 备份"，不删、不改任何已有数据。
+
+### 💭 设计思考
+- 为什么用「普通变量重绑」而不是 defineProperty getter？getter 会让全局词法绑定遮蔽 window 属性，产生隐藏 bug；普通变量 + bindBookGlobals() 在启动/切书时重绑，简单可靠，未来可渐进迁移到显式 getLessons() / getVocab() / getGrammar()。
+- 为什么阶段1不动任何页面？架构升级要分阶段验证：先保证"地基稳、数据安全"，再谈"首页展示多教材"。一次大改风险高，小步走每步可测。
+- 遵循了哪些原则？做减法（不加用户可见功能）、渐进式重构（不动 45 处原有引用）、数据安全优先（迁移幂等、保留备份、不删任何数据）。
+
+### ⚠️ 开发记录
+- 测试：用 node 模拟浏览器环境加载全部模块，19 项断言全过——迁移幂等、切书防护、会话清理、数据重绑均验证通过。
+- 一个坑：data.js 重命名后，已安装的 PWA / 桌面应用缓存里仍是旧文件清单，必须同步 bump 缓存号 + 更新 FILES，否则拿不到 data-books.js 会 404（已处理）。
+
+### 📌 下一步建议
+- 阶段2：首页加「我的教材」入口（等用户确认阶段1稳定后再开始）
+- 阶段3：学习进度快照、测验历史、上次所学按书隔离（保存时写入 bookId）
+- 阶段4：加入延世韩国语2 数据（新建 data-yonsei2.js）
+- 后续：把全站 LESSONS/VOCAB/GRAMMAR 引用渐进替换为 getLessons() / getVocab() / getGrammar()，彻底去全局依赖
+
 ## 📅 2026-08-11 16:24 · v1.10.15
 
 ### 📝 一句话总结

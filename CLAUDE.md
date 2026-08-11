@@ -181,7 +181,8 @@
 
 | 文件 | 职责 |
 |---|---|
-| data.js | 词汇 / 语法 / 课程数据（VOCAB / GRAMMAR / LESSONS / APP_CONFIG） |
+| data-books.js | 教材注册表 + 应用全局状态（BOOKS / APP_STATE / APP_CONFIG / registerBook / getCurrentBook / bindBookGlobals） |
+| data-yonsei1.js | 延世韩国语1 词汇 / 语法 / 课程数据（YONSEI1_VOCAB / YONSEI1_GRAMMAR / YONSEI1_LESSONS + registerBook） |
 | utils.js | 纯工具：SRS 间隔算法、韩语活用生成、输入归一化（无 DOM） |
 | app.js | 核心层：全局状态、页面导航、首页与单词列表渲染、设置、数据持久化、打卡/每日日志 |
 | study.js | 学习层：闪卡学习、发音、收藏页、搜索、易错本、复习池、键盘与滑动手势 |
@@ -193,10 +194,11 @@
 
 1. **新增业务逻辑 → 写入对应模块文件**，不得在 index.html 里新增内联 `<script>`。
 2. **index.html 只保留**：页面结构、`<script src>` 引用、末尾的启动脚本（初始化 + 刷新恢复位置）。
-3. **加载顺序固定**：data.js → utils.js → app.js → study.js → stats.js → quiz.js → 末尾启动脚本。新文件插在正确位置：依赖某模块的函数，就放该模块之后。
+3. **加载顺序固定**：data-books.js → data-yonsei1.js → utils.js → app.js → study.js → stats.js → quiz.js → 末尾启动脚本。新文件插在正确位置：依赖某模块的函数，就放该模块之后。
 4. **新增 JS 文件时**，同步更新 sw.js 的 `FILES` 数组，并把缓存号 `CACHE` 升一位（如 hangul-v25→v26）。否则已安装的 PWA / 桌面应用拿不到新文件，会 404。
-5. **版本发布三同步**：data.js 的 `APP_CONFIG.version` = CHANGELOG 版本号 = sw.js 缓存号升位。
+5. **版本发布三同步**：data-books.js 的 `APP_CONFIG.version` = CHANGELOG 版本号 = sw.js 缓存号升位。
 6. **依赖方向**：上层模块可调用下层模块的函数（app 最早加载）；不要在 app.js 里写"加载即执行"且依赖 study/quiz 函数的代码（运行时调用可以）。
+7. **新增教材**：新建 `data-yonseiN.js`（N 为序号），把该书的 YONSEI*_VOCAB / GRAMMAR / LESSONS 命名好，文件末尾 `registerBook({...})` 注册并 `bindBookGlobals()`；同步更新 index.html 脚本引用、sw.js FILES 与缓存号。
 
 ---
 
@@ -549,7 +551,7 @@ Daily Hangul 不是功能展示网站。
 - 涉及哪些文件
 - 是否存在风险
 - 是否有后续优化建议
-- 若涉及版本发布，请同步更新 [data.js](data.js) 中 `APP_CONFIG.version`（与 CHANGELOG 版本号一致），并 bump [sw.js](sw.js) 的缓存版本号 `CACHE`（如 hangul-v5→v6），确保安装版/桌面应用能刷新缓存。
+- 若涉及版本发布，请同步更新 [data-books.js](data-books.js) 中 `APP_CONFIG.version`（与 CHANGELOG 版本号一致），并 bump [sw.js](sw.js) 的缓存版本号 `CACHE`（如 hangul-v5→v6），确保安装版/桌面应用能刷新缓存。
 
 ---
 

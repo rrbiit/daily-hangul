@@ -1,8 +1,9 @@
     /* ═══════════════════════════════════════════
-       词汇数据 · 延世韩国语1 第1~3课
+       延世韩国语1 教材数据（词汇 / 语法 / 课程）
+       在文件末尾 registerBook 注册为教材，bindBookGlobals 绑定到全局
        ═══════════════════════════════════════════ */
 
-    const VOCAB = {
+    const YONSEI1_VOCAB = {
       1: [
         { kr: '안녕하세요', cn: '你好', pos: '问候语', stars: 5 },
         { kr: '감사합니다', cn: '谢谢', pos: '问候语', stars: 5 },
@@ -748,7 +749,7 @@
        课程信息
        ═══════════════════════════════════════════ */
 
-    const GRAMMAR = {
+    const YONSEI1_GRAMMAR = {
       1: [
         {
           pattern: '-입니다',
@@ -1292,7 +1293,7 @@
       ],
     }
 
-    const LESSONS = [
+    const YONSEI1_LESSONS = [
       { num: 1, title: '소개', kr: '自我介绍' },
       { num: 2, title: '학교와 집', kr: '学校和家' },
       { num: 3, title: '가족', kr: '家人' },
@@ -1305,9 +1306,13 @@
       { num: 10, title: '휴일', kr: '假日' },
     ]
 
-    const APP_CONFIG = {
+    // 注册为"延世韩国语1"教材（registerBook / bindBookGlobals 定义于 data-books.js）
+    registerBook({
+      bookId: 'yonsei1',
       textbook: '연세 한국어 1',
       bookTag: '연세1',     // 页面上的短书名（单词列表页顶部）
-      bookId: 'yonsei1',    // 内部书编号：单词/语法 key 的前缀（加第二本书时如 yonsei2）
-      version: '1.10.15',
-    }
+      lessons: YONSEI1_LESSONS,
+      vocab: YONSEI1_VOCAB,
+      grammar: YONSEI1_GRAMMAR,
+    })
+    bindBookGlobals()

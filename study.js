@@ -2,7 +2,7 @@
    study.js · 学习层
    闪卡学习 / 发音 / 收藏页 / 搜索 / 易错本 / 复习池 / 键盘与滑动手势
    从 index.html 拆出（v1.10.6）
-   依赖：data.js / utils.js / app.js 全局函数与状态
+   依赖：data-books.js / data-yonsei1.js / utils.js / app.js 全局函数与状态
    加载：须在 app.js 之后、quiz.js 之前
    ═══════════════════════════════════════════ */
 
@@ -220,11 +220,11 @@
           descEl.textContent = p.title || '恢复上次进度'
         } catch(e) {
           titleEl.textContent = '开始学习'
-          descEl.textContent = APP_CONFIG.textbook
+          descEl.textContent = getCurrentBook().textbook
         }
       } else {
         titleEl.textContent = '开始学习'
-        descEl.textContent = APP_CONFIG.textbook
+        descEl.textContent = getCurrentBook().textbook
       }
     }
 
