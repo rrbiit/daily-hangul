@@ -1,10 +1,11 @@
-var CACHE = 'hangul-v38';
+var CACHE = 'hangul-v39';
 var FILES = [
   '.',
   'index.html',
   'style.css',
   'data-books.js',
   'data-yonsei1.js',
+  'data-yonsei2.js',
   'utils.js',
   'app.js',
   'study.js',

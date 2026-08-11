@@ -15,7 +15,6 @@ const BOOKS = []
 // 规划中的教材：首页书架先占位置，内容文件（data-yonseiN.js）写好后
 // 用 registerBook() 注册即自动变成可学教材（然后从 PLANNED_BOOKS 移除）
 const PLANNED_BOOKS = [
-  { bookId: 'yonsei2', textbook: '연세 한국어 2', cn: '延世韩国语2', bookTag: '연세2' },
   { bookId: 'yonsei3', textbook: '연세 한국어 3', cn: '延世韩国语3', bookTag: '연세3' },
 ]
 
@@ -25,7 +24,7 @@ const APP_STATE = {
 
 const APP_CONFIG = {
   defaultBookId: 'yonsei1',   // 默认教材（老数据无书号，一律归属此书）
-  version: '1.14.0',
+  version: '1.15.0',
 }
 
 // 兼容全局：当前教材的数据指针（普通变量 + 重绑，非 getter，避免词法遮蔽陷阱）
