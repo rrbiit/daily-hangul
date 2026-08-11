@@ -631,7 +631,7 @@
         // 星星收藏点击
         div.querySelector('.grammar-star').onclick = function(e) {
           e.stopPropagation()
-          const k = `${g.lessonNum}-${g.grammarIdx}`
+          const k = gk(g.lessonNum, g.grammarIdx)
           if (grammarStarred.has(k)) grammarStarred.delete(k)
           else grammarStarred.add(k)
           saveUserData()
@@ -788,7 +788,7 @@
                 (mastered ? '✓' : '○') +
               '</span>' +
             '</div>' +
-            '<button class="word-learn-btn" onclick="event.stopPropagation();startStudyFromContext(\'' + key + '\',\'搜索结果\',\'page-home\')">▶ 学习</button>' +
+            '<button class="word-learn-btn" onclick="event.stopPropagation();closeSearch();startStudyFromContext(\'' + key + '\',\'搜索结果\',\'page-home\')">▶ 学习</button>' +
           '</div>'
 
         results.appendChild(div)

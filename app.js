@@ -46,7 +46,7 @@
         var pct = total > 0 ? Math.round((done / total) * 100) : 0
         var item = document.createElement('div')
         item.className = 'home-lesson-item'
-        item.onclick = function() { navigateTo('page-words'); openLesson(l.num) }
+        item.onclick = function() { openLesson(l.num) }
         item.innerHTML = '<span class="hli-num">제' + l.num + '과</span>' +
           '<div class="hli-info"><div class="hli-title">' + l.title + '</div><div class="hli-meta">' + total + ' 个词 · 掌握 ' + done + ' 个</div></div>' +
           '<div class="hli-stats"><div class="hli-bar-wrap"><div class="hli-bar-fill" style="width:' + pct + '%"></div></div><span class="hli-count">' + done + '/' + total + '</span></div>'
