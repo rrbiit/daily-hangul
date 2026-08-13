@@ -1,4 +1,4 @@
-var CACHE = 'hangul-v59';
+var CACHE = 'hangul-v60';
 var FILES = [
   '.',
   'index.html',
@@ -10,6 +10,7 @@ var FILES = [
   'app.js',
   'study.js',
   'stats.js',
+  'confusion.js',
   'quiz.js',
   'manifest.json'
 ];
