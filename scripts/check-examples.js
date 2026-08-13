@@ -34,12 +34,7 @@ const ROOT = path.resolve(__dirname, '..')
 // 已知遗留：延世2 第1/7/8/9/10课的 49 个词组/惯用语词，手写于「每词 3 句」旧标准时期，
 // 现全站标准为每词 4 句。这些词计入报告（legacyThree）但不判失败，待逐课扩展到 4 句。
 // 键格式：bookId|课号|kr（与下方检查脚本同款拼接）。
-const LEGACY_THREE = new Set([
-  'yonsei2|9|사진을 찍다', 'yonsei2|9|기억에 남다', 'yonsei2|9|기대가 되다',
-  'yonsei2|10|이사를 하다', 'yonsei2|10|짐을 싸다', 'yonsei2|10|짐을 옮기다', 'yonsei2|10|계약을 하다',
-  'yonsei2|10|설거지를 하다', 'yonsei2|10|청소기를 돌리다', 'yonsei2|10|먼지를 털다', 'yonsei2|10|빨래를 하다',
-  'yonsei2|10|화분에 물을 주다', 'yonsei2|10|걸레질을 하다', 'yonsei2|10|병이 나다'
-])
+const LEGACY_THREE = new Set([])
 
 // 1. 加载应用基础层 + 全部教材数据文件
 const ctx = { __FILES__: [] }
