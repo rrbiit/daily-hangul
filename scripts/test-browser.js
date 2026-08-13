@@ -76,6 +76,26 @@ async function main() {
       // 发音桩：jsdom 无 Audio / speechSynthesis
       window.Audio = class { constructor() {} play() { return Promise.reject(new Error('no-audio')) } pause() {} }
       window.speechSynthesis = { cancel() {}, speak() {}, getVoices() { return [] } }
+      // 导出桩：捕获下载 Blob（jsdom 无 createObjectURL）
+      window.URL.createObjectURL = blob => { window.__capturedBlob = blob; return 'blob:mock' }
+      window.URL.revokeObjectURL = () => {}
+      // 导入桩：FileReader 同步回填 + 文件选择器 click 后派发 change（jsdom 无真实文件选择）
+      window.FileReader = class {
+        readAsText(file) {
+          const self = this
+          const fill = t => { self.result = t; if (self.onload) self.onload({ target: self }) }
+          if (file && typeof file.text === 'function') file.text().then(fill, () => fill(''))
+          else fill('')
+        }
+      }
+      const origClick = window.HTMLInputElement.prototype.click
+      window.HTMLInputElement.prototype.click = function() {
+        origClick.call(this)
+        if (this.type === 'file' && window.__importFile) {
+          Object.defineProperty(this, 'files', { value: [window.__importFile], configurable: true })
+          this.dispatchEvent(new window.Event('change'))
+        }
+      }
     },
   })
 
@@ -190,9 +210,33 @@ async function main() {
     console.log('    (jsdom 环境噪音 ' + errors.length + ' 条：' + errors.slice(0, 3).join(' | '))
   }
 
-  console.log('── 8. 清除所有数据（含 ys-confusions）──')
+  console.log('── 8. 导出 / 导入（含 ys-confusions 个人混淆数据）──')
+  window.eval("clearConfusions(); recordConfusion('yonsei1|6|싸다', 'yonsei1|3|사다'); recordConfusion('yonsei1|6|싸다', 'yonsei1|3|사다')")
+  ok(window.eval('getPersonalPairs("yonsei1").length') === 1, '导出前存在个人混淆记录（싸다↔사다）')
+  window.exportData()
+  const backupText = await window.__capturedBlob.text()
+  const backup = JSON.parse(backupText)
+  ok(!!backup.store && !!backup.store['ys-confusions'], '导出 JSON 包含 ys-confusions（ys- 前缀已纳入备份范围）')
+  ok(JSON.stringify(backup.store['ys-confusions']).indexOf('싸다') >= 0, 'ys-confusions 内容包含混淆记录（싸다）')
+  ok(!!backup.store['yonsei-study-data'] && !!backup.store['quiz-history'], '原有数据（SRS/历史）照常导出')
+  // 模拟全部数据丢失（用应用自身的 key 收集函数清空），再导入恢复
+  window.eval('collectAppStorageKeys().forEach(function(k){ localStorage.removeItem(k) })')
+  ok(window.localStorage.getItem('ys-confusions') === null && window.localStorage.getItem('yonsei-study-data') === null, '已模拟全部数据丢失')
+  window.__importFile = new window.File([backupText], 'backup.json', { type: 'application/json' })
+  window.confirm = () => true
+  window.alert = () => {}
+  window.importData()
+  await sleep(200)
+  window.eval('loadConfusions()')   // 真实浏览器里 importData 会 location.reload() 自动重读；jsdom 无刷新，手动等价模拟
+  ok(window.localStorage.getItem('ys-confusions') !== null, '导入后 ys-confusions 已写回 localStorage')
+  ok(window.localStorage.getItem('yonsei-study-data') !== null, '导入后原有学习数据一并恢复')
+  ok(window.localStorage.getItem('quiz-history') !== null, '导入后测验历史一并恢复')
+  const restored = window.eval('getPersonalPairs("yonsei1")')
+  ok(restored.length === 1 && restored[0].ba === 2 && restored[0].ab === 0, '恢复的混淆方向计数正确（a=사다, b=싸다，考 싸다 答成 사다 2 次 → ba=2）')
+
+  console.log('── 9. 清除所有数据（含 ys-confusions）──')
   window.eval(`recordConfusion('yonsei1|6|싸다', 'yonsei1|3|사다')`)
-  ok(window.eval('getPersonalPairs("yonsei1").length') >= 1, '存在个人混淆记录（实测 ' + window.eval('getPersonalPairs("yonsei1").length') + ' 组，含本轮新增）')
+  ok(window.eval('getPersonalPairs("yonsei1").length') >= 1, '存在个人混淆记录（实测 ' + window.eval('getPersonalPairs("yonsei1").length') + ' 组）')
   ok(window.localStorage.getItem('ys-confusions') !== null, 'ys-confusions 已写入 localStorage')
   window.confirm = () => true
   window.alert = () => {}
