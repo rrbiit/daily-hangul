@@ -16,10 +16,11 @@
 
     // ─── 常量 ───
     var CONFUSION_ACTIVE_MIN_COUNT = 2    // 个人混淆"活跃"阈值：定向混淆次数 ≥2 才生效
+    var CONFUSION_ACTIVE_MIN_WEIGHT = 0.5 // 个人混淆进入"辨析题"的最低权重（低于 → 只作干扰项，不再占用题位）
     var CONFUSION_MATCH_MAX_DIST = 1      // 听写"疑似混淆"最大编辑距离（>1 视为纯拼写错误）
     var CONFUSION_STORE_CAP = 300         // 个人混淆关系存储上限（超出按最近活跃时间淘汰）
     var CONFUSION_HALF_LIFE_MS = 30 * 86400000   // 权重时间衰减半衰期：30 天
-    var CONFUSION_RESOLVE_DISCOUNT = 0.8  // 连续答对一次的权重折扣
+    var CONFUSION_RESOLVE_DISCOUNT = 0.85 // 连续答对一次的权重折扣（渐进降低，不一次清零）
 
     // ─── 内部状态 ───
     var _confusions = null                // 个人混淆关系 { compositeKey: {a,b,ab,ba,last,resolvedStreak} }
@@ -180,6 +181,15 @@
         })
       }
       return out
+    }
+
+    // 可进入"辨析题"的个人混淆对：次数达活跃阈值 且 当前权重 ≥ 最低权重
+    // （长期未出现/已被稳定区分的对会因权重不足退出题位，但仍保留在存储中，
+    //   重新混淆即可恢复——"逐渐降低，不突然永久消失"）
+    function getActivePersonalPairs(bookId) {
+      return getPersonalPairs(bookId).filter(function(p) {
+        return isActivePersonalPair(p) && p.weight >= CONFUSION_ACTIVE_MIN_WEIGHT
+      })
     }
 
     /* ═══════════ ③ 听写最近词匹配（供听写判分后判定"是否疑似混淆"）═══════════ */

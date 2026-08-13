@@ -172,8 +172,11 @@ const K = {
   sseu:vm.runInContext("testKeyOf('yonsei1','쓰다')", ctx),
   biss:vm.runInContext("testKeyOf('yonsei1','비싸다')", ctx),
   irum:vm.runInContext("testKeyOf('yonsei1','이름')", ctx),
+  kga: vm.runInContext("testKeyOf('yonsei1','가다')", ctx),
+  kod: vm.runInContext("testKeyOf('yonsei1','오다')", ctx),
+  kbo: vm.runInContext("testKeyOf('yonsei1','보다')", ctx),
 }
-ok(K.ssa && K.sa && K.sseu && K.biss && K.irum, '测试词 key 齐备')
+ok(K.ssa && K.sa && K.sseu && K.biss && K.irum && K.kga && K.kod && K.kbo, '测试词 key 齐备')
 forceRandom(0.0)
 // 小词池：保证 싸다 一定出现在题目序列中（不依赖大池随机抽样）
 const ssaPool = vm.runInContext("testPoolOf(['싸다','사다','쓰다','비싸다','이름'])", ctx)
@@ -314,6 +317,119 @@ vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)
 vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)   // 权重 2，活跃
 const partners = vm.runInContext(`getConfusionPartners('${K.ssa}')`, ctx)
 ok(partners.length > 0 && partners[0].key === K.sa && partners[0].kind === 'personal', '个人混淆（사다, weight=2）排在预设候选之前')
+
+console.log('── K. 动态权重：次数 × 时间衰减 × 连续答对渐进折扣 ──')
+const wk3 = vm.runInContext(`(function () {
+  var now = Date.now()
+  return {
+    fresh: pairWeight({ ab: 2, ba: 1, last: now, resolvedStreak: 0 }),       // 3
+    resolve1: pairWeight({ ab: 2, ba: 1, last: now, resolvedStreak: 1 }),    // 3×0.85=2.55
+    resolve5: pairWeight({ ab: 2, ba: 1, last: now, resolvedStreak: 5 }),    // 3×0.85^5≈1.331
+    resolve50: pairWeight({ ab: 2, ba: 1, last: now, resolvedStreak: 50 }),  // 仍 > 0
+    decay100: pairWeight({ ab: 2, ba: 1, last: now - 100 * 86400000, resolvedStreak: 0 }) // < 0.5
+  }
+})()`, ctx)
+ok(wk3.fresh === 3, '基础权重 = 混淆次数 3（实际 ' + wk3.fresh + '）')
+ok(wk3.resolve1 === 2.55, '连续答对 1 次 → 3×0.85=2.55（渐进降低，非一次清零）')
+ok(wk3.resolve5 === 1.331, '连续答对 5 次 → 3×0.85^5≈1.331（逐渐降低）')
+ok(wk3.resolve50 > 0, '连续答对 50 次 → 权重仍 > 0（不永久消失）')
+ok(wk3.decay100 > 0 && wk3.decay100 < 0.5, '100 天未出现 → 时间衰减到 <0.5（' + wk3.decay100 + '，仍 >0）')
+
+console.log('── L. 辨析题插槽：高权重个人混淆对进入，间隔放置，普通题仍占多数 ──')
+vm.runInContext('clearConfusions()', ctx)
+for (let li = 0; li < 4; li++) vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)   // weight 4
+forceRandom(0.0)   // 确定性：加权采样取第一个、放置间隔 = 2
+qs = vm.runInContext('generateQuizQuestions(ssaPool)', ctx)
+const idxSsa = qs.findIndex(q => q.targetKey === K.ssa)
+const idxSa = qs.findIndex(q => q.targetKey === K.sa)
+ok(idxSsa >= 0 && idxSa >= 0, '高权重个人混淆对（싸다↔사다）进入辨析题')
+ok(Math.abs(idxSsa - idxSa) === 2, '辨析对间隔 2 题（不机械相邻）')
+ok(qs.length === ssaPool.length, '总题数与词池一致（' + qs.length + ' 题）')
+restoreRandom()
+
+console.log('── M. 加权采样：权重高的混淆对出现更多（统计验证）──')
+vm.runInContext('clearConfusions()', ctx)
+for (let mi = 0; mi < 4; mi++) vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)    // weight 4
+for (let mi = 0; mi < 3; mi++) vm.runInContext(`recordConfusion('${K.sseu}', '${K.kbo}')`, ctx)   // weight 3
+for (let mi = 0; mi < 2; mi++) vm.runInContext(`recordConfusion('${K.kga}', '${K.kod}')`, ctx)    // weight 2
+restoreRandom()
+let m1 = 0, m2 = 0, m3 = 0, maxPairsSeen = 0
+for (let ri = 0; ri < 300; ri++) {
+  const runQs = vm.runInContext('generateQuizQuestions(testPool())', ctx)
+  const keys = runQs.map(q => q.targetKey)
+  const has = k => keys.indexOf(k) >= 0
+  let n = 0
+  if (has(K.ssa) && has(K.sa)) { m1++; n++ }
+  if (has(K.sseu) && has(K.kbo)) { m2++; n++ }
+  if (has(K.kga) && has(K.kod)) { m3++; n++ }
+  if (n > maxPairsSeen) maxPairsSeen = n
+}
+ok(m1 > m2 && m2 > m3, '权重 4 的对出现 ' + m1 + ' 次 > 权重 3（' + m2 + '）> 权重 2（' + m3 + '）')
+ok(maxPairsSeen <= 2, '一局最多 2 个辨析对（实际最大 ' + maxPairsSeen + '）——20% 题量上限生效')
+
+console.log('── N. 连续答对渐进降权（答题路径接线）+ 答错回升 ──')
+vm.runInContext('clearConfusions()', ctx)
+for (let ni = 0; ni < 4; ni++) vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)   // weight 4
+forceRandom(0.0)   // 个人伙伴 → 注入概率 0.8 → 0<0.8 必注入
+qs = vm.runInContext('generateQuizQuestions(ssaPool)', ctx)
+const nQ = qs.find(q => q.targetKey === K.ssa)
+ok(nQ && nQ.contrastKeys.indexOf(K.sa) >= 0, '싸다 题注入 사다 并记录 contrastKeys')
+let wBefore = vm.runInContext('getPersonalPairs("yonsei1")[0].weight', ctx)
+ok(wBefore === 4, '初始权重 4')
+for (let ci = 0; ci < 5; ci++) {
+  vm.runInContext(`quizQuestions = [${JSON.stringify(nQ)}]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+  vm.runInContext(`quizAnswer(${nQ.correctIdx})`, ctx)   // 答对（区分了 사다）
+}
+const wAfter = vm.runInContext('getPersonalPairs("yonsei1")[0]', ctx)
+ok(wAfter.resolvedStreak === 5, '连续答对 5 次 → resolvedStreak=5')
+ok(wAfter.weight < wBefore && wAfter.weight > 0, '权重从 4 渐进降到 ' + wAfter.weight + '（>0，不一次清零）')
+ok(wAfter.weight === Math.round(4 * Math.pow(0.85, 5) * 1000) / 1000, '权重 = 4×0.85^5 ≈ ' + wAfter.weight + '（公式精确）')
+// 答错一次 → 混淆次数 +1、连续答对清零 → 权重回升
+vm.runInContext(`quizQuestions = [${JSON.stringify(nQ)}]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+vm.runInContext(`quizAnswer(${nQ.options.indexOf('买')})`, ctx)
+const wBack = vm.runInContext('getPersonalPairs("yonsei1")[0]', ctx)
+ok(wBack.weight === 5 && wBack.resolvedStreak === 0, '答错一次 → 权重回升到 5、连续答对清零（最近答错 → 高权重）')
+restoreRandom()
+
+console.log('── O. 避免霸占：超高超重对也最多占用 2 题 ──')
+vm.runInContext('clearConfusions()', ctx)
+for (let oi = 0; oi < 50; oi++) vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)   // weight 50
+forceRandom(0.0)
+qs = vm.runInContext('generateQuizQuestions(ssaPool)', ctx)
+const ssaCount = qs.filter(q => q.targetKey === K.ssa).length
+const saCount = qs.filter(q => q.targetKey === K.sa).length
+ok(ssaCount === 1 && saCount === 1, 'weight=50 的超高对每词也只出现 1 次（不霸占整局）')
+const normalCount = qs.filter(q => q.targetKey !== K.ssa && q.targetKey !== K.sa).length
+ok(normalCount >= qs.length - 2, '普通题仍占多数（' + normalCount + '/' + qs.length + '）')
+restoreRandom()
+
+console.log('── P. 时间衰减：长期未出现 → 退出辨析题位但存储保留 ──')
+const stale = vm.runInContext(`(function () {
+  var p = { ab: 3, ba: 0, last: Date.now() - 100 * 86400000, resolvedStreak: 0 }
+  var w = pairWeight(p)
+  return { weight: w, eligible: w >= CONFUSION_ACTIVE_MIN_WEIGHT }
+})()`, ctx)
+ok(stale.weight > 0 && stale.weight < 0.5, '100 天未出现 → 权重 ' + stale.weight + '（>0 且低于辨析门槛 0.5）')
+ok(stale.eligible === false, '权重不足 → 不占用辨析题位（getActivePersonalPairs 过滤）')
+
+console.log('── Q. 听写模式共享同一套辨析对规划 ──')
+vm.runInContext('clearConfusions()', ctx)
+for (let qi = 0; qi < 4; qi++) vm.runInContext(`recordConfusion('${K.ssa}', '${K.sa}')`, ctx)
+testSetMode('dict')
+forceRandom(0.0)
+qs = vm.runInContext('generateQuizQuestions(ssaPool)', ctx)
+const qIdxSsa = qs.findIndex(q => q.targetKey === K.ssa)
+const qIdxSa = qs.findIndex(q => q.targetKey === K.sa)
+ok(qIdxSsa >= 0 && qIdxSa >= 0 && Math.abs(qIdxSsa - qIdxSa) === 2, '听写模式：辨析对近邻出现（间隔 2）')
+ok(qs.every(q => q.options.length === 0 && q.contrastKeys.length === 0), '听写题无选项、无 contrastKeys（判分逻辑不变）')
+testSetMode('kr-cn')
+restoreRandom()
+
+console.log('── R. 多教材隔离：活跃个人混淆对按书过滤 ──')
+testBind('yonsei2')
+ok(vm.runInContext('getActivePersonalPairs("yonsei2").length === 0', ctx) === true, '延世2 无个人混淆对 → 无辨析题（延世1 的记录不串书）')
+testBind('yonsei1')
+ok(vm.runInContext('getActivePersonalPairs("yonsei1").length >= 1', ctx) === true, '延世1 的个人混淆对正常存在')
 
 console.log('')
 console.log('═══ 结果：' + passed + ' 通过 / ' + failed + ' 失败 ═══')

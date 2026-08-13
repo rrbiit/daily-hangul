@@ -286,14 +286,15 @@
       return items
     }
 
-    // 构建一道选择题的选项（易混词干扰项优先注入 + 显示去重）
+    // 构建一道选择题的选项（易混词干扰项动态注入 + 显示去重）
     // mode: kr-cn / cn-kr / listen（选项为中文释义）/ listen-kr（选项为韩语词形）
-    // 返回 { options: [显示文本], optionKeys: [词key], correctIdx }
+    // 返回 { options: [显示文本], optionKeys: [词key], correctIdx, contrastKeys: [注入的易混伙伴key] }
     function buildQuizOptions(w, mode, allItems) {
       var isKrOption = mode === 'cn-kr' || mode === 'listen-kr'
       var correctText = isKrOption ? w.kr : w.cn
       var targetKey = wk(w, w.lessonNum)
       var chosen = []   // { text, key }
+      var contrastKeys = []   // 实际进入选项的易混伙伴（答对时用于渐进降权）
       function tryAdd(text, key) {
         if (!text || text === correctText) return false
         if (chosen.some(function(c) { return c.text === text })) return false
@@ -301,9 +302,13 @@
         return true
       }
 
-      // ① 易混词干扰项优先（个人混淆权重高优先 → 预设候选距离近优先），60% 概率注入，最多 2 个
+      // ① 易混词干扰项优先（动态注入概率，最多 2 个）：
+      //    有个人混淆记录 → 0.8（用户行为证据 > 系统词形相似度）
+      //    仅预设候选 → 0.4；无任何候选 → 0（纯随机普通题）
       var partners = getConfusionPartners(targetKey)
-      if (partners.length > 0 && Math.random() < 0.6) {
+      var hasPersonal = partners.some(function(p) { return p.kind === 'personal' })
+      var injectProb = hasPersonal ? 0.8 : (partners.length > 0 ? 0.4 : 0)
+      if (partners.length > 0 && injectProb > 0 && Math.random() < injectProb) {
         var nPartners = Math.min(2, partners.length)
         for (var i = 0; i < partners.length && chosen.length < nPartners; i++) {
           var pItem = null
@@ -311,7 +316,7 @@
             if (wk(allItems[ai], allItems[ai].lessonNum) === partners[i].key) { pItem = allItems[ai]; break }
           }
           if (!pItem) continue
-          tryAdd(isKrOption ? pItem.kr : pItem.cn, partners[i].key)
+          if (tryAdd(isKrOption ? pItem.kr : pItem.cn, partners[i].key)) contrastKeys.push(partners[i].key)
         }
       }
 
@@ -339,56 +344,102 @@
         if (i3 === correctIdx) correctIdx = j3
         else if (j3 === correctIdx) correctIdx = i3
       }
-      return { options: options, optionKeys: optionKeys, correctIdx: correctIdx }
+      return { options: options, optionKeys: optionKeys, correctIdx: correctIdx, contrastKeys: contrastKeys }
     }
 
-    // 轻度"近邻对照"：同一易混组的词在题目序列中靠近出现（间隔 2~3 题，40% 概率），
-    // 不强制机械相邻；伙伴必须仍在词池（符合范围过滤）且未被选中
-    function applyNearbyContrast(selected, pool) {
-      var out = selected.slice()
-      var poolByKey = {}
-      pool.forEach(function(w) { poolByKey[wk(w, w.lessonNum)] = w })
-      var used = {}
-      out.forEach(function(w) { used[wk(w, w.lessonNum)] = true })
-      for (var i = 0; i < out.length && out.length < quizCount; i++) {
-        var key = wk(out[i], out[i].lessonNum)
-        var partners = getConfusionPartners(key)
-        var partner = null
-        for (var pi = 0; pi < partners.length; pi++) {
-          var pk = partners[pi].key
-          if (poolByKey[pk] && !used[pk]) { partner = poolByKey[pk]; break }
+    function shuffleArray(arr) {
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1))
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t
+      }
+      return arr
+    }
+
+    // 加权随机选取 k 个个人混淆对：权重高 → 更容易被选（动态核心）
+    // 已选对涉及过的词会从候选中排除（一个词一局最多进一个辨析对）→ 防止某对霸占整局
+    function pickWeightedPairs(pairs, k) {
+      var out = []
+      var remaining = pairs.slice()
+      var usedWords = {}
+      while (out.length < k && remaining.length > 0) {
+        var total = 0
+        for (var i = 0; i < remaining.length; i++) total += remaining[i].weight
+        if (total <= 0) break
+        var r = Math.random() * total
+        var acc = 0, idx = remaining.length - 1
+        for (var i2 = 0; i2 < remaining.length; i2++) {
+          acc += remaining[i2].weight
+          if (r < acc) { idx = i2; break }
         }
-        if (!partner) continue
-        if (Math.random() < 0.4) {
-          var pos = Math.min(i + 2 + Math.floor(Math.random() * 2), out.length)   // 间隔 2~3 题
-          out.splice(pos, 0, partner)
-          used[wk(partner, partner.lessonNum)] = true
+        var p = remaining[idx]
+        out.push(p)
+        usedWords[p.a] = true; usedWords[p.b] = true
+        remaining = remaining.filter(function(x) { return !usedWords[x.a] && !usedWords[x.b] })
+      }
+      return out
+    }
+
+    // 把一对辨析词放入间隔 2~3 的空位（不机械相邻）；放不下则任意两个空位兜底
+    function placePairWords(slots, wordA, wordB) {
+      var n = slots.length
+      for (var tries = 0; tries < 30; tries++) {
+        var i = Math.floor(Math.random() * n)
+        var gap = 2 + Math.floor(Math.random() * 2)
+        if (i + gap < n && !slots[i] && !slots[i + gap]) {
+          slots[i] = wordA; slots[i + gap] = wordB
+          return true
         }
       }
-      return out.slice(0, quizCount)
+      var empties = []
+      for (var j = 0; j < n; j++) if (!slots[j]) empties.push(j)
+      if (empties.length >= 2) { slots[empties[0]] = wordA; slots[empties[1]] = wordB; return true }
+      return false
+    }
+
+    // 动态出题规划：普通随机题 + 个人混淆辨析题
+    // - 辨析对数量 = min(⌊N×20%⌋, 词池内的活跃个人混淆对数)；没有活跃对 → 全是普通题（不强行凑）
+    // - 辨析对按权重加权随机选出；每对两词间隔 2~3 题放置
+    // - 剩余位置由普通随机词填充（排除已用作辨析的词）
+    // 所有模式共用：听写没有选项，同样靠"辨析对近邻出现"形成对照
+    function planQuizSlots(pool, n) {
+      var slots = []
+      for (var si = 0; si < n; si++) slots.push(null)
+      var poolByKey = {}
+      pool.forEach(function(w) { poolByKey[wk(w, w.lessonNum)] = w })
+      var activePairs = getActivePersonalPairs(getCurrentBook().bookId).filter(function(p) {
+        return poolByKey[p.a] && poolByKey[p.b]
+      })
+      var maxPairs = Math.min(Math.floor(n * 0.2), activePairs.length)
+      var picked = pickWeightedPairs(activePairs, maxPairs)
+      var used = {}
+      picked.forEach(function(p) {
+        var wa = poolByKey[p.a], wb = poolByKey[p.b]
+        if (placePairWords(slots, wa, wb)) { used[p.a] = true; used[p.b] = true }
+      })
+      var normals = pool.filter(function(w) { return !used[wk(w, w.lessonNum)] })
+      shuffleArray(normals)
+      var ni = 0
+      for (var i = 0; i < slots.length; i++) {
+        if (!slots[i]) slots[i] = normals[ni++] || slots[i]
+      }
+      return slots
     }
 
     function generateQuizQuestions(pool) {
       var n = Math.min(quizCount, pool.length)
-      var shuffled = pool.slice()
-      for (var i = shuffled.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1))
-        var t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t
-      }
-      var selected = shuffled.slice(0, n)
-      selected = applyNearbyContrast(selected, pool)
-
+      var slots = planQuizSlots(pool, n)
       var allItems = buildBookItems()
       var questions = []
-      selected.forEach(function(w) {
+      slots.forEach(function(w) {
+        if (!w) return
         var targetKey = wk(w, w.lessonNum)
         // 听写模式无需选项，直接输入韩语
         if (quizMode === 'dict') {
-          questions.push({ word: w, targetKey: targetKey, options: [], optionKeys: [], correctIdx: -1 })
+          questions.push({ word: w, targetKey: targetKey, options: [], optionKeys: [], correctIdx: -1, contrastKeys: [] })
           return
         }
         var built = buildQuizOptions(w, quizMode, allItems)
-        questions.push({ word: w, targetKey: targetKey, options: built.options, optionKeys: built.optionKeys, correctIdx: built.correctIdx })
+        questions.push({ word: w, targetKey: targetKey, options: built.options, optionKeys: built.optionKeys, correctIdx: built.correctIdx, contrastKeys: built.contrastKeys || [] })
       })
       return questions
     }
@@ -579,6 +630,14 @@
         document.getElementById('quiz-next-btn').style.display = ''
       } else {
         quizScore++
+        // 连续答对 → 渐进降低本题出现的易混伙伴的混淆权重
+        // （0.85^连续答对次数；只对"本题确实出现、且用户没有选错"的伙伴生效，
+        //   每次新混淆会重置连续答对计数——权重回升，不是一次清零）
+        if (q.contrastKeys) {
+          q.contrastKeys.forEach(function(pk) {
+            recordConfusionResolved(q.targetKey, pk)
+          })
+        }
         fb.textContent = '✓ 正确！'
         fb.style.color = 'var(--accent-green)'
         // 答对自动下一题

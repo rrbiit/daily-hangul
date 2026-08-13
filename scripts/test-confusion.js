@@ -146,7 +146,7 @@ const w = vm.runInContext(`(function () {
 })()`, ctx1)
 ok(w.fresh === 3, '无衰减权重 = 次数 3（实际 ' + w.fresh + '）')
 ok(w.decayed30d === 1.5, '30 天后权重减半 = 1.5（实际 ' + w.decayed30d + '）')
-ok(w.resolved === 2.4, '连续答对 1 次折扣 0.8 → 2.4（实际 ' + w.resolved + '）')
+ok(w.resolved === 2.55, '连续答对 1 次折扣 0.85 → 2.55（实际 ' + w.resolved + '）')
 ok(w.zero === 0, '零次数权重 = 0')
 ok(w.neg === 3, '未来时间戳不产生负权重（按 0 天算）')
 
