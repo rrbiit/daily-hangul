@@ -916,13 +916,14 @@
     }
 
     // ─── 主题模式 ───
-    var _themeMedia = window.matchMedia('(prefers-color-scheme: dark)')
+    // matchMedia 缺失的环境（旧 WebView / 测试环境）降级为"不监听系统主题"，不影响启动
+    var _themeMedia = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-color-scheme: dark)') : null
 
     function applyTheme() {
       var mode = lsGet('ys-theme', 'auto')
       if (mode === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark')
-      } else if (mode === 'auto' && _themeMedia.matches) {
+      } else if (mode === 'auto' && _themeMedia && _themeMedia.matches) {
         document.documentElement.setAttribute('data-theme', 'dark')
       } else {
         document.documentElement.removeAttribute('data-theme')
@@ -952,11 +953,13 @@
     }
 
     // 监听系统主题变化（仅在 auto 模式下生效）
-    _themeMedia.addEventListener('change', function() {
-      if (lsGet('ys-theme', 'auto') === 'auto') {
-        applyTheme()
-      }
-    })
+    if (_themeMedia) {
+      _themeMedia.addEventListener('change', function() {
+        if (lsGet('ys-theme', 'auto') === 'auto') {
+          applyTheme()
+        }
+      })
+    }
 
     function setCardDir(dir) {
       cardDirection = dir
@@ -1097,18 +1100,19 @@
 
     function resetAllData() {
       // 全部清光（用户确认）：清掉两本教材的所有学习数据，用确认框防止误点
-      if (!confirm('确定要清除所有学习数据吗？\n\n包括：\n· 两本教材的进度、收藏、易错记录\n· 测验历史\n· 打卡 / 连续学习记录\n· 学习偏好设置\n\n此操作无法撤销！')) return
-      // 删除本应用相关的全部本地存储 key
-      var delKeys = collectAppStorageKeys()
-      try {
-        delKeys.forEach(function(k) { localStorage.removeItem(k) })
-      } catch(e) {}
-      // 内存同步清空
+      if (!confirm('确定要清除所有学习数据吗？\n\n包括：\n· 两本教材的进度、收藏、易错记录\n· 个人易混记录（易混词辨析）\n· 测验历史\n· 打卡 / 连续学习记录\n· 学习偏好设置\n\n此操作无法撤销！')) return
+      // ① 先清内存（含易混词/混淆关系层；clearConfusions 会写回空对象，随后被下面的删除一并清掉）
       try {
         starred.clear()
         grammarStarred.clear()
         grammarMastered.clear()
         srs = {}
+        if (typeof clearConfusions === 'function') clearConfusions()
+      } catch(e) {}
+      // ② 再删除本应用相关的全部本地存储 key（含 ys-confusions，以 ys- 前缀覆盖）
+      var delKeys = collectAppStorageKeys()
+      try {
+        delKeys.forEach(function(k) { localStorage.removeItem(k) })
       } catch(e) {}
       alert('所有学习数据已清除。正在刷新…')
       setTimeout(function() { location.reload() }, 300)
