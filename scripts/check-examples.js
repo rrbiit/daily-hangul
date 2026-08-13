@@ -35,10 +35,6 @@ const ROOT = path.resolve(__dirname, '..')
 // 现全站标准为每词 4 句。这些词计入报告（legacyThree）但不判失败，待逐课扩展到 4 句。
 // 键格式：bookId|课号|kr（与下方检查脚本同款拼接）。
 const LEGACY_THREE = new Set([
-  'yonsei2|7|여보세요', 'yonsei2|7|전화를 걸다', 'yonsei2|7|전화가 오다', 'yonsei2|7|전화를 받다',
-  'yonsei2|7|(전화를) 바꿔 주다', 'yonsei2|7|전화를 끊다', 'yonsei2|7|통화 중이다', 'yonsei2|7|전화를 잘못 걸다',
-  'yonsei2|7|웬일이에요', 'yonsei2|7|약속을 하다', 'yonsei2|7|약속을 지키다', 'yonsei2|7|약속을 취소하다',
-  'yonsei2|7|약속을 바꾸다', 'yonsei2|7|약속을 미루다', 'yonsei2|7|약속을 어기다',
   'yonsei2|8|열이 나다', 'yonsei2|8|기침을 하다', 'yonsei2|8|콧물이 나다', 'yonsei2|8|목이 아프다',
   'yonsei2|8|목이 쉬다', 'yonsei2|8|코가 막히다', 'yonsei2|8|몸이 떨리다', 'yonsei2|8|소화가 안 되다',
   'yonsei2|8|배탈이 나다', 'yonsei2|8|설사를 하다', 'yonsei2|8|속이 쓰리다', 'yonsei2|8|변비가 있다',
