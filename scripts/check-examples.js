@@ -14,7 +14,14 @@
       - 어제/오늘/내일 误加 -에（第5课语法规则：这些词后不加 -에）
    5. 同一词 / 同一语法卡片内例句不重复（防复制粘贴事故）
 
-   退出码：0 = 全部通过；1 = 发现问题。
+    ── 生成器兜底词审计（无 w.ex 的词）──
+    6. 无手写例句的词：抽样调用生成器（3 次），检查输出非空 + 结构性错误
+       （词组名词化 / 裸자모 / 어제·오늘·내일 误加 -에）——补上原盲区，
+       让 697 个生成器词也进入校验范围
+    7. 输出「每课手写覆盖率」报告（手写 X/共 Y），未完成的课可视化，
+       便于逐课推进手写工程（覆盖率不达标仅提示，不判失败）
+
+   退出码：0 = 全部通过；1 = 发现问题（含生成器兜底词的结构性错误）。
    ════════════════════════════════════════════════════════════════ */
 'use strict'
 
@@ -28,7 +35,6 @@ const ROOT = path.resolve(__dirname, '..')
 // 现全站标准为每词 4 句。这些词计入报告（legacyThree）但不判失败，待逐课扩展到 4 句。
 // 键格式：bookId|课号|kr（与下方检查脚本同款拼接）。
 const LEGACY_THREE = new Set([
-  'yonsei2|1|처음 뵙겠습니다', 'yonsei2|1|말씀 많이 들었습니다', 'yonsei2|1|잘 부탁합니다', 'yonsei2|1|오래간만입니다',
   'yonsei2|7|여보세요', 'yonsei2|7|전화를 걸다', 'yonsei2|7|전화가 오다', 'yonsei2|7|전화를 받다',
   'yonsei2|7|(전화를) 바꿔 주다', 'yonsei2|7|전화를 끊다', 'yonsei2|7|통화 중이다', 'yonsei2|7|전화를 잘못 걸다',
   'yonsei2|7|웬일이에요', 'yonsei2|7|약속을 하다', 'yonsei2|7|약속을 지키다', 'yonsei2|7|약속을 취소하다',
@@ -51,6 +57,8 @@ const dataFiles = fs.readdirSync(ROOT).filter(f => /^data-(?!books\.js).*\.js$/.
 for (const f of dataFiles) {
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx)
 }
+// 生成器兜底词审计需要 generateExample（utils.js）→ 一并加载进沙箱
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'utils.js'), 'utf8'), ctx)
 ctx.__FILES__ = dataFiles
 ctx.__LEGACY = LEGACY_THREE
 
@@ -126,6 +134,36 @@ const result = vm.runInContext(`
       }
     }
 
+    // ── 生成器兜底词审计：无手写例句的词，抽样生成器输出（补原盲区）──
+    const genProblems = []
+    const coverage = []  // 每课手写覆盖率 { book, lesson, total, hand, gen }
+    for (const book of BOOKS) {
+      for (const lessonKey in book.vocab) {
+        const ws = book.vocab[lessonKey]
+        let hand = 0
+        for (const w of ws) {
+          if (w.ex && w.ex.length > 0) { hand++; continue }
+          const tag = '[' + book.bookId + ' 第' + lessonKey + '课·生成器] ' + w.kr
+          let gotAny = false
+          // 生成器随机取模板 → 抽 3 次，尽量覆盖到会随机撞出的病句
+          for (let s = 0; s < 3; s++) {
+            const gen = generateExample(w) || []
+            if (gen.length === 0) continue
+            gotAny = true
+            gen.forEach(function (e, i) {
+              if (!e.kr || !String(e.kr).trim()) genProblems.push(tag + ' 第' + (i + 1) + '条：缺 kr')
+              if (!e.kr) return
+              if (/[\\u1100-\\u11FF\\u3130-\\u318F]/.test(e.kr)) genProblems.push(tag + ' 生成器例句含裸자모：' + e.kr)
+              if (/([가-힣])(다|하다)를/.test(e.kr)) genProblems.push(tag + ' 生成器例句疑似词组被名词化（…다/하다+를）：' + e.kr)
+              if (/(어제|오늘|내일)에/.test(e.kr)) genProblems.push(tag + ' 生成器例句违反「어제/오늘/내일 不加 -에」：' + e.kr)
+            })
+          }
+          if (!gotAny) genProblems.push(tag + '：生成器无输出（该词类无模板且未手写，例句会缺失）')
+        }
+        coverage.push({ book: book.bookId, lesson: lessonKey, total: ws.length, hand: hand, gen: ws.length - hand })
+      }
+    }
+
     return {
       books: BOOKS.length,
       dataFiles: __FILES__,
@@ -133,7 +171,9 @@ const result = vm.runInContext(`
       handTotal: handTotal,
       grammarExampleTotal: grammarExampleTotal,
       legacyThree: legacyThree,
-      problems: problems
+      problems: problems,
+      genProblems: genProblems,
+      coverage: coverage
     }
   })()
 `, ctx)
@@ -155,13 +195,23 @@ if (result.legacyThree.length > 0) {
   console.log('')
 }
 
-if (result.problems.length === 0) {
-  console.log('✅ 通过：无违反 4 句标准的词，无损坏例句。')
+// 每课手写覆盖率（生成器兜底可视化：手写工程逐课推进的进度表）
+console.log('── 手写例句覆盖率 ──────────────────────────────')
+result.coverage.forEach(function (c) {
+  var pct = c.total > 0 ? Math.round(c.hand / c.total * 100) : 100
+  var flag = c.hand === c.total ? '✅' : ('⚠️ 待手写 ' + c.gen + ' 词')
+  console.log('  [' + c.book + ' 第' + c.lesson + '课] ' + c.hand + '/' + c.total + ' (' + pct + '%) ' + flag)
+})
+console.log('')
+
+var allProblems = result.problems.concat(result.genProblems)
+if (allProblems.length === 0) {
+  console.log('✅ 通过：无违反 4 句标准的词，生成器兜底词无结构性错误，无损坏例句。')
   process.exit(0)
 }
 
-console.log('❌ 发现 ' + result.problems.length + ' 个问题：')
-result.problems.forEach(function (p, i) {
+console.log('❌ 发现 ' + allProblems.length + ' 个问题：')
+allProblems.forEach(function (p, i) {
   console.log('  ' + (i + 1) + '. ' + p)
 })
 process.exit(1)
