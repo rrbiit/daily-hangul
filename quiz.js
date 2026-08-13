@@ -119,7 +119,7 @@
         container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
         return
       }
-      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音', 'dict': '✍️ 听写' }
+      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音选义', 'listen-kr': '🔊 听音选词', 'dict': '✍️ 听写' }
       var html = ''
       // 倒序显示，最新的在前面
       for (var i = history.length - 1; i >= 0; i--) {
@@ -159,6 +159,7 @@
           'kr-cn': '看韩语，选正确的中文意思',
           'cn-kr': '看中文，选正确的韩语',
           'listen': '听发音，选正确的中文意思',
+          'listen-kr': '听发音，选出听到的韩语单词',
           'dict': '听发音，打出韩语'
         }[mode] || ''
       }
@@ -271,6 +272,102 @@
       return pool
     }
 
+    // 当前教材全部词条（带 lessonNum，供选项构建/听写匹配用）
+    function buildBookItems() {
+      var items = []
+      LESSONS.forEach(function(l) {
+        (VOCAB[l.num] || []).forEach(function(w) {
+          var item = {}
+          for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }
+          item.lessonNum = l.num
+          items.push(item)
+        })
+      })
+      return items
+    }
+
+    // 构建一道选择题的选项（易混词干扰项优先注入 + 显示去重）
+    // mode: kr-cn / cn-kr / listen（选项为中文释义）/ listen-kr（选项为韩语词形）
+    // 返回 { options: [显示文本], optionKeys: [词key], correctIdx }
+    function buildQuizOptions(w, mode, allItems) {
+      var isKrOption = mode === 'cn-kr' || mode === 'listen-kr'
+      var correctText = isKrOption ? w.kr : w.cn
+      var targetKey = wk(w, w.lessonNum)
+      var chosen = []   // { text, key }
+      function tryAdd(text, key) {
+        if (!text || text === correctText) return false
+        if (chosen.some(function(c) { return c.text === text })) return false
+        chosen.push({ text: text, key: key })
+        return true
+      }
+
+      // ① 易混词干扰项优先（个人混淆权重高优先 → 预设候选距离近优先），60% 概率注入，最多 2 个
+      var partners = getConfusionPartners(targetKey)
+      if (partners.length > 0 && Math.random() < 0.6) {
+        var nPartners = Math.min(2, partners.length)
+        for (var i = 0; i < partners.length && chosen.length < nPartners; i++) {
+          var pItem = null
+          for (var ai = 0; ai < allItems.length; ai++) {
+            if (wk(allItems[ai], allItems[ai].lessonNum) === partners[i].key) { pItem = allItems[ai]; break }
+          }
+          if (!pItem) continue
+          tryAdd(isKrOption ? pItem.kr : pItem.cn, partners[i].key)
+        }
+      }
+
+      // ② 随机补齐到 3 个干扰项（排除显示重复）
+      var distractors = allItems.slice()
+      for (var i2 = distractors.length - 1; i2 > 0; i2--) {
+        var j2 = Math.floor(Math.random() * (i2 + 1))
+        var t2 = distractors[i2]; distractors[i2] = distractors[j2]; distractors[j2] = t2
+      }
+      for (var di = 0; di < distractors.length && chosen.length < 3; di++) {
+        var x = distractors[di]
+        if (wk(x, x.lessonNum) === targetKey) continue
+        tryAdd(isKrOption ? x.kr : x.cn, wk(x, x.lessonNum))
+      }
+
+      // ③ 加入正确答案并整体打乱（选项与 key 同步移动，correctIdx 跟随）
+      var options = [], optionKeys = []
+      chosen.forEach(function(c) { options.push(c.text); optionKeys.push(c.key) })
+      var correctIdx = options.length
+      options.push(correctText); optionKeys.push(targetKey)
+      for (var i3 = options.length - 1; i3 > 0; i3--) {
+        var j3 = Math.floor(Math.random() * (i3 + 1))
+        var t3 = options[i3]; options[i3] = options[j3]; options[j3] = t3
+        var k3 = optionKeys[i3]; optionKeys[i3] = optionKeys[j3]; optionKeys[j3] = k3
+        if (i3 === correctIdx) correctIdx = j3
+        else if (j3 === correctIdx) correctIdx = i3
+      }
+      return { options: options, optionKeys: optionKeys, correctIdx: correctIdx }
+    }
+
+    // 轻度"近邻对照"：同一易混组的词在题目序列中靠近出现（间隔 2~3 题，40% 概率），
+    // 不强制机械相邻；伙伴必须仍在词池（符合范围过滤）且未被选中
+    function applyNearbyContrast(selected, pool) {
+      var out = selected.slice()
+      var poolByKey = {}
+      pool.forEach(function(w) { poolByKey[wk(w, w.lessonNum)] = w })
+      var used = {}
+      out.forEach(function(w) { used[wk(w, w.lessonNum)] = true })
+      for (var i = 0; i < out.length && out.length < quizCount; i++) {
+        var key = wk(out[i], out[i].lessonNum)
+        var partners = getConfusionPartners(key)
+        var partner = null
+        for (var pi = 0; pi < partners.length; pi++) {
+          var pk = partners[pi].key
+          if (poolByKey[pk] && !used[pk]) { partner = poolByKey[pk]; break }
+        }
+        if (!partner) continue
+        if (Math.random() < 0.4) {
+          var pos = Math.min(i + 2 + Math.floor(Math.random() * 2), out.length)   // 间隔 2~3 题
+          out.splice(pos, 0, partner)
+          used[wk(partner, partner.lessonNum)] = true
+        }
+      }
+      return out.slice(0, quizCount)
+    }
+
     function generateQuizQuestions(pool) {
       var n = Math.min(quizCount, pool.length)
       var shuffled = pool.slice()
@@ -279,36 +376,19 @@
         var t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t
       }
       var selected = shuffled.slice(0, n)
+      selected = applyNearbyContrast(selected, pool)
 
+      var allItems = buildBookItems()
       var questions = []
-      var allItems = []
-      LESSONS.forEach(function(l) {
-        (VOCAB[l.num] || []).forEach(function(w) {
-          var item = {}; for (var k in w) { if (w.hasOwnProperty(k)) item[k] = w[k] }; item.lessonNum = l.num
-          allItems.push(item)
-        })
-      })
-
       selected.forEach(function(w) {
+        var targetKey = wk(w, w.lessonNum)
         // 听写模式无需选项，直接输入韩语
         if (quizMode === 'dict') {
-          questions.push({ word: w, options: [], correctIdx: -1 })
+          questions.push({ word: w, targetKey: targetKey, options: [], optionKeys: [], correctIdx: -1 })
           return
         }
-        var correct = quizMode === 'cn-kr' ? w.kr : w.cn
-        var distractors = allItems.filter(function(x) { return x.kr !== w.kr })
-        for (var i2 = distractors.length - 1; i2 > 0; i2--) {
-          var j2 = Math.floor(Math.random() * (i2 + 1))
-          var t2 = distractors[i2]; distractors[i2] = distractors[j2]; distractors[j2] = t2
-        }
-        var picked = distractors.slice(0, 3)
-        var options = picked.map(function(x) { return quizMode === 'cn-kr' ? x.kr : x.cn })
-        options.push(correct)
-        for (var i3 = options.length - 1; i3 > 0; i3--) {
-          var j3 = Math.floor(Math.random() * (i3 + 1))
-          var t3 = options[i3]; options[i3] = options[j3]; options[j3] = t3
-        }
-        questions.push({ word: w, options: options, correctIdx: options.indexOf(correct) })
+        var built = buildQuizOptions(w, quizMode, allItems)
+        questions.push({ word: w, targetKey: targetKey, options: built.options, optionKeys: built.optionKeys, correctIdx: built.correctIdx })
       })
       return questions
     }
@@ -366,6 +446,11 @@
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
       } else if (quizMode === 'listen') {
         area.innerHTML = '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
+          '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
+          '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>' +
+          '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
+      } else if (quizMode === 'listen-kr') {
+        area.innerHTML = '<div class="quiz-q-label">听音选词 · 选出你听到的韩语单词</div>' +
           '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>' +
           '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
@@ -444,7 +529,7 @@
       }
 
       // 未答过的新题：自动播放发音
-      if (!prev && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'dict')) {
+      if (!prev && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'listen-kr' || quizMode === 'dict')) {
         setTimeout(function() { quizSpeakWord() }, 400)
       }
     }
@@ -468,7 +553,8 @@
       quizAnswered = true
       var q = quizQuestions[quizIndex]
       var correct = idx === q.correctIdx
-      quizAnswers[quizIndex] = { correct: correct, selectedIdx: idx }
+      var selectedKey = q.optionKeys && q.optionKeys[idx] ? q.optionKeys[idx] : null
+      quizAnswers[quizIndex] = { correct: correct, selectedIdx: idx, targetKey: q.targetKey || null, selectedKey: selectedKey }
       var labels = ['A', 'B', 'C', 'D']
 
       var opts = document.querySelectorAll('#quiz-options .quiz-option')
@@ -482,6 +568,11 @@
         opts[idx].classList.add('wrong', 'shake')
         var w = q.word
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
+        // 混淆记录：仅当用户实际选了另一个词且两词"词形相似"（recordConfusion 内部把关），
+        // 完全无关的选项只走上面的错题逻辑，不产生混淆关系
+        if (q.targetKey && selectedKey && selectedKey !== q.targetKey) {
+          recordConfusion(q.targetKey, selectedKey)
+        }
         fb.textContent = '✗ 正确答案是 ' + labels[q.correctIdx]
         fb.style.color = 'var(--accent-pink)'
         // 答错停在当前题，显示"下一题"按钮
@@ -514,7 +605,17 @@
       // 宽容规则：完全一致；或"距离 ≤1 且正确词 ≥3 字"（短词防变意，必须全对）
       var isCorrect = input === correct
       var isClose = !isCorrect && correct.length >= 3 && dist <= 1
-      quizAnswers[quizIndex] = { correct: isCorrect || isClose, close: isClose, submitted: field ? field.value : '' }
+      quizAnswers[quizIndex] = { correct: isCorrect || isClose, close: isClose, submitted: field ? field.value : '', targetKey: q.targetKey || null, matchedKey: null }
+      // 混淆信号（不改变判分）：输入命中了另一个"词形相似"的真实词
+      // ——距离 ≤1 且比正确词更接近该词（含"很接近"被判对的情况，如 비싸다 打成 싸다）
+      if (!isCorrect && q.targetKey) {
+        var matchItems = buildBookItems().map(function(x) { return { key: wk(x, x.lessonNum), kr: x.kr } })
+        var matched = findNearestWordKey(input, matchItems)
+        if (matched && matched.key !== q.targetKey && matched.dist <= dist && isLikelyConfusionDist(matched.dist)) {
+          quizAnswers[quizIndex].matchedKey = matched.key
+          recordConfusion(q.targetKey, matched.key)
+        }
+      }
       var fb = document.getElementById('quiz-feedback')
       if (isCorrect || isClose) {
         quizScore++

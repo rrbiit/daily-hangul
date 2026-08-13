@@ -186,13 +186,18 @@
 
     // 在给定词条中找与输入最接近的词
     // items: [{ key, kr }]；返回 { key, kr, dist }；无匹配返回 null
+    // 同距离时优先等长候选（避免"비사다"这种少写一个字的输入被误配到别的短词）
     function findNearestWordKey(input, items) {
       var norm = normalizeForCompare(input)
       if (!norm || !items || items.length === 0) return null
       var best = null
       for (var i = 0; i < items.length; i++) {
-        var d = levenshtein(norm, normalizeForCompare(items[i].kr))
-        if (!best || d < best.dist) best = { key: items[i].key, kr: items[i].kr, dist: d }
+        var it = items[i]
+        var d = levenshtein(norm, normalizeForCompare(it.kr))
+        var lenDiff = Math.abs(norm.length - String(it.kr || '').length)
+        if (!best || d < best.dist || (d === best.dist && lenDiff < best.lenDiff)) {
+          best = { key: it.key, kr: it.kr, dist: d, lenDiff: lenDiff }
+        }
       }
       return best
     }
@@ -215,6 +220,88 @@
           return { a: p.a, b: p.b, ab: p.ab, ba: p.ba, weight: p.weight, kind: 'personal' }
         })
       }
+    }
+
+    /* ═══════════ ⑤ 消费端：某词的易混伙伴（供出题/选项构建调用）═══════════ */
+
+    // ─── 韩文 jamo 相似度（用于伙伴排序：紧音/送气音对更接近）───
+    var _JAMO_INITIALS = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+    var _JAMO_MEDIALS = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
+    var _JAMO_FINALS = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+    // 平音/紧音/送气音属于同一发音部位组（ㅅㅆ、ㄱㄲㅋ、ㄷㄸㅌ、ㅂㅃㅍ、ㅈㅉㅊ），互相替换记 0.5
+    function _isJamoClose(a, b) {
+      if (!a || !b) return false
+      var groups = ['ㄱㄲㅋ', 'ㄷㄸㅌ', 'ㅂㅃㅍ', 'ㅅㅆ', 'ㅈㅉㅊ']
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].indexOf(a) >= 0 && groups[i].indexOf(b) >= 0) return true
+      }
+      return false
+    }
+    // 韩文串 → jamo 序列（非谚文原样保留）
+    function _toJamos(str) {
+      var out = []
+      for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i)
+        if (c >= 0xAC00 && c <= 0xD7A3) {
+          var code = c - 0xAC00
+          out.push(_JAMO_INITIALS[Math.floor(code / 588)])
+          out.push(_JAMO_MEDIALS[Math.floor((code % 588) / 28)])
+          var fin = code % 28
+          if (fin) out.push(_JAMO_FINALS[fin])
+        } else {
+          out.push(str[i])
+        }
+      }
+      return out
+    }
+    // 带紧音/送气音折扣的 jamo 编辑距离（同组替换 0.5，其余替换 1，插入删除 1）
+    function _jamoDist(a, b) {
+      var A = _toJamos(a), B = _toJamos(b)
+      var m = A.length, n = B.length
+      var d = []
+      for (var i = 0; i <= m; i++) d[i] = [i]
+      for (var j = 0; j <= n; j++) d[0][j] = j
+      for (var i2 = 1; i2 <= m; i2++) {
+        for (var j2 = 1; j2 <= n; j2++) {
+          var cost = A[i2 - 1] === B[j2 - 1] ? 0 : (_isJamoClose(A[i2 - 1], B[j2 - 1]) ? 0.5 : 1)
+          d[i2][j2] = Math.min(d[i2 - 1][j2] + 1, d[i2][j2 - 1] + 1, d[i2 - 1][j2 - 1] + cost)
+        }
+      }
+      return d[m][n]
+    }
+
+    // 某词的全部易混伙伴，排序：个人混淆权重高优先 → 预设候选 jamo 相似度近优先
+    // 返回 [{ key, kind: 'personal' | 'preset', weight?, dist?, score? }]
+    function getConfusionPartners(wordKey) {
+      if (!wordKey) return []
+      var bookId = _keyBookId(wordKey)
+      var kr = _keyKr(wordKey)
+      var map = {}
+      // 个人混淆（用户行为证据优先）
+      getPersonalPairs(bookId).forEach(function(p) {
+        var other = p.a === wordKey ? p.b : (p.b === wordKey ? p.a : null)
+        if (other) map[other] = { key: other, kind: 'personal', weight: p.weight || 0, dist: null, score: null }
+      })
+      // 预设候选（jamo 相似度排序：紧音/送气音对更接近）
+      getPresetPairs(bookId).forEach(function(p) {
+        var other = p.a === wordKey ? p.b : (p.b === wordKey ? p.a : null)
+        if (other && !map[other]) {
+          map[other] = { key: other, kind: 'preset', weight: 0, dist: p.dist, score: _jamoDist(kr, _keyKr(other)) }
+        }
+      })
+      var arr = []
+      for (var k in map) arr.push(map[k])
+      arr.sort(function(x, y) {
+        var px = x.kind === 'personal' ? 1 : 0
+        var py = y.kind === 'personal' ? 1 : 0
+        if (px !== py) return py - px
+        if (px === 1) return (y.weight || 0) - (x.weight || 0)
+        var sx = x.score == null ? 99 : x.score
+        var sy = y.score == null ? 99 : y.score
+        if (sx !== sy) return sx - sy
+        return (x.dist == null ? 99 : x.dist) - (y.dist == null ? 99 : y.dist)
+      })
+      return arr
     }
 
     // 浏览器就绪：启动即载入个人混淆关系（Node 环境无 localStorage 则内存兜底）
