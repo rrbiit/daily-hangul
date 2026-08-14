@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单词发音试听</title>
+<style>
+  body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; background: #f7f7f7; }
+  h1 { font-size: 19px; margin-bottom: 4px; }
+  .note { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+  .word { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; }
+  .kr { font-size: 22px; font-weight: 600; }
+  .cn { font-size: 13px; color: #888; margin-top: 2px; }
+  .play { width: 52px; height: 52px; border-radius: 50%; border: none; background: #4a90d9; color: #fff; font-size: 22px; cursor: pointer; flex-shrink: 0; }
+  .play:active { transform: scale(0.92); }
+  .status { font-size: 12px; color: #2e7d32; text-align: center; margin-top: 6px; min-height: 18px; }
+</style>
+</head>
+<body>
+<h1>🔊 单词发音试听</h1>
+<p class="note">这是"预生成音频文件"方案的 5 个测试词（mp3 直接放在网站里，不依赖任何在线服务）。<br><b>请在手机上点下面的按钮，看能不能听到声音。</b></p>
+
+<div id="list"></div>
+<div class="status" id="status"></div>
+
+<script>
+var words = [
+  { kr: '안녕하세요', cn: '你好' },
+  { kr: '감사합니다', cn: '谢谢' },
+  { kr: '네', cn: '是的' },
+  { kr: '아니요', cn: '不是的' },
+  { kr: '저', cn: '我' },
+]
+var list = document.getElementById('list')
+words.forEach(function(w) {
+  var div = document.createElement('div')
+  div.className = 'word'
+  div.innerHTML = '<div><div class="kr">' + w.kr + '</div><div class="cn">' + w.cn + '</div></div><button class="play" data-kr="' + w.kr + '">▶</button>'
+  list.appendChild(div)
+})
+var audio = null
+list.addEventListener('click', function(e) {
+  var btn = e.target.closest('.play')
+  if (!btn) return
+  var kr = btn.getAttribute('data-kr')
+  if (audio) { audio.pause(); audio = null }
+  audio = new Audio('audio/yonsei1/1/' + encodeURIComponent(kr) + '.mp3')
+  document.getElementById('status').textContent = '正在播放 ' + kr + '...'
+  audio.play().then(function() {
+    document.getElementById('status').textContent = '✅ 播放中（听到声音了吗？）'
+  }).catch(function(err) {
+    document.getElementById('status').textContent = '❌ 播放失败: ' + err.name
+  })
+})
+</script>
+</body>
+</html>
