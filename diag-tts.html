@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发音诊断（手机版）</title>
+<style>
+  body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; background: #f7f7f7; }
+  h1 { font-size: 19px; }
+  .row { background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; border: 1px solid #e0e0e0; font-size: 14px; }
+  .label { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .result { font-weight: 600; word-break: break-all; }
+  .ok { color: #2e7d32; } .bad { color: #c62828; } .warn { color: #e65100; }
+  button { padding: 12px 20px; font-size: 16px; border: none; border-radius: 10px; background: #4a90d9; color: #fff; cursor: pointer; margin: 4px 4px 4px 0; }
+  .log { font-size: 12px; color: #555; white-space: pre-wrap; background: #f0f0f0; padding: 10px; border-radius: 8px; margin-top: 8px; max-height: 260px; overflow: auto; }
+  .small { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+<h1>🔍 发音诊断（手机版）</h1>
+<p class="small">把每行结果截图或打字发给我。测试②③可能需要几秒，请耐心。</p>
+
+<div class="row"><div class="label">① 代码版本</div><div class="result" id="r1">检测中...</div></div>
+<div class="row"><div class="label">② 微软网站连通性（https://www.bing.com）</div><div class="result" id="r2">检测中...</div></div>
+<div class="row"><div class="label">③ 发音服务连通性（https://speech.platform.bing.com）</div><div class="result" id="r3">检测中...</div></div>
+<div class="row"><div class="label">④ 微软发音 WebSocket 连接</div><div class="result" id="r4"><button onclick="wsTest()">开始测试</button></div></div>
+<div class="row"><div class="label">⑤ 浏览器原生语音</div><div class="result" id="r5">检测中...</div></div>
+<div class="row"><div class="label">⑥ 播放测试（点按钮）</div><div class="result" id="r6"><button onclick="playTest()">▶ 播放测试音</button></div></div>
+
+<div class="log" id="log"></div>
+<script>
+var TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4'
+function log(m) { document.getElementById('log').textContent += m + '\n' }
+function setR(id, txt, cls) { var el = document.getElementById(id); el.textContent = txt; el.className = 'result ' + (cls || '') }
+
+// ① 版本
+fetch('study.js?t=' + Date.now()).then(function(r){ return r.text() }).then(function(t){
+  if (t.indexOf('speakEdgeTTS') >= 0 && t.indexOf('translate.google.com') < 0) setR('r1', '✅ 新版（Edge 发音）', 'ok')
+  else if (t.indexOf('translate.google.com') >= 0) setR('r1', '❌ 旧版（Google）', 'bad')
+  else setR('r1', '⚠️ 无法识别（' + t.length + '字节）', 'warn')
+}).catch(function(e){ setR('r1', '❌ 读取失败: ' + e.message, 'bad') })
+
+// ② bing.com 可达性
+fetch('https://www.bing.com/', { mode: 'cors' }).then(function(r){ setR('r2', '✅ 可达（HTTP ' + r.status + '）', 'ok') })
+  .catch(function(e){ setR('r2', '❌ 连不上: ' + e.message.slice(0, 60), 'bad') })
+
+// ③ speech.platform.bing.com 可达性
+fetch('https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=' + TOKEN, { mode: 'cors' })
+  .then(function(r){ setR('r3', '✅ 可达（HTTP ' + r.status + '，404 属正常，服务在响应）', 'ok') })
+  .catch(function(e){ setR('r3', '❌ 连不上: ' + e.message.slice(0, 80), 'bad') })
+
+// ⑤ 原生语音
+try {
+  if (window.speechSynthesis) {
+    setR('r5', '✅ speechSynthesis 存在。语音数量：' + (window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices().length : '未知') + '（韩语语音需系统 TTS 支持）', 'ok')
+  } else {
+    setR('r5', '❌ 当前浏览器没有 speechSynthesis（这就是"不支持发音"提示的来源）', 'bad')
+  }
+} catch(e) { setR('r5', '⚠️ 检查出错: ' + e.message, 'warn') }
+
+// ── SHA-256（与线上 study.js 相同实现）──
+function sha256Hex(ascii) {
+  function rightRotate(v, a) { return (v >>> a) | (v << (32 - a)) }
+  var words = [], asciiBitLength = ascii.length * 8, hash = [], k = [], i, j
+  var isComposite = {}, primeCounter = 0
+  for (var candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate
+      hash[primeCounter] = (Math.pow(candidate, 0.5) * 4294967296) | 0
+      k[primeCounter++] = (Math.pow(candidate, 1 / 3) * 4294967296) | 0
+    }
+  }
+  ascii += '\x80'
+  while (ascii.length % 64 - 56) ascii += '\x00'
+  for (i = 0; i < ascii.length; i++) { j = ascii.charCodeAt(i); if (j >> 8) return ''; words[i >> 2] |= j << ((3 - i) % 4) * 8 }
+  words[words.length] = (asciiBitLength / 4294967296) | 0
+  words[words.length] = asciiBitLength
+  for (j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16), oldHash = hash
+    hash = hash.slice(0, 8)
+    for (i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2], a = hash[0], e = hash[4]
+      var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e & hash[5]) ^ (~e & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0)
+      var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]))
+      hash = [(temp1 + temp2) | 0].concat(hash); hash[4] = (hash[4] + temp1) | 0
+    }
+    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0
+  }
+  var result = ''
+  for (i = 0; i < 8; i++) { for (j = 3; j + 1; j--) { var b = (hash[i] >> (j * 8)) & 255; result += ((b < 16) ? '0' : '') + b.toString(16) } }
+  return result
+}
+var lastAudio = null
+function wsTest() {
+  setR('r4', '⏳ 正在连接...')
+  log('开始连接测试 ' + new Date().toLocaleTimeString())
+  if (typeof WebSocket === 'undefined') { setR('r4', '❌ 没有 WebSocket', 'bad'); return }
+  var sec = Math.floor(Date.now() / 1000) + 11644473600
+  var floored = sec - (sec % 300)
+  var gecc = sha256Hex(String(floored) + '0000000' + TOKEN).toUpperCase()
+  var connId = 'diag-' + Date.now() + '-' + Math.floor(Math.random() * 1e6)
+  var url = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1' +
+    '?TrustedClientToken=' + TOKEN + '&Sec-MS-GEC=' + gecc + '&Sec-MS-GEC-Version=1-143.0.3650.75' +
+    '&ConnectionId=' + connId + '&X-ClientId=' + connId
+  var parts = [], done = false, ws = null
+  var timer = setTimeout(function(){ finish(false, '超时（10 秒无响应）') }, 10000)
+  function finish(ok, msg) {
+    if (done) return
+    done = true; clearTimeout(timer)
+    try { if (ws) ws.close() } catch(e) {}
+    if (ok && parts.length) {
+      lastAudio = new Blob(parts, { type: 'audio/mpeg' })
+      setR('r4', '✅ 连接成功，收到 ' + parts.length + ' 段音频。点"播放测试音"试听', 'ok')
+    } else setR('r4', '❌ ' + msg, 'bad')
+    log('连接结果: ' + msg)
+  }
+  try { ws = new WebSocket(url) } catch(e) { finish(false, '创建失败: ' + e.message); return }
+  ws.onopen = function() {
+    log('✅ 握手成功 (onopen)')
+    var d = new Date()
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    var pad = function(n){ return String(n).padStart(2, '0') }
+    var ts = days[d.getUTCDay()] + ' ' + months[d.getUTCMonth()] + ' ' + pad(d.getUTCDate()) + ' ' + d.getUTCFullYear() +
+      ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' GMT+0000 (Coordinated Universal Time)'
+    var config = '{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"true","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}\r\n'
+    ws.send('X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' + config)
+    var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><voice name='ko-KR-SunHiNeural'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>안녕하세요</prosody></voice></speak>"
+    ws.send('X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml)
+  }
+  ws.onmessage = function(e) {
+    if (typeof e.data === 'string') {
+      if (e.data.indexOf('Path:turn.start') >= 0) log('收到 turn.start')
+      if (e.data.indexOf('Path:turn.end') >= 0) finish(true, '收到 turn.end')
+      if (e.data.indexOf('Path:response') >= 0) log('收到 response')
+    } else {
+      var buf = new Uint8Array(e.data)
+      for (var i = 0; i < buf.length - 1; i++) {
+        if (buf[i] === 0xFF && (buf[i+1] & 0xE0) === 0xE0) { parts.push(buf.slice(i)); break }
+      }
+    }
+  }
+  ws.onerror = function() { log('onerror 触发'); finish(false, '连接出错 (onerror)') }
+  ws.onclose = function(e) { log('onclose code=' + e.code); finish(false, '连接被关闭 (code=' + e.code + ')') }
+}
+function playTest() {
+  if (!lastAudio) { setR('r6', '先测④拿到音频', 'warn'); return }
+  var url = URL.createObjectURL(lastAudio)
+  var a = new Audio(url)
+  a.muted = true
+  a.play().then(function(){ a.muted = false; setR('r6', '✅ 正在播放（能听到吗？）', 'ok') })
+    .catch(function(e){ setR('r6', '❌ 播放被拦截: ' + e.name, 'bad') })
+  setTimeout(function(){ URL.revokeObjectURL(url) }, 30000)
+}
+</script>
+</body>
+</html>
