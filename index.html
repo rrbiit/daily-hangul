@@ -610,7 +610,9 @@
     // 页面刷新后恢复上次位置（拆模块后放最后：确保 quiz.js 已加载）
     var initHash = location.hash.replace('#', '')
     if (initHash && HASH_PAGE[initHash] && initHash !== 'home') {
-      showPage(HASH_PAGE[initHash])
+      // 用 restorePage 恢复页面：同步内部当前页与导航栈（否则刷新/深链接后
+      // 进入学习再退出会回到首页而非来源页）
+      restorePage(HASH_PAGE[initHash])
       if (initHash === 'quiz') { renderQuizLessons(); renderQuizHistory() }
       if (initHash === 'starred') { showStarred() }
       if (initHash === 'weak') { renderWeakWords() }

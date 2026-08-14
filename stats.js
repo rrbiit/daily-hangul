@@ -157,7 +157,8 @@
       for (var k in log) {
         if (!log.hasOwnProperty(k)) continue
         var e = log[k]
-        if ((e.quizTotal || 0) > 0 || (e.mastered || 0) > 0) {
+        // 只学单词（未做测验/未点掌握）的日子也要进每日列表，与顶部总览口径一致
+        if ((e.quizTotal || 0) > 0 || (e.mastered || 0) > 0 || (e.words || 0) > 0) {
           days.push(k)
         }
       }

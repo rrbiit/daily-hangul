@@ -453,6 +453,17 @@
       showPage(pageId)
     }
 
+    // 页面恢复（刷新 / 深链接 / 外部 #hash 直达的统一入口）：
+    // 重置内部当前页与导航栈后显示目标页。
+    // 与 navigateRoot（底部导航入口）语义相同，但专用于"从 URL 恢复页面"，
+    // 保证后续进入学习模式等依赖 _currentPage 的逻辑能拿到正确来源页，
+    // 而不是停留在初始的 page-home（否则退出学习/返回会回到错误页面）。
+    function restorePage(pageId) {
+      _pageStack = []
+      _currentPage = pageId
+      showPage(pageId)
+    }
+
     /* ═══════════ 时段问候 ═══════════ */
     var _now = new Date()
     var hour = _now.getHours()
@@ -1155,8 +1166,13 @@
         _currentPage = e.state.page
         showPage(e.state.page)
       } else {
-        _currentPage = 'page-home'
-        showPage('page-home')
+        // 无历史标记（刷新后 / 深链接直接进入的历史条目没有 pushState 状态）：
+        // 按当前 URL 的 #hash 推断要回到的页面，避免一律跳回首页导致位置丢失。
+        // 例如 #words 整页加载后从学习退出，返回键应回到单词页而不是首页。
+        var _hash = location.hash.replace('#', '')
+        var _page = HASH_PAGE[_hash] || 'page-home'
+        _currentPage = _page
+        showPage(_page)
       }
       _fromPopstate = false
     })
