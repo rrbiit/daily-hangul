@@ -133,7 +133,7 @@
       // 自动播放当前单词发音（韩语优先方向：正面即韩语；中文优先时跳过，避免提前泄露答案）
       if (cardDirection !== 'cn-first' && w.kr) {
         flashSpeakBtn()
-        speak(w.kr, 'ko')
+        speakLocal(w, w.lessonNum, 'ko')
       }
     }
 
@@ -282,362 +282,87 @@
       var w = studyWords[studyIndex]
       if (!w) return
       flashSpeakBtn()
-      speak(w.kr, 'ko')
+      speakLocal(w, w.lessonNum, 'ko')
     }
 
     // 通用发音函数：speak('안녕하세요', 'ko')
     var _playingAudio = null
-    // 原生语音"静默失败"兜底提示计时器（全局：连续发音时只保留最后一个，
-    // 避免旧语音的计时器在下次发音后误报）
-    var _speakFailTimer = null
 
-    // ─── Edge TTS 通道（国内直连、免费韩语神经语音）───
-    // 这是 Edge 浏览器"大声朗读"背后的云服务（未公开接口，社区逆向维护）。
-    // 实测 speech.platform.bing.com 在国内可不翻墙直连；只依赖标准 WebSocket +
-    // Audio，所有现代浏览器（含微信 X5 内核）都支持，与是否用 Edge 浏览器无关。
-    // 注意：服务未公开，若微软调整协议需跟进；旧的 Google TTS 通道因被墙环境
-    // 连接超时过慢已从调用链移除，代码保留在 Git 历史（v1.21.1 及之前版本）。
-    var EDGE_TTS_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4'
-    var EDGE_TTS_VOICES = { ko: 'ko-KR-SunHiNeural', 'zh-CN': 'zh-CN-XiaoxiaoNeural' }
 
-    // 纯 JS SHA-256（不依赖 crypto.subtle，保证 http 本地测试与老内核可用）
-    function sha256Hex(ascii) {
-      function rightRotate(v, a) { return (v >>> a) | (v << (32 - a)) }
-      var words = [], asciiBitLength = ascii.length * 8, hash = [], k = [], i, j
-      // 初始哈希与轮常量（前 8 质数平方根 / 前 64 质数立方根的小数部分）
-      var isComposite = {}, primeCounter = 0
-      for (var candidate = 2; primeCounter < 64; candidate++) {
-        if (!isComposite[candidate]) {
-          for (i = 0; i < 313; i += candidate) isComposite[i] = candidate
-          hash[primeCounter] = (Math.pow(candidate, 0.5) * 4294967296) | 0
-          k[primeCounter++] = (Math.pow(candidate, 1 / 3) * 4294967296) | 0
-        }
-      }
-      ascii += '\x80'
-      while (ascii.length % 64 - 56) ascii += '\x00'
-      for (i = 0; i < ascii.length; i++) {
-        j = ascii.charCodeAt(i)
-        if (j >> 8) return ''
-        words[i >> 2] |= j << ((3 - i) % 4) * 8
-      }
-      words[words.length] = (asciiBitLength / 4294967296) | 0
-      words[words.length] = asciiBitLength
-      for (j = 0; j < words.length;) {
-        var w = words.slice(j, j += 16), oldHash = hash
-        hash = hash.slice(0, 8)
-        for (i = 0; i < 64; i++) {
-          var w15 = w[i - 15], w2 = w[i - 2]
-          var a = hash[0], e = hash[4]
-          var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e & hash[5]) ^ (~e & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0)
-          var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]))
-          hash = [(temp1 + temp2) | 0].concat(hash)
-          hash[4] = (hash[4] + temp1) | 0
-        }
-        for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0
-      }
-      var result = ''
-      for (i = 0; i < 8; i++) {
-        for (j = 3; j + 1; j--) {
-          var b = (hash[i] >> (j * 8)) & 255
-          result += ((b < 16) ? '0' : '') + b.toString(16)
-        }
-      }
-      return result
-    }
-
-    // Edge TTS 的 Sec-MS-GEC 签名（edge-tts 社区逆向算法，与 Python 参考实现逐字节对照验证过）：
-    // unix 秒 + Windows 文件时间偏移(11644473600) → 向下取整到 5 分钟(300s) → ×10^7（100ns 刻度）
-    // → 拼接 Token → SHA-256 → 大写 hex。
-    // 注意：×10^7 在 JS 里超出安全整数，用字符串补 7 个零代替，保证与大数精度一致。
-    function edgeTtsGec() {
-      var sec = Math.floor(Date.now() / 1000) + 11644473600
-      var floored = sec - (sec % 300)
-      var hashInput = String(floored) + '0000000' + EDGE_TTS_TOKEN
-      return sha256Hex(hashInput).toUpperCase()
-    }
-
-    function _edgeTtsUuid() {
-      if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID()
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
-      })
-    }
-
-    function _escapeXml(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
-    }
-
-    // ─── Edge TTS 连接复用（减少每次发音的握手延迟）───
-    // 慢的原因：每次发音都新建 WebSocket，国内连微软握手就要 0.5-1 秒。
-    // 优化：连接建立后保持复用（协议支持同一连接连续多轮合成），空闲 60 秒
-    //       自动关闭；首次用户点击（pointerdown）即预热连接，让第一次发音也快。
-    //       请求串行：进行中再来新请求则排队（发音天然串行，先发先到）。
-    var _edgeTtsWs = null
-    var _edgeTtsWsTimer = null
-    var _edgeTtsBusy = false
-    var _edgeTtsReq = null
-    var _edgeTtsPendingCall = null
-
-    // 主动关闭缓存的连接（空闲超时 / 页面离开 / 连接异常时调用）
-    function _edgeTtsClose() {
-      if (_edgeTtsWsTimer) { clearTimeout(_edgeTtsWsTimer); _edgeTtsWsTimer = null }
-      if (_edgeTtsWs) {
-        var ws = _edgeTtsWs
-        _edgeTtsWs = null
-        ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null
-        try { ws.close() } catch(e) {}
-      }
-    }
-
-    // 空闲计时：请求完成或预热后开始倒数，60 秒无请求则关闭连接
-    function _edgeTtsArmIdle() {
-      if (_edgeTtsWsTimer) clearTimeout(_edgeTtsWsTimer)
-      _edgeTtsWsTimer = setTimeout(function() { _edgeTtsClose() }, 60000)
-    }
-
-    // 建立新连接（仅建连不发请求；请求在 onopen 后发送）
-    function _edgeTtsOpen() {
-      if (typeof WebSocket === 'undefined') return null
-      var gecc = edgeTtsGec()
-      var connId = _edgeTtsUuid()
-      var wsUrl = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1' +
-        '?TrustedClientToken=' + EDGE_TTS_TOKEN +
-        '&Sec-MS-GEC=' + gecc +
-        '&Sec-MS-GEC-Version=1-143.0.3650.75' +
-        '&ConnectionId=' + connId +
-        '&X-ClientId=' + connId
-      var ws
-      try {
-        ws = new WebSocket(wsUrl)
-        // 关键：二进制消息默认是 Blob，必须显式设为 ArrayBuffer，否则收不到音频数据
-        ws.binaryType = 'arraybuffer'
-      } catch(e) {
-        return null
-      }
-      ws.onopen = function() {
-        // 连接就绪后，若已有排队的请求则立即发送
-        if (ws._pendingSend) { var s = ws._pendingSend; ws._pendingSend = null; s() }
-      }
-      ws.onmessage = function(e) {
-        var req = _edgeTtsReq
-        if (!req) return
-        if (typeof e.data === 'string') {
-          // 文本帧：只有匹配当前请求的 Path:turn.end 表示本轮合成结束。
-          // turn.start / response 只是中间信号，音频在其后的二进制帧里，不能提前结束。
-          if (e.data.indexOf('Path:turn.end') >= 0 && e.data.indexOf(req.requestId) >= 0) {
-            req.finish()
-          }
-          return
-        }
-        // 二进制帧：定位 MP3 同步字（0xFF + 0xE0~0xFF）取音频，对头格式变化最鲁棒
-        var buf = new Uint8Array(e.data)
-        var sync = -1
-        for (var i = 0; i < buf.length - 1; i++) {
-          if (buf[i] === 0xFF && (buf[i + 1] & 0xE0) === 0xE0) { sync = i; break }
-        }
-        if (sync >= 0) req.audioParts.push(buf.slice(sync))
-      }
-      ws.onerror = function() {
-        // 连接异常：清理连接；当前请求判失败（由上层降级原生语音）
-        _edgeTtsClose()
-        var req = _edgeTtsReq
-        if (req) req.fail(new Error('ws-error'))
-      }
-      ws.onclose = function() {
-        if (_edgeTtsWs === ws) _edgeTtsWs = null
-        var req = _edgeTtsReq
-        if (req) req.fail(new Error('ws-closed'))
-      }
-      _edgeTtsWs = ws
-      return ws
-    }
-
-    // 预热：提前建立连接（用户即将操作时调用），不发送合成请求
-    function prewarmEdgeTts() {
-      if (typeof WebSocket === 'undefined') return
-      if (_edgeTtsBusy) return
-      var ws = _edgeTtsWs
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        _edgeTtsArmIdle()
-        return
-      }
-      if (ws) _edgeTtsClose()
-      _edgeTtsOpen()
-    }
-
-    // 结束当前请求：清状态、放行排队的下一个请求
-    function _edgeTtsFinishRequest() {
-      _edgeTtsReq = null
-      _edgeTtsBusy = false
-      if (_edgeTtsPendingCall) {
-        var p = _edgeTtsPendingCall
-        _edgeTtsPendingCall = null
-        _edgeTtsStartRequest(p.text, p.lang, p.onFail)
-      }
-    }
-
-    // 发起一轮合成请求（连接可能新建或复用）
-    function _edgeTtsStartRequest(text, lang, onFail) {
-      _edgeTtsBusy = true
-      var voice = EDGE_TTS_VOICES[lang] || EDGE_TTS_VOICES['ko']
-      var requestId = _edgeTtsUuid()
-      var audioParts = []
-      var done = false
-      var failTimer = setTimeout(function() {
-        if (!done) {
-          done = true
-          clearTimeout(failTimer)
-          _edgeTtsClose()
-          _edgeTtsFinishRequest()
-          onFail(new Error('timeout'))
-        }
-      }, 8000)
-      var req = {
-        requestId: requestId,
-        audioParts: audioParts,
-        finish: function() {
-          if (done) return
-          done = true
-          clearTimeout(failTimer)
-          _edgeTtsArmIdle()
-          _edgeTtsFinishRequest()
-          if (audioParts.length === 0) { onFail(new Error('no-audio')); return }
-          var blob = new Blob(audioParts, { type: 'audio/mpeg' })
-          var url = URL.createObjectURL(blob)
-          var a = new Audio(url)
-          a.playbackRate = parseFloat(lsGet('ys-tts-rate', '0.85'))
-          // 先静音启动，绕过浏览器自动播放策略（Chrome 允许静音自动播放），
-          // 播放开始后再取消静音——否则学习卡片"自动发音"（非点击触发）会被
-          // NotAllowedError 拦截，导致桌面环境静默无声。
-          a.muted = true
-          _playingAudio = a
-          a.play().then(function() {
-            a.muted = false
-            // 播起来了；播放完释放 blob URL
-            a.addEventListener('ended', function() { URL.revokeObjectURL(url) })
-          }).catch(function(err) {
-            URL.revokeObjectURL(url)
-            if (_playingAudio === a) _playingAudio = null
-            onFail(err)
-          })
-        },
-        fail: function(err) {
-          if (done) return
-          done = true
-          clearTimeout(failTimer)
-          _edgeTtsFinishRequest()
-          onFail(err)
-        }
-      }
-      _edgeTtsReq = req
-
-      var ws = _edgeTtsWs
-      var send = function() {
-        if (_edgeTtsWsTimer) { clearTimeout(_edgeTtsWsTimer); _edgeTtsWsTimer = null }
-        // 时间戳格式与 edge-tts 一致：'Thu Aug 14 2026 08:10:00 GMT+0000 (Coordinated Universal Time)'
-        var d = new Date()
-        var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-        var pad = function(n) { return String(n).padStart(2, '0') }
-        var ts = days[d.getUTCDay()] + ' ' + months[d.getUTCMonth()] + ' ' + pad(d.getUTCDate()) + ' ' + d.getUTCFullYear() +
-          ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) +
-          ' GMT+0000 (Coordinated Universal Time)'
-        // 1) speech.config（当前协议为 metadataoptions 小写 + 结尾 \r\n）
-        var config = '{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"true","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}\r\n'
-        ws.send('X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' + config)
-        // 2) SSML（X-RequestId + X-Timestamp 尾缀 Z + Path:ssml + prosody 模板，与 edge-tts 一致）
-        var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>" +
-          "<voice name='" + voice + "'><prosody pitch='+0Hz' rate='+0%' volume='+0%'>" +
-          _escapeXml(text) + '</prosody></voice></speak>'
-        ws.send('X-RequestId:' + requestId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml)
-      }
-
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        send()
-      } else {
-        if (ws) _edgeTtsClose()
-        ws = _edgeTtsOpen()
-        if (!ws) {
-          done = true
-          clearTimeout(failTimer)
-          _edgeTtsFinishRequest()
-          onFail(new Error('ws-create-failed'))
-          return
-        }
-        // 连接建立后（onopen）再发送
-        ws._pendingSend = send
-      }
-    }
-
-    // Edge TTS 合成并播放。成功无回调；失败回调 onFail(err)，
-    // err.name === 'NotAllowedError' 表示自动播放被浏览器拦截（属正常现象）。
-    function speakEdgeTTS(text, lang, onFail) {
-      if (typeof WebSocket === 'undefined') { onFail(new Error('no-websocket')); return }
-      if (_edgeTtsBusy) {
-        // 上一个请求未完成 → 排队（发音天然串行，先发先到）
-        _edgeTtsPendingCall = { text: text, lang: lang, onFail: onFail }
-        return
-      }
-      _edgeTtsStartRequest(text, lang, onFail)
-    }
-
-    // 预热：首次用户点击（pointerdown）后提前建立连接，
-    // 用户随后点发音按钮/翻卡时连接已就绪，发音明显更快
-    document.addEventListener('pointerdown', function _prewarmOnce() {
-      document.removeEventListener('pointerdown', _prewarmOnce)
-      prewarmEdgeTts()
-    }, { passive: true, once: true })
-
-    // 页面离开时关闭缓存的连接
-    window.addEventListener('pagehide', function() { _edgeTtsClose() })
-
-    function speak(text, lang) {
+    // 通用发音函数：speak('안녕하세요', 'ko') / speak('안녕하세요', 'ko', 'audio/yonsei1/1/안녕하세요.mp3')
+    // localSrc 存在时：本地 mp3 优先（不联网、任何浏览器可播）；
+    // 本地缺失/播放被拦 → Google TTS 在线（用户翻墙环境可用）；失败静默不打扰。
+    function speak(text, lang, localSrc) {
       if (!text) return
-      // 新发音开始时清掉上一个兜底计时器（上一次语音可能已被本函数 cancel 掉）
-      if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null }
       if (_playingAudio) { _playingAudio.pause(); _playingAudio = null }
-      // 停止任何残留的原生语音合成
       if (window.speechSynthesis) { try { window.speechSynthesis.cancel() } catch(e) {} }
       var l = lang || 'ko'
 
-      // 主通道：Edge TTS（国内直连，免翻墙）。失败才降级原生语音（含失败提示）。
-      speakEdgeTTS(text, l, function(err) {
-        // 自动播放策略拦截（非点击触发的自动发音被浏览器拒绝）属正常现象，
-        // 继续降级原生，但不提示，避免每张卡片都弹提示
-        var autoBlocked = !!(err && err.name === 'NotAllowedError')
-        var synth = window.speechSynthesis
-        if (!synth) {
-          if (!autoBlocked && typeof showToast === 'function') showToast('⚠️ 发音失败，当前环境不支持发音')
-          return
+      // Google TTS 在线播放（例句/本地缺失兜底；失败静默，不弹提示）
+      var playGoogle = function() {
+        var url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + l + '&q=' + encodeURIComponent(text)
+        var a = new Audio(url)
+        a.playbackRate = parseFloat(lsGet('ys-tts-rate', '0.85'))
+        _playingAudio = a
+        a.play().catch(function() {
+          if (_playingAudio === a) _playingAudio = null
+        })
+      }
+
+      if (localSrc) {
+        // 本地 mp3 优先：文件随网站发布，不依赖网络与浏览器内核
+        var a = new Audio(localSrc)
+        a.playbackRate = parseFloat(lsGet('ys-tts-rate', '0.85'))
+        // 先静音启动，绕过浏览器自动播放策略（Chrome 允许静音自动播放），
+        // 播放开始后再取消静音——学习卡片"自动发音"（非点击触发）也能出声。
+        a.muted = true
+        var settled = false
+        var toGoogle = function() {
+          if (settled) return
+          settled = true
+          if (_playingAudio === a) _playingAudio = null
+          playGoogle()
         }
-        var failed = false
-        var onError = function() {
-          if (failed) return
-          failed = true
-          if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null }
-          if (!autoBlocked && typeof showToast === 'function') showToast('⚠️ 发音失败，请检查网络')
-        }
-        try {
-          synth.cancel()
-          var u = new SpeechSynthesisUtterance(text)
-          u.lang = l === 'ko' ? 'ko-KR' : 'zh-CN'
-          u.rate = parseFloat(lsGet('ys-tts-rate', '0.85'))
-          // 真播起来了 / 正常播完 → 取消兜底计时
-          u.onstart = function() { if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null } }
-          u.onend = function() { if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null } }
-          u.onerror = function(e) {
-            // 忽略自己 cancel() 触发的 interruption/canceled 事件（正常打断，不是失败）
-            if (e && (e.error === 'canceled' || e.error === 'interrupted')) return
-            onError()
-          }
-          // 兜底：个别环境 speak() 不报错但也不出声（如无韩语语音包），超时后提示
-          _speakFailTimer = setTimeout(onError, 3000)
-          synth.speak(u)
-        } catch(e2) {
-          onError()
-        }
-      })
+        // 文件不存在（404）/ 解码失败 → 回退 Google（用 onerror 属性，兼容性最稳）
+        a.onerror = function() { toGoogle() }
+        _playingAudio = a
+        a.play().then(function() {
+          a.muted = false
+        }).catch(function() {
+          toGoogle()
+        })
+      } else {
+        // 无本地音频（如例句）→ 直接 Google 在线
+        playGoogle()
+      }
+    }
+
+    // 本地音频优先发音（词条级：知道书号/课号，指向 audio/ 目录的 mp3）
+    function speakLocal(w, num, lang) {
+      if (!w || !w.kr) return
+      var bookId = (w.bookId) || getCurrentBook().bookId
+      var src = 'audio/' + bookId + '/' + num + '/' + encodeURIComponent(w.kr) + '.mp3'
+      speak(w.kr, lang || 'ko', src)
+    }
+
+    // 例句发音：Google TTS 在线（无本地音频），失败静默
+    function speakExample(text, lang) {
+      speak(text, lang)
+    }
+
+    // 本地音频优先发音（词条级：知道书号/课号，指向 audio/ 目录的 mp3）
+    function speakLocal(w, num, lang) {
+      if (!w || !w.kr) return
+      var bookId = (w.bookId) || getCurrentBook().bookId
+      var src = 'audio/' + bookId + '/' + num + '/' + encodeURIComponent(w.kr) + '.mp3'
+      speak(w.kr, lang || 'ko', src)
+    }
+
+    // 例句/无本地音频的发音：Google TTS 在线尝试，失败静默（不降级、不弹提示）。
+    // 单词发音已由本地 mp3 覆盖；例句未预生成（体积原因），走在线 Google TTS——
+    // 用户环境可翻墙时能听；连不上（如手机未开梯子）时静默，不打扰学习。
+    function speakExample(text, lang) {
+      speak(text, lang)
     }
 
     // 生成例句 HTML，整行可点读
@@ -659,7 +384,7 @@
       var row = e.target.closest ? e.target.closest('.ex-clickable') : null
       if (row) {
         var text = row.getAttribute('data-speak')
-        if (text) { e.stopPropagation(); speak(text, 'ko') }
+        if (text) { e.stopPropagation(); speakExample(text, 'ko') }
         return
       }
 
@@ -668,7 +393,7 @@
       if (speakEl) {
         e.stopPropagation()
         var spkText = speakEl.getAttribute('data-speak')
-        if (spkText) speak(spkText, 'ko')
+        if (spkText) speak(spkText, 'ko', speakEl.getAttribute('data-path'))
         return
       }
 
@@ -922,6 +647,7 @@
           var key2 = wk(w, w.lessonNum)
           var mastered2 = isMastered(w, w.lessonNum)
           var safeKr2 = w.kr.replace(/"/g, '&quot;')
+          var localPath2 = 'audio/' + (w.bookId || getCurrentBook().bookId) + '/' + w.lessonNum + '/' + encodeURIComponent(w.kr) + '.mp3'
 
           const div = document.createElement('div')
           div.className = 'word-item'
@@ -930,7 +656,7 @@
           div.setAttribute('data-book', w.bookId || '')
           div.onclick = function(e) {
             if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
-            speak(w.kr, 'ko')
+            speakLocal(w, w.lessonNum, 'ko')
             div.classList.add('speaking')
             setTimeout(function() { div.classList.remove('speaking') }, 350)
           }
@@ -948,7 +674,7 @@
                 '<span class="stars">' + renderStars(5) + '</span>' +
               '</span>' +
               '<div class="word-actions-under-stars">' +
-                '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+                '<span class="word-speak-btn" title="发音" data-speak="' + safeKr2 + '" data-path="' + localPath2 + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\',this.getAttribute(\'data-path\'))">🔊</span>' +
                 '<span class="word-mastery-badge ' + (mastered2 ? 'mastered' : 'unmastered') + '" data-key="' + key2 + '" title="点击切换掌握状态">' +
                   (mastered2 ? '✓' : '○') +
                 '</span>' +
@@ -1132,6 +858,7 @@
         var key = wk(w, w.lessonNum)
         var mastered = isMastered(w, w.lessonNum)
         var isStar = starred.has(key)
+        var localPath = 'audio/' + (w.bookId || getCurrentBook().bookId) + '/' + w.lessonNum + '/' + encodeURIComponent(w.kr) + '.mp3'
 
         var div = document.createElement('div')
         div.className = 'word-item search-result-item'
@@ -1139,7 +866,7 @@
         div.setAttribute('data-lesson', String(w.lessonNum))
         div.onclick = function(e) {
           if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
-          speak(w.kr, 'ko')
+          speakLocal(w, w.lessonNum, 'ko')
           div.classList.add('speaking')
           setTimeout(function() { div.classList.remove('speaking') }, 350)
         }
@@ -1163,7 +890,7 @@
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
             '<div class="word-actions-under-stars">' +
-              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" data-path="' + localPath + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\',this.getAttribute(\'data-path\'))">🔊</span>' +
               '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
                 (mastered ? '✓' : '○') +
               '</span>' +
@@ -1343,6 +1070,7 @@
         var mastered = isMastered(w, num)
         var isStar = starred.has(key)
         var safeKr = w.kr.replace(/"/g, '&quot;')
+        var localPath = 'audio/' + (w.bookId || getCurrentBook().bookId) + '/' + num + '/' + encodeURIComponent(w.kr) + '.mp3'
 
         var div = document.createElement('div')
         div.className = 'word-item'
@@ -1352,7 +1080,7 @@
 
         div.onclick = function(e) {
           if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
-          speak(w.kr, 'ko')
+          speakLocal(w, num, 'ko')
           div.classList.add('speaking')
           setTimeout(function() { div.classList.remove('speaking') }, 350)
         }
@@ -1374,7 +1102,7 @@
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
             '<div class="word-actions-under-stars">' +
-              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" data-path="' + localPath + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\',this.getAttribute(\'data-path\'))">🔊</span>' +
               '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
                 (mastered ? '✓' : '○') +
               '</span>' +

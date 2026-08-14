@@ -96,7 +96,9 @@
         for (var ci = 0; ci < today.masteredKeys.length; ci++) {
           var kp = today.masteredKeys[ci].split('|')
           // 取最后一段即韩语词：兼容旧格式「3|가족」与新格式「yonsei1|3|가족」
-          chips.push('<span class="sdc-chip mastered">' + (kp[kp.length - 1] || '') + '</span>')
+          var krTxt = kp[kp.length - 1] || ''
+          var p2 = chipAudioPath(today.masteredKeys[ci])
+          chips.push('<span class="sdc-chip mastered" data-path="' + (p2 || '') + '">' + krTxt + '</span>')
         }
         html += '<div>' + chips.join('') + '</div>'
       }
@@ -112,7 +114,8 @@
         html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">📕 今日错词：</div>'
         var errChips = []
         for (var ej = 0; ej < todayErrors.length; ej++) {
-          errChips.push('<span class="sdc-chip error">' + todayErrors[ej] + '</span>')
+          var errPath = todayErrors[ej].num ? ('audio/' + getCurrentBook().bookId + '/' + todayErrors[ej].num + '/' + encodeURIComponent(todayErrors[ej].kr) + '.mp3') : ''
+          errChips.push('<span class="sdc-chip error" data-path="' + errPath + '">' + todayErrors[ej].kr + '</span>')
         }
         html += '<div>' + errChips.join('') + '</div>'
       }
@@ -126,7 +129,7 @@
       el.innerHTML = html
     }
 
-    // 某天测验答错的词（去重，只显示韩语）；顶部"今日错词"复用同一天逻辑
+    // 某天测验答错的词（去重，带课号）；顶部"今日错词"复用同一天逻辑
     function dayQuizErrors(dayKey) {
       var seen = {}
       var out = []
@@ -138,12 +141,23 @@
         var errs = h.errors || []
         for (var j = 0; j < errs.length; j++) {
           var kr = errs[j].kr
-          if (!seen[kr]) { seen[kr] = true; out.push(kr) }
+          if (!seen[kr]) { seen[kr] = true; out.push({ kr: kr, num: errs[j].lessonNum }) }
         }
       }
       return out
     }
     function todayQuizErrors() { return dayQuizErrors(getStudyDay()) }
+
+    // 从统计 key（书ID|课号|韩语 或 旧格式 课号|韩语）解析本地音频路径；解析不出返回 null
+    function chipAudioPath(keyStr, fallbackBookId) {
+      var parts = String(keyStr || '').split('|')
+      if (parts.length < 2) return null
+      var kr = parts[parts.length - 1]
+      var num = parts[parts.length - 2]
+      if (!kr || !num) return null
+      var bookId = parts.length >= 3 ? parts[0] : (fallbackBookId || getCurrentBook().bookId)
+      return 'audio/' + bookId + '/' + num + '/' + encodeURIComponent(kr) + '.mp3'
+    }
 
     function renderStatsList() {
       var el = document.getElementById('stats-list')
@@ -201,22 +215,27 @@
           html += '<div class="sdc-line">' + parts.join(' · ') + '</div>'
         }
 
-        // 掌握词标签（可点听发音）
+        // 掌握词标签（可点听发音，优先本地 mp3）
         if ((e.mastered || 0) > 0) {
           var mKeys = e.masteredKeys || []
           if (mKeys.length > 0) {
             var mWords = []
             for (var mi = 0; mi < mKeys.length; mi++) {
               var mp = String(mKeys[mi]).split('|')
-              mWords.push(mp[mp.length - 1] || '')
+              mWords.push({ t: mp[mp.length - 1] || '', p: chipAudioPath(mKeys[mi]) || '' })
             }
             html += '<div class="sdc-chips">' + buildChipRow(mWords, 'mastered') + '</div>'
           }
         }
-        // 错词标签（可点听发音），行首加小字「错词：」区分
+        // 错词标签（可点听发音，优先本地 mp3），行首加小字「错词：」区分
         var dayErrors = dayQuizErrors(key)
         if (dayErrors.length > 0) {
-          html += '<div class="sdc-chips">' + '<span class="sdc-err-prefix">错词：</span>' + buildChipRow(dayErrors, 'error') + '</div>'
+          var errItems = []
+          for (var ei2 = 0; ei2 < dayErrors.length; ei2++) {
+            var de = dayErrors[ei2]
+            errItems.push({ t: de.kr, p: de.num ? ('audio/' + getCurrentBook().bookId + '/' + de.num + '/' + encodeURIComponent(de.kr) + '.mp3') : '' })
+          }
+          html += '<div class="sdc-chips">' + '<span class="sdc-err-prefix">错词：</span>' + buildChipRow(errItems, 'error') + '</div>'
         }
         html += '</div>'
       }
@@ -225,13 +244,16 @@
     }
 
     // 词条标签行：掌握词 / 错词最多各显示 8 个，更多的折叠到「▾ 展开」里，避免卡片被撑高
+    // items：字符串（无本地音频）或 { t: 韩语, p: 本地mp3路径 }
     var DAY_CHIP_MAX = 8
-    function buildChipRow(words, kind) {
-      var shown = words.slice(0, DAY_CHIP_MAX)
-      var rest = words.slice(DAY_CHIP_MAX)
+    function buildChipRow(items, kind) {
+      var shown = items.slice(0, DAY_CHIP_MAX)
+      var rest = items.slice(DAY_CHIP_MAX)
       var html = ''
-      function chipSpan(w) {
-        return '<span class="sdc-chip ' + kind + '">' + w + '</span>'
+      function chipSpan(it) {
+        var t = typeof it === 'string' ? it : it.t
+        var p = typeof it === 'string' ? '' : (it.p || '')
+        return '<span class="sdc-chip ' + kind + '" data-path="' + p + '">' + t + '</span>'
       }
       for (var i = 0; i < shown.length; i++) {
         html += chipSpan(shown[i])
@@ -262,7 +284,11 @@
         var chip = t && t.closest ? t.closest('.sdc-chip') : null
         if (!chip) return
         var word = chip.textContent.trim()
-        if (word) speak(word, 'ko')
+        if (!word) return
+        // 优先本地 mp3（data-path 存在时）；否则走 Google（例句级静默）
+        var path = chip.getAttribute('data-path')
+        if (path) speak(word, 'ko', path)
+        else speakExample(word, 'ko')
       })
     }
 

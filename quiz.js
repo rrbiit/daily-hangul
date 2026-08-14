@@ -590,7 +590,7 @@
       if (!q) return
       var btn = document.getElementById('quiz-speak-btn')
       if (btn) { btn.classList.add('playing'); setTimeout(function() { btn.classList.remove('playing') }, 1500) }
-      speak(q.word.kr, 'ko')
+      speakLocal(q.word, q.word.lessonNum, 'ko')
       document.getElementById('quiz-feedback').textContent = '🔊 正在播放...'
       document.getElementById('quiz-feedback').style.color = 'var(--text-dim)'
       setTimeout(function() {

@@ -172,6 +172,7 @@
         var isStar = starred.has(key)
         var origIdx = rawWords.indexOf(w)
         var safeKr = w.kr.replace(/"/g, '&quot;')
+        var localPath = 'audio/' + getCurrentBook().bookId + '/' + num + '/' + encodeURIComponent(w.kr) + '.mp3'
 
         var div = document.createElement('div')
         div.className = 'word-item'
@@ -182,7 +183,7 @@
           // 点了操作按钮不触发卡片点击
           if (e && e.target && e.target.closest && (e.target.closest('.word-speak-btn') || e.target.closest('.word-mastery-badge') || e.target.closest('.word-stars-clickable') || e.target.closest('.word-learn-btn'))) return
           // 点击卡片空白处 → 播放读音
-          speak(w.kr, 'ko')
+          speakLocal(w, num, 'ko')
           div.classList.add('speaking')
           setTimeout(function() { div.classList.remove('speaking') }, 350)
         }
@@ -200,7 +201,7 @@
               '<span class="stars">' + starsText + '</span>' +
             '</span>' +
             '<div class="word-actions-under-stars">' +
-              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\')">🔊</span>' +
+              '<span class="word-speak-btn" title="发音" data-speak="' + safeKr + '" data-path="' + localPath + '" onclick="event.stopPropagation();speak(this.getAttribute(\'data-speak\'),\'ko\',this.getAttribute(\'data-path\'))">🔊</span>' +
               '<span class="word-mastery-badge ' + (mastered ? 'mastered' : 'unmastered') + '" data-key="' + key + '" title="点击切换掌握状态">' +
                 (mastered ? '✓' : '○') +
               '</span>' +
