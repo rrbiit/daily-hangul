@@ -360,6 +360,7 @@
       renderHomeBooks()
       updateContinueBtn()
       updateStarredCount()
+      updateBackupReminder()
     }
 
     function updateStarredCount() {
@@ -1034,6 +1035,47 @@
       document.body.removeChild(a)
       setTimeout(function() { URL.revokeObjectURL(url) }, 1000)
       showToast('📤 下载中...')
+      // 手动导出也算一次备份，7 天内不再提醒
+      recordBackupTime()
+    }
+
+    // ─── 自动备份提醒（纯前端安全网，不引入后端）───
+    // 触发条件：已有学习数据（进度/收藏/日志任一项）且距上次"备份/暂不"超过 7 天。
+    // 行为温和：出现一行小卡片，用户点「去备份」或「暂不」后 7 天内不再出现。
+    var BACKUP_REMIND_DAYS = 7
+
+    function updateBackupReminder() {
+      var el = document.getElementById('backup-reminder')
+      if (!el) return
+      // 没有任何学习数据 → 不打扰新用户
+      var hasData = starred.size > 0 || grammarStarred.size > 0 || Object.keys(srs).length > 0
+      if (!hasData) {
+        var log = loadDailyLog()
+        for (var k in log) { if (log.hasOwnProperty(k)) { hasData = true; break } }
+      }
+      if (!hasData) { el.style.display = 'none'; return }
+      // 距上次处理备份提醒未超过 7 天 → 不提醒
+      var last = parseInt(lsGet('ys-last-backup', '0'), 10) || 0
+      if (last > 0 && Date.now() - last < BACKUP_REMIND_DAYS * 86400000) {
+        el.style.display = 'none'
+        return
+      }
+      el.style.display = 'flex'
+    }
+
+    // 记录"已处理备份提醒"的时间（去备份 / 暂不 / 设置页手动导出都会调用）
+    function recordBackupTime() {
+      lsSet('ys-last-backup', String(Date.now()))
+      var el = document.getElementById('backup-reminder')
+      if (el) el.style.display = 'none'
+    }
+
+    function doBackupNow() {
+      exportData()
+    }
+
+    function dismissBackupReminder() {
+      recordBackupTime()
     }
 
     // 给元素一个"弹一下"的视觉反馈

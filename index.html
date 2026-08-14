@@ -57,6 +57,15 @@
           <div class="hp-hint">学习记录 ›</div>
         </div>
 
+        <!-- 备份提醒（有学习数据且距上次备份超 7 天时显示；纯前端安全网） -->
+        <div id="backup-reminder" class="backup-reminder" style="display:none;">
+          <span class="br-text">💾 距上次备份已超过 7 天，建议导出一次数据</span>
+          <span class="br-actions">
+            <button class="br-btn br-btn-primary" onclick="doBackupNow()">去备份</button>
+            <button class="br-btn" onclick="dismissBackupReminder()">暂不</button>
+          </span>
+        </div>
+
         <!-- 今日小结 -->
         <div class="today-summary" id="today-summary" style="display:none;">
           <span class="today-summary-icon">✨</span>

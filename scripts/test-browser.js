@@ -112,7 +112,7 @@ async function main() {
   ok(!window.document.querySelector('#ys-error'), '启动无全局错误（#ys-error 不存在）')
   ok(typeof window.startQuiz === 'function' && typeof window.switchQuizMode === 'function', 'quiz.js 已加载（startQuiz/switchQuizMode 可用）')
   ok(typeof window.getConfusionPairsForBook === 'function', 'confusion.js 已加载（易混层可用）')
-  ok(window.eval('APP_CONFIG.version') === '1.21.1', '版本号 = 1.21.1（实际 ' + window.eval('APP_CONFIG.version') + '）')
+  ok(window.eval('APP_CONFIG.version') === '1.22.0', '版本号 = 1.22.0（实际 ' + window.eval('APP_CONFIG.version') + '）')
 
   console.log('── 2. 测验设置页：五种模式按钮 ──')
   window.showQuiz()

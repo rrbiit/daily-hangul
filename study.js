@@ -287,9 +287,14 @@
 
     // 通用发音函数：speak('안녕하세요', 'ko')
     var _playingAudio = null
+    // 原生语音"静默失败"兜底提示计时器（全局：连续发音时只保留最后一个，
+    // 避免旧语音的计时器在下次发音后误报）
+    var _speakFailTimer = null
 
     function speak(text, lang) {
       if (!text) return
+      // 新发音开始时清掉上一个兜底计时器（上一次语音可能已被本函数 cancel 掉）
+      if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null }
       if (_playingAudio) { _playingAudio.pause(); _playingAudio = null }
       // 停止任何残留的原生语音合成
       if (window.speechSynthesis) { try { window.speechSynthesis.cancel() } catch(e) {} }
@@ -302,17 +307,42 @@
       _playingAudio = a
       a.play().then(function() {
         // 播起来了，不用降级
-      }).catch(function() {
+      }).catch(function(err) {
         // 方案2：Google TTS 不通，降级原生
         _playingAudio = null
-        if (window.speechSynthesis) {
-          try {
-            window.speechSynthesis.cancel()
-            var u = new SpeechSynthesisUtterance(text)
-            u.lang = l === 'ko' ? 'ko-KR' : 'zh-CN'
-            u.rate = parseFloat(lsGet('ys-tts-rate', '0.85'))
-            window.speechSynthesis.speak(u)
-          } catch(e2) {}
+        // 自动播放策略拦截（非点击触发的自动发音被浏览器拒绝）属正常现象，
+        // 继续降级原生，但不提示，避免每张卡片都弹提示
+        var autoBlocked = !!(err && err.name === 'NotAllowedError')
+        var synth = window.speechSynthesis
+        if (!synth) {
+          if (!autoBlocked && typeof showToast === 'function') showToast('⚠️ 发音失败，当前环境不支持发音')
+          return
+        }
+        var failed = false
+        var onError = function() {
+          if (failed) return
+          failed = true
+          if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null }
+          if (!autoBlocked && typeof showToast === 'function') showToast('⚠️ 发音失败，请检查网络')
+        }
+        try {
+          synth.cancel()
+          var u = new SpeechSynthesisUtterance(text)
+          u.lang = l === 'ko' ? 'ko-KR' : 'zh-CN'
+          u.rate = parseFloat(lsGet('ys-tts-rate', '0.85'))
+          // 真播起来了 / 正常播完 → 取消兜底计时
+          u.onstart = function() { if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null } }
+          u.onend = function() { if (_speakFailTimer) { clearTimeout(_speakFailTimer); _speakFailTimer = null } }
+          u.onerror = function(e) {
+            // 忽略自己 cancel() 触发的 interruption/canceled 事件（正常打断，不是失败）
+            if (e && (e.error === 'canceled' || e.error === 'interrupted')) return
+            onError()
+          }
+          // 兜底：个别环境 speak() 不报错但也不出声（如无韩语语音包），超时后提示
+          _speakFailTimer = setTimeout(onError, 3000)
+          synth.speak(u)
+        } catch(e2) {
+          onError()
         }
       })
     }

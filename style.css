@@ -124,6 +124,27 @@
       cursor: pointer; flex-shrink: 0; margin-left: 8px; white-space: nowrap;
     }
 
+    /* ─── 备份提醒（首页进度条下方，温和提示，不打扰） ─── */
+    .backup-reminder {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--accent-yellow-light); border: 1px solid var(--accent-yellow);
+      border-radius: 12px; padding: 8px 12px; margin-bottom: 10px;
+      font-size: 12px; color: var(--text); line-height: 1.5;
+    }
+    .backup-reminder .br-text { flex: 1; min-width: 0; }
+    .backup-reminder .br-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .backup-reminder .br-btn {
+      border: 1px solid var(--accent-yellow); background: transparent;
+      color: var(--text-dim); border-radius: 8px; padding: 4px 10px;
+      font-size: 12px; font-family: var(--font-display); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .backup-reminder .br-btn:hover { background: var(--surface); }
+    .backup-reminder .br-btn-primary {
+      background: var(--accent-yellow); color: #7a5a1e; font-weight: 600;
+    }
+    .backup-reminder .br-btn-primary:hover { opacity: 0.9; }
+
     /* ─── 主操作行：CTA + 小入口 ─── */
     .home-action-row {
       display: flex; gap: 8px; margin-bottom: 10px;
