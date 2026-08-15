@@ -831,6 +831,45 @@
     }
     .study-done-btn-ghost:hover { background: var(--surface); opacity: 1; transform: none; }
 
+    /* ─── 测验词数不足确认弹窗（毛玻璃半透明）─── */
+    .quiz-low-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh;
+      background: rgba(0,0,0,0.22); z-index: 2200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px; animation: fadeIn 0.2s ease;
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    }
+    :root[data-theme="dark"] .quiz-low-overlay { background: rgba(0,0,0,0.45); }
+    .quiz-low-modal {
+      background: rgba(255,255,255,0.72);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 20px; padding: 28px 24px;
+      width: 100%; max-width: 320px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.16);
+      animation: slideUp 0.25s ease;
+    }
+    :root[data-theme="dark"] .quiz-low-modal {
+      background: rgba(26,26,46,0.72);
+      border-color: rgba(255,255,255,0.08);
+    }
+    .quiz-low-emoji { font-size: 40px; line-height: 1; }
+    .quiz-low-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); margin-top: 8px; }
+    .quiz-low-desc { font-size: 13px; color: var(--text-dim); line-height: 1.8; margin-top: 12px; }
+    .quiz-low-btn {
+      margin-top: 18px; width: 100%; padding: 11px 0;
+      border: none; border-radius: 14px; cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+      color: white; font-size: 15px; font-weight: 600;
+      font-family: var(--font-display); transition: all 0.2s;
+    }
+    .quiz-low-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+    .quiz-low-btn-ghost {
+      margin-top: 8px; background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); font-weight: 500;
+    }
+    .quiz-low-btn-ghost:hover { background: var(--surface); opacity: 1; transform: none; }
+
     /* ─── 首页书架（我的教材）─── */
     .home-book-list { display: flex; flex-direction: column; gap: 10px; }
     .home-book-item {

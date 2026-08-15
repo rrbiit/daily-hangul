@@ -667,5 +667,16 @@
       <button class="study-done-btn study-done-btn-ghost" onclick="closeStudyDone()">留在本页</button>
     </div>
   </div>
+
+  <!-- ═══════════ 测验词数不足确认弹窗（毛玻璃半透明）═══════════ -->
+  <div id="quiz-low-overlay" class="quiz-low-overlay" style="display:none;" onclick="if(event.target===this)closeQuizLowOverlay()">
+    <div class="quiz-low-modal">
+      <div class="quiz-low-emoji" id="quiz-low-emoji">🧩</div>
+      <div class="quiz-low-title" id="quiz-low-title">只剩 2 个词</div>
+      <div class="quiz-low-desc" id="quiz-low-desc"></div>
+      <button class="quiz-low-btn" id="quiz-low-start" onclick="quizLowStart()">开始 2 题</button>
+      <button class="quiz-low-btn quiz-low-btn-ghost" id="quiz-low-ghost" onclick="closeQuizLowOverlay()">先不测</button>
+    </div>
+  </div>
 </body>
 </html>

@@ -305,7 +305,7 @@
       }
 
       footer.style.display = totalCount > 0 ? 'block' : 'none'
-      btn.disabled = totalCount < 4
+      btn.disabled = totalCount === 0  // 1~3 词也可开始（点开始后弹确认），0 词才禁用
     }
 
     function buildQuizPool() {
@@ -505,8 +505,14 @@
       var nums = setKeys(quizSelectedLessons)
       var pool = buildQuizPool()
       if (nums.length > 0) { pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 }) }
-      if (pool.length < 4) { alert('词汇不足，至少需要4个词才能测验'); return }
+      if (pool.length === 0) { showQuizNoWordsOverlay(); return }
+      if (pool.length < 4) { showQuizLowOverlay(pool); return }
+      beginQuiz(pool)
+    }
 
+    // 真正开局：给定词池开始答题（startQuiz / quizRetry / 低词确认后共用）
+    function beginQuiz(pool) {
+      if (!pool || pool.length === 0) return
       quizQuestions = generateQuizQuestions(pool)
       quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-setup').style.display = 'none'
@@ -516,6 +522,48 @@
       document.getElementById('quiz-tab-bar').style.display = 'none'
       hideNav()  // 答题中隐藏底部导航栏
       showQuizQuestion()
+    }
+
+    /* ═══════════ 测验词数不足确认弹窗（毛玻璃半透明）═══════════ */
+    // 待确认开始的词池（不足 4 词时弹窗确认后使用）
+    var _quizPendingPool = null
+
+    // 1~3 个词：问用户是否直接开始（题数 = 实际词数）
+    function showQuizLowOverlay(pool) {
+      _quizPendingPool = pool
+      var count = pool.length
+      var el
+      el = document.getElementById('quiz-low-emoji'); if (el) el.textContent = '🧩'
+      el = document.getElementById('quiz-low-title'); if (el) el.textContent = '只剩 ' + count + ' 个词'
+      el = document.getElementById('quiz-low-desc'); if (el) el.textContent = '当前范围只有 ' + count + ' 个词，不够 4 题。直接开始的话，这轮就是 ' + count + ' 题的小测验，测完就收工 🎉'
+      el = document.getElementById('quiz-low-start'); if (el) el.textContent = '开始 ' + count + ' 题'
+      el = document.getElementById('quiz-low-ghost'); if (el) el.style.display = ''
+      el = document.getElementById('quiz-low-overlay'); if (el) el.style.display = 'flex'
+    }
+
+    // 0 个词：无法开始，引导切换范围
+    function showQuizNoWordsOverlay() {
+      _quizPendingPool = null
+      var el
+      el = document.getElementById('quiz-low-emoji'); if (el) el.textContent = '🌱'
+      el = document.getElementById('quiz-low-title'); if (el) el.textContent = '没有可测的词啦'
+      el = document.getElementById('quiz-low-desc'); if (el) el.textContent = '当前范围已经没有词了。可以切换到「全部」或「已掌握」等范围继续测验～'
+      el = document.getElementById('quiz-low-start'); if (el) el.textContent = '知道了'
+      el = document.getElementById('quiz-low-ghost'); if (el) el.style.display = 'none'
+      el = document.getElementById('quiz-low-overlay'); if (el) el.style.display = 'flex'
+    }
+
+    // 弹窗主按钮：确认开始（或「知道了」关闭）
+    function quizLowStart() {
+      var pool = _quizPendingPool
+      closeQuizLowOverlay()
+      if (pool && pool.length > 0) beginQuiz(pool)
+    }
+
+    function closeQuizLowOverlay() {
+      _quizPendingPool = null
+      var el = document.getElementById('quiz-low-overlay')
+      if (el) el.style.display = 'none'
     }
 
     function showQuizQuestion() {
@@ -861,14 +909,9 @@
       var pool = buildQuizPool()
       var nums = setKeys(quizSelectedLessons)
       if (nums.length > 0) pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 })
-      if (pool.length < 4) { alert('词汇不足'); return }
-      quizQuestions = generateQuizQuestions(pool)
-      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
-      document.getElementById('quiz-result').style.display = 'none'
-      document.getElementById('quiz-result').innerHTML = ''
-      document.getElementById('quiz-play').style.display = 'block'
-      hideNav()  // 答题中隐藏底部导航栏
-      showQuizQuestion()
+      if (pool.length === 0) { showQuizNoWordsOverlay(); return }
+      if (pool.length < 4) { showQuizLowOverlay(pool); return }
+      beginQuiz(pool)
     }
 
     function quizBackToSetup() {

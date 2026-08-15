@@ -39,7 +39,8 @@ function makeDom() {
         return els.__opts
       }
       return []
-    }
+    },
+    createElement() { return fakeEl() }
   }
 }
 
@@ -68,6 +69,9 @@ const ctx = {
   srs: {},
   markMastered: () => {},
   saveUserData: () => {},
+  markStudyDay: () => {},
+  hideNav: () => {},
+  showNav: () => {},
 }
 vm.createContext(ctx)
 const FILES = ['data-books.js', 'data-yonsei1.js', 'data-yonsei2.js', 'utils.js', 'confusion.js', 'quiz.js']
@@ -535,6 +539,36 @@ vm.runInContext('saveUserData = function () { __savedSrs = JSON.parse(JSON.strin
 for (let s8i = 0; s8i < 3; s8i++) sAnswer(true)
 const savedBlob = vm.runInContext('__savedSrs', ctx)
 ok(savedBlob && savedBlob[K.ssa] && savedBlob[K.ssa].quizCorrect === 3, '保存的数据包含累计答对次数（3 次答对 → 存储 3/4）')
+
+console.log('── T. 词数不足 → 毛玻璃确认弹窗 ──')
+// 用 testItemByKey 构造确定词数的池（testPoolOf 会跨课重复收集，词数不确定）
+const tW1 = vm.runInContext(`testItemByKey('${K.ssa}')`, ctx)
+const tW2 = vm.runInContext(`testItemByKey('${K.sa}')`, ctx)
+const tW3 = vm.runInContext(`testItemByKey('${K.sseu}')`, ctx)
+const tPool3 = [tW1, tW2, tW3]
+// T1: 1~3 词池也能正常出题（干扰项取自全教材，不依赖筛选池）
+let tqs = vm.runInContext(`generateQuizQuestions(${JSON.stringify(tPool3)})`, ctx)
+ok(tqs.length === 3 && tqs.every(q => q.options.length === 4), '3 词池 → 3 题、每题 4 选项（干扰项取自全教材）')
+tqs = vm.runInContext(`generateQuizQuestions(${JSON.stringify([tW1])})`, ctx)
+ok(tqs.length === 1 && tqs[0].options.length === 4, '1 词池 → 1 题、4 选项（极限小池也可测）')
+
+// T2: 不足 4 词 → 显示确认弹窗
+vm.runInContext(`showQuizLowOverlay(${JSON.stringify(tPool3)})`, ctx)
+ok(vm.runInContext("document.getElementById('quiz-low-overlay').style.display", ctx) === 'flex', '不足 4 词 → 显示确认弹窗')
+ok(vm.runInContext("document.getElementById('quiz-low-title').textContent", ctx) === '只剩 3 个词', '弹窗标题 = 只剩 3 个词')
+ok(vm.runInContext("document.getElementById('quiz-low-start').textContent", ctx) === '开始 3 题', '主按钮 = 开始 3 题')
+ok(vm.runInContext("document.getElementById('quiz-low-ghost').style.display", ctx) === '', '1~3 词时显示「先不测」按钮')
+
+// T3: 确认后以小词池开局（题数 = 实际词数）
+vm.runInContext('quizLowStart()', ctx)
+ok(vm.runInContext("document.getElementById('quiz-play').style.display", ctx) === 'block', '确认后进入答题区')
+ok(vm.runInContext('quizQuestions.length', ctx) === 3, '本轮共 3 题')
+ok(vm.runInContext("document.getElementById('quiz-low-overlay').style.display", ctx) === 'none', '弹窗已关闭')
+
+// T4: 0 词 → 引导弹窗（不可开始）
+vm.runInContext('showQuizNoWordsOverlay()', ctx)
+ok(vm.runInContext("document.getElementById('quiz-low-title').textContent", ctx) === '没有可测的词啦', '0 词 → 引导弹窗标题')
+ok(vm.runInContext("document.getElementById('quiz-low-ghost').style.display", ctx) === 'none', '0 词时隐藏「先不测」按钮')
 
 console.log('')
 console.log('═══ 结果：' + passed + ' 通过 / ' + failed + ' 失败 ═══')
