@@ -915,6 +915,40 @@
     }
 
     function quizBackToSetup() {
+      resetQuizToSetup()
+    }
+
+    // ─── 退出测验统一逻辑 ───
+    // 所有"测验进行中退出"路径共用：已答过的题会计入测验记录（与 ✕ 退出 一致）。
+    // 弹出毛玻璃确认弹窗，确认后保存记录并重置回设置页，再执行 onDone（如需跳转）。
+    function exitQuizWithConfirm(onDone) {
+      var answered = quizScore + quizErrors.length
+      var resetAnd = function() {
+        // 半途退出也保存已答部分的记录
+        if (answered > 0) persistQuizRecord(quizScore, answered, true)
+        resetQuizToSetup()
+        if (typeof onDone === 'function') onDone()
+      }
+      if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        showAppDialog({
+          emoji: '👋',
+          title: '退出测验？',
+          desc: answered > 0 ? '已答的 ' + answered + ' 题会计入测验记录。确定退出吗？' : '确定退出测验吗？',
+          confirmText: '退出',
+          cancelText: '继续答题',
+          onConfirm: resetAnd
+        })
+      } else {
+        resetAnd()
+      }
+    }
+
+    function confirmExitQuiz() {
+      exitQuizWithConfirm()
+    }
+
+    // 重置测验会话回设置页（返回设置 / 退出测验共用）
+    function resetQuizToSetup() {
       quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
@@ -934,17 +968,36 @@
     }
 
     // ─── 退出测验统一逻辑 ───
-    // 所有"测验进行中退出"路径共用：已答过的题会计入测验记录（与 ✕ 退出 一致），
-    // 不再出现「会计入测验记录 / 进度将丢失」前后矛盾的文案与行为。
-    // 返回 true = 已退出并重置到设置页；false = 用户取消。
-    function exitQuizWithConfirm() {
+    // 所有"测验进行中退出"路径共用：已答过的题会计入测验记录（与 ✕ 退出 一致）。
+    // 弹出毛玻璃确认弹窗，确认后保存记录并重置回设置页，再执行 onDone（如需跳转）。
+    function exitQuizWithConfirm(onDone) {
       var answered = quizScore + quizErrors.length
-      if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        if (!confirm(answered > 0 ? '确定退出吗？已答的 ' + answered + ' 题会计入测验记录。' : '确定退出吗？')) return false
+      var resetAnd = function() {
         // 半途退出也保存已答部分的记录
         if (answered > 0) persistQuizRecord(quizScore, answered, true)
+        resetQuizToSetup()
+        if (typeof onDone === 'function') onDone()
       }
-      // 重置测验会话回设置页
+      if (quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
+        showAppDialog({
+          emoji: '👋',
+          title: '退出测验？',
+          desc: answered > 0 ? '已答的 ' + answered + ' 题会计入测验记录。确定退出吗？' : '确定退出测验吗？',
+          confirmText: '退出',
+          cancelText: '继续答题',
+          onConfirm: resetAnd
+        })
+      } else {
+        resetAnd()
+      }
+    }
+
+    function confirmExitQuiz() {
+      exitQuizWithConfirm()
+    }
+
+    // 重置测验会话回设置页（返回设置 / 退出测验共用）
+    function resetQuizToSetup() {
       quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
@@ -953,11 +1006,6 @@
       document.getElementById('quiz-tab-bar').style.display = ''
       switchQuizTab('quiz')
       renderQuizLessons()
-      return true
-    }
-
-    function confirmExitQuiz() {
-      exitQuizWithConfirm()
     }
 
     function showQuiz() {
@@ -1008,20 +1056,34 @@
       var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
-        if (!exitQuizWithConfirm()) return
+        exitQuizWithConfirm(function() {
+          navigateRoot('page-quiz')
+          showQuiz()
+        })
+        return
       }
       navigateRoot('page-quiz')
       showQuiz()
     }
 
-    // 拦截测验中底部导航跳转 —— 测验进行中先统一确认（已答的会计入记录）
+    // 拦截测验中底部导航跳转 —— 测验进行中先统一确认（已答的会计入记录）。
+    // 手机/浏览器返回键（popstate）也在拦截范围内：popstate 发生时历史已回退、URL 已变，
+    // 这里先把历史顶回测验页（pushState 占位），再弹确认——返回键被真正"困住"，
+    // 不会出现"已经返回了又弹确认"的状态脱节；点「继续答题」页面与 URL 保持一致。
+    // 确认退出后按正常流程切换页面（历史多一条测验占位，退出后按返回会回到测验设置页，属预期）。
     var origShowPage = showPage
     showPage = function(id) {
       var quizPlaying = document.getElementById('page-quiz').classList.contains('active') &&
         document.getElementById('quiz-play') && document.getElementById('quiz-play').style.display === 'block'
       if (quizPlaying && quizQuestions.length > 0 && quizIndex < quizQuestions.length) {
         if (id !== 'page-quiz' && id !== 'page-study') {
-          if (!exitQuizWithConfirm()) return
+          // 返回键触发的回退：把 URL/历史顶回测验页，再弹确认
+          if (_fromPopstate) {
+            _currentPage = 'page-quiz'
+            history.pushState({ page: 'page-quiz' }, '', '#quiz')
+          }
+          exitQuizWithConfirm(function() { origShowPage(id) })
+          return
         }
       }
       origShowPage(id)

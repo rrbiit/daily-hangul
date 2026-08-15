@@ -72,6 +72,10 @@ const ctx = {
   markStudyDay: () => {},
   hideNav: () => {},
   showNav: () => {},
+  showAppDialog: () => {},
+  addQuizSummary: () => {},
+  unmarkMastered: () => {},
+  getStudyDay: () => '2026-01-01',
 }
 vm.createContext(ctx)
 const FILES = ['data-books.js', 'data-yonsei1.js', 'data-yonsei2.js', 'utils.js', 'confusion.js', 'quiz.js']
@@ -569,6 +573,32 @@ ok(vm.runInContext("document.getElementById('quiz-low-overlay').style.display", 
 vm.runInContext('showQuizNoWordsOverlay()', ctx)
 ok(vm.runInContext("document.getElementById('quiz-low-title').textContent", ctx) === '没有可测的词啦', '0 词 → 引导弹窗标题')
 ok(vm.runInContext("document.getElementById('quiz-low-ghost').style.display", ctx) === 'none', '0 词时隐藏「先不测」按钮')
+
+console.log('── U. 退出测验确认 → 通用毛玻璃弹窗 ──')
+// 桩：捕获 showAppDialog 调用（模拟通用弹窗）
+vm.runInContext('__dlg = null', ctx)
+vm.runInContext('showAppDialog = function (opts) { __dlg = opts }', ctx)
+// 构造进行中的测验（已答 1 题）
+vm.runInContext(`quizQuestions = [${JSON.stringify(sQ)}]; quizIndex = 0; quizAnswered = true; quizAnswers = [{ correct: true, selectedIdx: 0 }]; quizScore = 1; quizErrors = []`, ctx)
+vm.runInContext('exitQuizWithConfirm()', ctx)
+const uDlg = vm.runInContext('__dlg', ctx)
+ok(uDlg && uDlg.title === '退出测验？', '退出测验 → 弹确认弹窗')
+ok(uDlg && uDlg.confirmText === '退出' && uDlg.cancelText === '继续答题', '弹窗按钮文案 = 退出 / 继续答题')
+ok(uDlg && uDlg.desc.indexOf('1 题会计入测验记录') >= 0, '提示已答 1 题会计入记录')
+// 点确认 → 保存记录并回到设置页
+vm.runInContext('__dlg.onConfirm()', ctx)
+ok(vm.runInContext("document.getElementById('quiz-setup').style.display", ctx) === 'block', '确认退出后回到设置页')
+ok(vm.runInContext("document.getElementById('quiz-play').style.display", ctx) === 'none', '答题区已隐藏')
+ok(vm.runInContext('quizQuestions.length', ctx) === 0, '测验会话已重置')
+// 未答任何题时退出 → 同样弹确认（文案不含"计入记录"），确认后直接重置
+vm.runInContext(`quizQuestions = [${JSON.stringify(sQ)}]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizScore = 0; quizErrors = []`, ctx)
+vm.runInContext('__dlg = null', ctx)
+vm.runInContext('exitQuizWithConfirm()', ctx)
+const uDlg2 = vm.runInContext('__dlg', ctx)
+ok(uDlg2 && uDlg2.title === '退出测验？', '未答题时退出也弹确认弹窗')
+ok(uDlg2 && uDlg2.desc.indexOf('会计入测验记录') === -1, '未答题时文案不含"计入测验记录"')
+vm.runInContext('__dlg.onConfirm()', ctx)
+ok(vm.runInContext('quizQuestions.length', ctx) === 0, '确认后直接重置（无记录保存）')
 
 console.log('')
 console.log('═══ 结果：' + passed + ' 通过 / ' + failed + ' 失败 ═══')

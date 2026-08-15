@@ -678,5 +678,16 @@
       <button class="quiz-low-btn quiz-low-btn-ghost" id="quiz-low-ghost" onclick="closeQuizLowOverlay()">先不测</button>
     </div>
   </div>
+
+  <!-- ═══════════ 通用确认/提示弹窗（毛玻璃半透明，替换原生 alert/confirm）═══════════ -->
+  <div id="app-dialog-overlay" class="app-dialog-overlay" style="display:none;" onclick="if(event.target===this)closeAppDialog()">
+    <div class="app-dialog-modal">
+      <div class="app-dialog-emoji" id="app-dialog-emoji">💬</div>
+      <div class="app-dialog-title" id="app-dialog-title"></div>
+      <div class="app-dialog-desc" id="app-dialog-desc"></div>
+      <button class="app-dialog-btn" id="app-dialog-confirm">确定</button>
+      <button class="app-dialog-btn app-dialog-btn-ghost" id="app-dialog-cancel" style="display:none;" onclick="closeAppDialog()">取消</button>
+    </div>
+  </div>
 </body>
 </html>

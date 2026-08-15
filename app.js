@@ -879,30 +879,47 @@
         markBtn.textContent = '↩ 取消全部已掌握'
         markBtn.style.cssText = 'margin-top:8px;width:100%;padding:10px;border:1px solid var(--accent-pink);border-radius:10px;background:var(--accent-pink-light);color:var(--accent-pink);cursor:pointer;font-family:var(--font-display);font-size:14px;transition:all 0.2s;'
         markBtn.onclick = function() {
-          if (!confirm('确定将本课所有词汇恢复为"未掌握"吗？')) return
-          ;(VOCAB[num] || []).forEach(function(w2) {
-            delete srs[wk(w2, num)]
+          showAppDialog({
+            emoji: '📚',
+            title: '取消本课全部已掌握？',
+            desc: '确定将本课所有词汇恢复为"未掌握"吗？',
+            confirmText: '全部取消',
+            cancelText: '再想想',
+            danger: true,
+            onConfirm: function() {
+              ;(VOCAB[num] || []).forEach(function(w2) {
+                delete srs[wk(w2, num)]
+              })
+              saveUserData()
+              updateHomeStats()
+              renderLessons()
+              openLesson(num)
+            }
           })
-          saveUserData()
-          updateHomeStats()
-          renderLessons()
-          openLesson(num)
         }
       } else {
         markBtn.textContent = '✓ 本课全部标记为掌握'
         markBtn.onclick = function() {
-          if (!confirm('确定将本课所有词汇标记为"已掌握"吗？')) return
-          var now = Date.now()
-          ;(VOCAB[num] || []).forEach(function(w2) {
-            var key2 = wk(w2, num)
-            var d2 = srs[key2]
-            srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
-            markMastered(key2)
+          showAppDialog({
+            emoji: '✅',
+            title: '本课全部标记为掌握？',
+            desc: '确定将本课所有词汇标记为"已掌握"吗？',
+            confirmText: '全部标记',
+            cancelText: '再想想',
+            onConfirm: function() {
+              var now = Date.now()
+              ;(VOCAB[num] || []).forEach(function(w2) {
+                var key2 = wk(w2, num)
+                var d2 = srs[key2]
+                srs[key2] = { lv: 4, due: now + 21*86400000, ease: 2.5, n: (d2 ? d2.n + 1 : 1), badCount: 0 }
+                markMastered(key2)
+              })
+              saveUserData()
+              updateHomeStats()
+              renderLessons()
+              openLesson(num)
+            }
           })
-          saveUserData()
-          updateHomeStats()
-          renderLessons()
-          openLesson(num)
         }
       }
       btnArea.appendChild(markBtn)
@@ -1093,6 +1110,39 @@
       clearTimeout(t._timer); t._timer = setTimeout(function() { t.style.opacity = '0' }, 2000)
     }
 
+    /* ═══════════ 通用毛玻璃弹窗（替换原生 alert/confirm）═══════════ */
+    // opts: { emoji, title, desc(支持 \n 换行), confirmText, cancelText(省略=提示型，只有确认按钮), danger(确认按钮警示色), onConfirm(确认回调) }
+    function showAppDialog(opts) {
+      opts = opts || {}
+      var ov = document.getElementById('app-dialog-overlay')
+      if (!ov) return
+      var el
+      el = document.getElementById('app-dialog-emoji'); if (el) el.textContent = opts.emoji || '💬'
+      el = document.getElementById('app-dialog-title'); if (el) el.textContent = opts.title || ''
+      el = document.getElementById('app-dialog-desc'); if (el) el.innerHTML = String(opts.desc || '').replace(/\n/g, '<br>')
+      var hasCancel = !!opts.cancelText
+      var confirmBtn = document.getElementById('app-dialog-confirm')
+      if (confirmBtn) {
+        confirmBtn.textContent = opts.confirmText || '确定'
+        confirmBtn.className = 'app-dialog-btn' + (opts.danger ? ' danger' : '')
+        confirmBtn.onclick = function() {
+          closeAppDialog()
+          if (typeof opts.onConfirm === 'function') opts.onConfirm()
+        }
+      }
+      var cancelBtn = document.getElementById('app-dialog-cancel')
+      if (cancelBtn) {
+        cancelBtn.style.display = hasCancel ? '' : 'none'
+        if (hasCancel) cancelBtn.textContent = opts.cancelText || '取消'
+      }
+      ov.style.display = 'flex'
+    }
+
+    function closeAppDialog() {
+      var ov = document.getElementById('app-dialog-overlay')
+      if (ov) ov.style.display = 'none'
+    }
+
     function importData() {
       var input = document.createElement('input')
       input.type = 'file'
@@ -1106,42 +1156,70 @@
             var data = JSON.parse(e.target.result)
             if (data.store && typeof data.store === 'object') {
               // 新格式全量备份：覆盖所有本地数据后整页刷新（各模块从 localStorage 重新读取）
-              if (!confirm('导入会覆盖当前所有学习数据（两本教材的进度、收藏、测验历史、打卡记录等）。\n确定继续吗？')) return
-              var keys = Object.keys(data.store)
-              keys.forEach(function(k) {
-                if (k === 'quiz-history' || k === 'yonsei-study-data' || k === 'yonsei-study-data-backup' || k.indexOf('ys-') === 0) {
-                  lsSet(k, data.store[k])
+              showAppDialog({
+                emoji: '📥',
+                title: '导入备份',
+                desc: '导入会覆盖当前所有学习数据（两本教材的进度、收藏、测验历史、打卡记录等）。\n确定继续吗？',
+                confirmText: '覆盖导入',
+                cancelText: '取消',
+                danger: true,
+                onConfirm: function() {
+                  var keys = Object.keys(data.store)
+                  keys.forEach(function(k) {
+                    if (k === 'quiz-history' || k === 'yonsei-study-data' || k === 'yonsei-study-data-backup' || k.indexOf('ys-') === 0) {
+                      lsSet(k, data.store[k])
+                    }
+                  })
+                  showAppDialog({
+                    emoji: '🎉',
+                    title: '导入成功',
+                    desc: '数据已恢复，正在刷新…',
+                    confirmText: '好的',
+                    onConfirm: function() { location.reload() }
+                  })
                 }
               })
-              alert('✅ 导入成功！数据已恢复，正在刷新…')
-              setTimeout(function() { location.reload() }, 300)
               return
             }
             // 旧格式（只有记忆字段的备份）：兼容导入
-            if (!confirm('导入会覆盖当前所有学习数据。确定继续吗？')) return
-            if (data.starred) starred = new Set(data.starred)
-            if (data.grammarStarred) grammarStarred = new Set(data.grammarStarred)
-            if (data.grammarMastered) grammarMastered = new Set(data.grammarMastered)
-            if (data.cardDirection) cardDirection = data.cardDirection
-            // SRS: 新格式直接用，旧mastered格式迁移
-            if (data.srs && typeof data.srs === 'object') {
-              srs = data.srs
-            } else if (data.mastered && Array.isArray(data.mastered)) {
-              var now = new Date().getTime()
-              srs = {}
-              data.mastered.forEach(function(key) {
-                srs[key] = { lv: 3, due: now, ease: 2.5, n: 3 }
-              })
-            }
-            // 导入的备份若是不带书前缀的旧格式，同样自动升级（与启动迁移一致）
-            migrateBookIdKeys()
-            saveUserData()
-            if (data.cardDirection) lsSet('ys-carddir', data.cardDirection)
-            updateHomeStats()
-            renderLessons()
-            showToast('✅ 导入成功！')
+            showAppDialog({
+              emoji: '📥',
+              title: '导入备份',
+              desc: '导入会覆盖当前所有学习数据。确定继续吗？',
+              confirmText: '覆盖导入',
+              cancelText: '取消',
+              danger: true,
+              onConfirm: function() {
+                if (data.starred) starred = new Set(data.starred)
+                if (data.grammarStarred) grammarStarred = new Set(data.grammarStarred)
+                if (data.grammarMastered) grammarMastered = new Set(data.grammarMastered)
+                if (data.cardDirection) cardDirection = data.cardDirection
+                // SRS: 新格式直接用，旧mastered格式迁移
+                if (data.srs && typeof data.srs === 'object') {
+                  srs = data.srs
+                } else if (data.mastered && Array.isArray(data.mastered)) {
+                  var now = new Date().getTime()
+                  srs = {}
+                  data.mastered.forEach(function(key) {
+                    srs[key] = { lv: 3, due: now, ease: 2.5, n: 3 }
+                  })
+                }
+                // 导入的备份若是不带书前缀的旧格式，同样自动升级（与启动迁移一致）
+                migrateBookIdKeys()
+                saveUserData()
+                if (data.cardDirection) lsSet('ys-carddir', data.cardDirection)
+                updateHomeStats()
+                renderLessons()
+                showToast('✅ 导入成功！')
+              }
+            })
           } catch (err) {
-            alert('导入失败：数据格式不对')
+            showAppDialog({
+              emoji: '⚠️',
+              title: '导入失败',
+              desc: '数据格式不对，请检查备份文件。',
+              confirmText: '知道了'
+            })
           }
         }
         reader.readAsText(file)
@@ -1153,23 +1231,37 @@
     }
 
     function resetAllData() {
-      // 全部清光（用户确认）：清掉两本教材的所有学习数据，用确认框防止误点
-      if (!confirm('确定要清除所有学习数据吗？\n\n包括：\n· 两本教材的进度、收藏、易错记录\n· 个人易混记录（易混词辨析）\n· 测验历史\n· 打卡 / 连续学习记录\n· 学习偏好设置\n\n此操作无法撤销！')) return
-      // ① 先清内存（含易混词/混淆关系层；clearConfusions 会写回空对象，随后被下面的删除一并清掉）
-      try {
-        starred.clear()
-        grammarStarred.clear()
-        grammarMastered.clear()
-        srs = {}
-        if (typeof clearConfusions === 'function') clearConfusions()
-      } catch(e) {}
-      // ② 再删除本应用相关的全部本地存储 key（含 ys-confusions，以 ys- 前缀覆盖）
-      var delKeys = collectAppStorageKeys()
-      try {
-        delKeys.forEach(function(k) { localStorage.removeItem(k) })
-      } catch(e) {}
-      alert('所有学习数据已清除。正在刷新…')
-      setTimeout(function() { location.reload() }, 300)
+      // 全部清光（用户确认）：清掉两本教材的所有学习数据，用确认弹窗防止误点
+      showAppDialog({
+        emoji: '🗑️',
+        title: '清除所有学习数据？',
+        desc: '确定要清除所有学习数据吗？\n\n包括：\n· 两本教材的进度、收藏、易错记录\n· 个人易混记录（易混词辨析）\n· 测验历史\n· 打卡 / 连续学习记录\n· 学习偏好设置\n\n此操作无法撤销！',
+        confirmText: '全部清除',
+        cancelText: '取消',
+        danger: true,
+        onConfirm: function() {
+          // ① 先清内存（含易混词/混淆关系层；clearConfusions 会写回空对象，随后被下面的删除一并清掉）
+          try {
+            starred.clear()
+            grammarStarred.clear()
+            grammarMastered.clear()
+            srs = {}
+            if (typeof clearConfusions === 'function') clearConfusions()
+          } catch(e) {}
+          // ② 再删除本应用相关的全部本地存储 key（含 ys-confusions，以 ys- 前缀覆盖）
+          var delKeys = collectAppStorageKeys()
+          try {
+            delKeys.forEach(function(k) { localStorage.removeItem(k) })
+          } catch(e) {}
+          showAppDialog({
+            emoji: '✨',
+            title: '已清除',
+            desc: '所有学习数据已清除。正在刷新…',
+            confirmText: '好的',
+            onConfirm: function() { location.reload() }
+          })
+        }
+      })
     }
 
     // ─── 显示设置 ───
@@ -1202,11 +1294,71 @@
       showSettings()
     }
     var _fromPopstate = false
+    // 把浏览器历史顶回「当前页」（用于模态层拦截后不让页面回退，URL 与页面状态保持一致）
+    function pushBackState() {
+      var page = _currentPage || 'page-home'
+      var hash = PAGE_HASH[page] || 'home'
+      history.pushState({ page: page }, '', '#' + hash)
+    }
+    // 返回键统一守卫：优先级 弹窗/浮层 > 学习模式。
+    // 返回 true = 已拦截（关闭模态并顶回历史，页面不后退）；false = 放行正常回退。
+    function backGuard() {
+      // ① 搜索浮层打开 → 只关浮层，不返回
+      var so = document.getElementById('search-overlay')
+      if (so && so.style.display === 'flex') {
+        if (typeof closeSearch === 'function') closeSearch()
+        else so.style.display = 'none'
+        pushBackState()
+        return true
+      }
+      // ② 学完总结弹窗 → 只关弹窗，不返回
+      var sdo = document.getElementById('study-done-overlay')
+      if (sdo && sdo.style.display === 'flex') {
+        if (typeof closeStudyDone === 'function') closeStudyDone()
+        else sdo.style.display = 'none'
+        pushBackState()
+        return true
+      }
+      // ③ 通用确认/提示弹窗 → 关闭（等同取消操作），不返回
+      var ado = document.getElementById('app-dialog-overlay')
+      if (ado && ado.style.display === 'flex') {
+        closeAppDialog()
+        pushBackState()
+        return true
+      }
+      // ④ 测验词数不足弹窗 → 关闭，不返回
+      var qlo = document.getElementById('quiz-low-overlay')
+      if (qlo && qlo.style.display === 'flex') {
+        if (typeof closeQuizLowOverlay === 'function') closeQuizLowOverlay()
+        else qlo.style.display = 'none'
+        pushBackState()
+        return true
+      }
+      // ⑤ 学习模式 → 干净退出（停语音 + 保存进度），放行回退
+      var studyPage = document.getElementById('page-study')
+      if (studyPage && studyPage.classList.contains('active')) {
+        if (typeof window !== 'undefined' && window.speechSynthesis) { try { window.speechSynthesis.cancel() } catch(e) {} }
+        if (typeof saveStudyProgress === 'function') saveStudyProgress()
+        return false
+      }
+      return false
+    }
+    // 返回键放行时，让页面内返回栈与浏览器历史对齐：
+    // 返回键直接回退不会更新 _pageStack，混用「页内返回按钮 + 返回键」会错乱；
+    // 回退到的页面若正好是栈顶（即该页曾入栈、现被返回键直接退回），把它弹出保持同步。
+    function syncBackStack(page) {
+      if (_pageStack.length > 0 && _pageStack[_pageStack.length - 1] === page) {
+        _pageStack.pop()
+      }
+    }
     // 浏览器返回键监听
     window.addEventListener('popstate', function(e) {
+      // 返回键守卫：弹窗/浮层/学习模式优先处理，避免页面回退与状态脱节
+      if (backGuard()) return
       _fromPopstate = true
       if (e.state && e.state.page) {
         _currentPage = e.state.page
+        syncBackStack(e.state.page)
         showPage(e.state.page)
       } else {
         // 无历史标记（刷新后 / 深链接直接进入的历史条目没有 pushState 状态）：
@@ -1215,6 +1367,7 @@
         var _hash = location.hash.replace('#', '')
         var _page = HASH_PAGE[_hash] || 'page-home'
         _currentPage = _page
+        syncBackStack(_page)
         showPage(_page)
       }
       _fromPopstate = false
