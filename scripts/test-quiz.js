@@ -64,6 +64,10 @@ const ctx = {
   lsSet: () => {},
   setKeys: s => { const a = []; s.forEach(v => a.push(v)); return a },
   showPage: () => {},
+  // app.js 提供的全局（浏览器里由 app.js 定义；测验答对计数依赖它们）
+  srs: {},
+  markMastered: () => {},
+  saveUserData: () => {},
 }
 vm.createContext(ctx)
 const FILES = ['data-books.js', 'data-yonsei1.js', 'data-yonsei2.js', 'utils.js', 'confusion.js', 'quiz.js']
@@ -430,6 +434,107 @@ testBind('yonsei2')
 ok(vm.runInContext('getActivePersonalPairs("yonsei2").length === 0', ctx) === true, '延世2 无个人混淆对 → 无辨析题（延世1 的记录不串书）')
 testBind('yonsei1')
 ok(vm.runInContext('getActivePersonalPairs("yonsei1").length >= 1', ctx) === true, '延世1 的个人混淆对正常存在')
+
+console.log('── S. 测验答对累计 → 自动已掌握（quizCorrect）──')
+// 构造 싸다（yonsei1）的确定题目：正确选项 0，干扰项 1（사다 中文"买"）
+const sWord = vm.runInContext(`testItemByKey('${K.ssa}')`, ctx)
+const sQ = { word: sWord, targetKey: K.ssa, options: ['便宜', '买', '写', '名字'], optionKeys: [K.ssa, K.sa, K.sseu, K.irum], correctIdx: 0, contrastKeys: [] }
+function sAnswer(correct) {
+  vm.runInContext(`quizQuestions = [${JSON.stringify(sQ)}]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+  vm.runInContext(`quizAnswer(${correct ? sQ.correctIdx : 1})`, ctx)
+}
+function sGet(key) { return vm.runInContext(`srs['${key}'] || null`, ctx) }
+function sMastered(key) {
+  return vm.runInContext(`(function(){ var it = testItemByKey('${key}'); return it ? isMastered(it, it.lessonNum) : false })()`, ctx)
+}
+function sReset() {
+  vm.runInContext('srs = {}', ctx)
+  vm.runInContext('quizAutoMasteredKeys = []', ctx)
+  vm.runInContext('clearConfusions()', ctx)
+}
+
+// S1: 正常累计（答对 4 次 → 自动已掌握）
+sReset()
+for (let s1i = 0; s1i < 4; s1i++) sAnswer(true)
+let s1d = sGet(K.ssa)
+ok(s1d && s1d.quizCorrect === 4, '答对 4 次 → 累计次数 = 4（1→2→3→4）')
+ok(s1d && s1d.lv === 4, '答对 4 次 → 自动变为已掌握（lv=4）')
+ok(sMastered(K.ssa) === true, 'isMastered 判定为已掌握')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 1, '本局自动掌握记录 1 个词')
+
+// S2: 答错不清零、不增加
+sReset()
+sAnswer(true)   // 1
+sAnswer(false)  // 答错 → 仍 1
+sAnswer(true)   // 2
+sAnswer(false)  // 答错 → 仍 2
+ok(sGet(K.ssa).quizCorrect === 2 && sGet(K.ssa).lv !== 4, '对/错/对/错 → 次数 2，答错不增加也不清零')
+sAnswer(true)   // 3
+sAnswer(true)   // 4 → 已掌握
+ok(sGet(K.ssa).quizCorrect === 4 && sGet(K.ssa).lv === 4, '继续答对到 4 → 自动已掌握（答错未影响累计）')
+
+// S3: 封顶 4，不重复累计（不会出现 5/4）
+sReset()
+for (let s3i = 0; s3i < 6; s3i++) sAnswer(true)
+ok(sGet(K.ssa).quizCorrect === 4, '答对 6 次 → 次数封顶 4（不出现 5/4）')
+ok(sGet(K.ssa).lv === 4 && sMastered(K.ssa) === true, '已掌握状态保持')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 1, '只记录 1 次自动掌握（不重复处理）')
+
+// S4: 多教材隔离（延世1 与延世2 的 싸다 互不影响）
+sReset()
+for (let s4i = 0; s4i < 4; s4i++) sAnswer(true)   // 延世1 싸다 → 已掌握
+const y2SsaKey = vm.runInContext("testKeyOf('yonsei2','싸다')", ctx)
+ok(!!y2SsaKey && y2SsaKey !== K.ssa, '延世2 也有 싸다（key 不同，天然隔离）')
+ok(sGet(y2SsaKey) === null, '延世2 싸다 无任何记录（不受延世1 影响）')
+if (y2SsaKey) {
+  testBind('yonsei2')
+  const s4y2Word = vm.runInContext(`testItemByKey('${y2SsaKey}')`, ctx)
+  vm.runInContext(`quizQuestions = [{ word: ${JSON.stringify(s4y2Word)}, targetKey: '${y2SsaKey}', options: ['便宜','买','写','名字'], optionKeys: ['${y2SsaKey}','${K.sa}','${K.sseu}','${K.irum}'], correctIdx: 0, contrastKeys: [] }]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+  vm.runInContext('quizAnswer(0)', ctx)   // 延世2 싸다 答对 1 次
+  const s4y2d = sGet(y2SsaKey)
+  ok(s4y2d && s4y2d.quizCorrect === 1 && s4y2d.lv !== 4, '延世2 싸다 答对 1 次 → 1/4，未掌握')
+  ok(sGet(K.ssa) && sGet(K.ssa).quizCorrect === 4 && sGet(K.ssa).lv === 4, '延世1 싸다 保持 4 次已掌握（互不串扰）')
+  testBind('yonsei1')
+}
+
+// S5: 已手动掌握 → 继续答题不冲突、不重复处理
+sReset()
+vm.runInContext(`srs['${K.ssa}'] = { lv: 4, due: Date.now() + 21 * 86400000, ease: 2.5, n: 1, badCount: 0 }`, ctx)   // 模拟手动标记
+sAnswer(true)
+let s5d = sGet(K.ssa)
+ok(s5d && s5d.lv === 4 && s5d.quizCorrect === 1, '手动掌握后答对 → 状态不破坏，次数从 1 开始累计')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 0, '已掌握的词不触发"自动掌握"（本来已掌握）')
+for (let s5i = 0; s5i < 3; s5i++) sAnswer(true)   // 次数到 4
+s5d = sGet(K.ssa)
+ok(s5d && s5d.quizCorrect === 4 && s5d.lv === 4, '次数到 4 时已掌握状态保持（不重复标记）')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 0, '不产生重复的自动掌握记录')
+
+// S6: 方案A —— 被现有规则降级后，再答对自动恢复
+sReset()
+for (let s6i = 0; s6i < 4; s6i++) sAnswer(true)   // 自动掌握
+ok(sMastered(K.ssa) === true, '前置：答对 4 次已掌握')
+vm.runInContext(`var d6 = srs['${K.ssa}']; d6.lv = 3`, ctx)   // 模拟测验答错降级（persistQuizRecord 现有行为）
+ok(sMastered(K.ssa) === false, '降级后回到未掌握（现有降级行为保留）')
+sAnswer(true)   // 再答对 → 方案A 恢复
+ok(sGet(K.ssa).lv === 4 && sMastered(K.ssa) === true, '再答对一次 → 自动恢复已掌握（方案A）')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 1, '恢复计入本局自动掌握记录')
+
+// S7: 听写"很接近"也计入答对
+testSetMode('dict')
+sReset()
+const s7Word = vm.runInContext(`testItemByKey('${K.biss}')`, ctx)
+vm.runInContext(`quizQuestions = [{ word: ${JSON.stringify(s7Word)}, targetKey: '${K.biss}', options: [], optionKeys: [], correctIdx: -1 }]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+ctx.document.getElementById('quiz-dict-field').value = '싸다'   // 비싸다 → 싸다：很接近 → 判对
+vm.runInContext('dictSubmit()', ctx)
+ok(sGet(K.biss) && sGet(K.biss).quizCorrect === 1, '听写"很接近"判对 → 计入答对次数 1')
+testSetMode('kr-cn')
+
+// S8: 次数随 srs 一起持久化（saveUserData 写入的数据包含 quizCorrect，刷新/重开不丢）
+sReset()
+vm.runInContext('saveUserData = function () { __savedSrs = JSON.parse(JSON.stringify(srs)) }', ctx)
+for (let s8i = 0; s8i < 3; s8i++) sAnswer(true)
+const savedBlob = vm.runInContext('__savedSrs', ctx)
+ok(savedBlob && savedBlob[K.ssa] && savedBlob[K.ssa].quizCorrect === 3, '保存的数据包含累计答对次数（3 次答对 → 存储 3/4）')
 
 console.log('')
 console.log('═══ 结果：' + passed + ' 通过 / ' + failed + ' 失败 ═══')

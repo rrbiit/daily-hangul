@@ -20,6 +20,63 @@
     var quizAnswered = false
     var quizAnswers = []  // 每道题的作答记录：{ correct, selectedIdx } / { correct, submitted }，未答为 undefined
 
+    /* ═══════════ 测验答对累计 → 自动已掌握 ═══════════ */
+    // 累计答对阈值：达到 4 次自动标记为「已掌握」（封顶 4，不重复累计、不出现 5/4）
+    var QUIZ_MASTER_THRESHOLD = 4
+    // 本局新晋「已掌握」的单词 key（结果页 ✨ 提示用）
+    var quizAutoMasteredKeys = []
+
+    // 记录一次答对：累计 +1（封顶 4）；达到阈值且当前未掌握 → 自动标记已掌握。
+    // 次数按「书|课|韩语」key 隔离（wk 生成），不同教材的同形词互不影响；
+    // 答错不加减、不清零（错题处理在 persistQuizRecord，与本计数无关）。
+    // 已掌握的词继续答对 → 不重复处理；若被现有规则（测验降级/SRS重学）移出已掌握，
+    // 次数仍保留 4，下次答对按同一规则自动恢复。
+    // 返回 { count, newlyMastered } 供 UI 展示。
+    function recordQuizCorrect(q) {
+      if (!q || !q.targetKey) return { count: 0, newlyMastered: false }
+      var key = q.targetKey
+      var d = srs[key]
+      if (!d) { d = { lv: 0, due: 0, ease: 2.5, n: 0 }; srs[key] = d }
+      var count = (d.quizCorrect || 0)
+      var newlyMastered = false
+      if (count < QUIZ_MASTER_THRESHOLD) {
+        count += 1
+        d.quizCorrect = count
+      }
+      // 达到阈值且当前未掌握 → 走现有「已掌握」通道（与手动标记同一入口，所有页面立即生效）
+      if (count >= QUIZ_MASTER_THRESHOLD && d.lv < 4) {
+        masterViaQuiz(key, d)
+        newlyMastered = true
+      }
+      saveUserData()
+      return { count: Math.min(count, QUIZ_MASTER_THRESHOLD), newlyMastered: newlyMastered }
+    }
+
+    // 升为已掌握：lv=4 + 21 天复习间隔（与手动标记写法一致）+ 记录掌握日期/今日成果
+    function masterViaQuiz(key, d) {
+      var now = Date.now()
+      d.lv = 4
+      d.due = now + 21 * 86400000
+      d.ease = 2.5
+      d.n = (d.n || 0) + 1
+      d.badCount = 0
+      d.quizCorrect = 4
+      markMastered(key)
+      if (quizAutoMasteredKeys.indexOf(key) === -1) quizAutoMasteredKeys.push(key)
+    }
+
+    // 在答对反馈下方追加一行进度小字（沿用现有 feedback 元素，不新增卡片）
+    function appendQuizMasteryNote(fb, m) {
+      if (!fb || !m) return
+      if (m.newlyMastered) {
+        fb.innerHTML = (fb.innerHTML || fb.textContent) +
+          '<br><span style="font-size:12px;color:var(--accent-green);">🎉 已掌握！累计答对 ' + QUIZ_MASTER_THRESHOLD + ' 次</span>'
+      } else if (m.count >= 1 && m.count < QUIZ_MASTER_THRESHOLD) {
+        fb.innerHTML = (fb.innerHTML || fb.textContent) +
+          '<br><span style="font-size:12px;color:var(--text-subtle);">该词已答对 ' + m.count + '/' + QUIZ_MASTER_THRESHOLD + ' · 再答对 ' + (QUIZ_MASTER_THRESHOLD - m.count) + ' 次自动掌握</span>'
+      }
+    }
+
     function loadQuizHistory() {
       try { var v = lsGet('quiz-history', ''); quizHistory = v ? JSON.parse(v) : [] } catch(e) { quizHistory = [] }
     }
@@ -451,7 +508,7 @@
       if (pool.length < 4) { alert('词汇不足，至少需要4个词才能测验'); return }
 
       quizQuestions = generateQuizQuestions(pool)
-      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
+      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-setup').style.display = 'none'
       document.getElementById('quiz-play').style.display = 'block'
       document.getElementById('quiz-result').style.display = 'none'
@@ -638,13 +695,16 @@
             recordConfusionResolved(q.targetKey, pk)
           })
         }
+        // 答对累计 → 自动已掌握（阈值 4 次，封顶，按书|课|词隔离）
+        var m = recordQuizCorrect(q)
         fb.textContent = '✓ 正确！'
         fb.style.color = 'var(--accent-green)'
-        // 答对自动下一题
+        appendQuizMasteryNote(fb, m)
+        // 答对自动下一题（刚自动掌握时多停留一会儿，让用户看到 🎉）
         setTimeout(function() {
           quizIndex++
           showQuizQuestion()
-        }, 800)
+        }, m.newlyMastered ? 1600 : 800)
       }
 
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
@@ -678,17 +738,22 @@
       var fb = document.getElementById('quiz-feedback')
       if (isCorrect || isClose) {
         quizScore++
+        // 答对累计 → 自动已掌握（听写"很接近"按现有判分口径同样计入）
+        var m = recordQuizCorrect(q)
         if (isClose) {
           fb.innerHTML = '✓ 正确（很接近）· 正确写法 <strong>' + q.word.kr + '</strong>'
         } else {
           fb.textContent = '✓ 正确！'
         }
         fb.style.color = 'var(--accent-green)'
-        // 答对自动下一题（接近时多停留一会儿，方便看清正确写法）
+        appendQuizMasteryNote(fb, m)
+        // 答对自动下一题（接近/刚自动掌握时多停留一会儿，方便看清）
+        var dDelay = isClose ? 1200 : 800
+        if (m.newlyMastered) dDelay = 1600
         setTimeout(function() {
           quizIndex++
           showQuizQuestion()
-        }, isClose ? 1200 : 800)
+        }, dDelay)
       } else {
         var w = q.word
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
@@ -769,6 +834,11 @@
         html += '<button class="quiz-retry-btn" onclick="reviewQuizErrors()" style="border-color:var(--accent-pink);color:var(--accent-pink);">📖 复习这 ' + quizErrors.length + ' 个错题</button>'
       }
 
+      // 本局新晋「已掌握」的提示（与答错降级提示同款式，正向绿色）
+      if (quizAutoMasteredKeys.length > 0) {
+        html += '<div style="font-size:12px;color:var(--accent-green);background:var(--accent-green-light);border-radius:10px;padding:10px 12px;margin-top:10px;line-height:1.6;">✨ ' + quizAutoMasteredKeys.length + ' 个词累计答对 4 次，已自动标记为已掌握</div>'
+      }
+
       html += '<button class="quiz-retry-btn" onclick="quizRetry()">🔄 再来一轮</button>'
       html += '<button class="quiz-retry-btn" style="margin-top:8px;border-color:var(--border);color:var(--text-dim);" onclick="quizBackToSetup()">↩ 返回设置</button>'
       html += '</div>'
@@ -793,7 +863,7 @@
       if (nums.length > 0) pool = pool.filter(function(w) { return nums.indexOf(w.lessonNum) >= 0 })
       if (pool.length < 4) { alert('词汇不足'); return }
       quizQuestions = generateQuizQuestions(pool)
-      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
+      quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
       document.getElementById('quiz-play').style.display = 'block'
@@ -802,7 +872,7 @@
     }
 
     function quizBackToSetup() {
-      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
+      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
@@ -832,7 +902,7 @@
         if (answered > 0) persistQuizRecord(quizScore, answered, true)
       }
       // 重置测验会话回设置页
-      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
+      quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
@@ -849,7 +919,7 @@
 
     function showQuiz() {
       quizMode = 'kr-cn'; quizScope = 'all'; quizCount = 10
-      quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []
+      quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
       document.getElementById('quiz-setup').style.display = 'block'
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
