@@ -731,6 +731,13 @@
       font-size: 12px; color: var(--accent-pink); background: var(--accent-pink-light);
       border-radius: 8px; padding: 4px 8px; display: inline-block;
     }
+    .qw-finish-wrap { margin-top: 14px; }
+    .qw-finish {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: var(--primary); color: #fff; font-family: var(--font-display);
+      font-size: 15px; font-weight: 500; cursor: pointer;
+    }
+    .qw-finish:active { opacity: 0.8; }
 
     .quiz-result-card {
       text-align: center; padding: 36px 24px; background: var(--surface);

@@ -21,6 +21,7 @@
     var quizAnswers = []  // 每道题的作答记录：{ correct, selectedIdx } / { correct, submitted }，未答为 undefined
     // 写义模式（✍️ 写义：整页批量 · 逐题即判）专属状态
     var quizWriteRevealed = []       // 各行是否点了「想不起来」（true 的行判错）
+    var quizWriteLastActive = -1     // 最近一次聚焦的输入框行号（用于"点下一个框 → 自动判上一行"）
 
     /* ═══════════ 测验答对累计 → 自动已掌握 ═══════════ */
     // 累计答对阈值：达到 4 次自动标记为「已掌握」（封顶 4，不重复累计、不出现 5/4）
@@ -53,6 +54,16 @@
       }
       saveUserData()
       return { count: Math.min(count, QUIZ_MASTER_THRESHOLD), newlyMastered: newlyMastered, alreadyMastered: alreadyMastered }
+    }
+
+    // 听写"很接近"计数：记录"接近但拼错"的次数（不改变判分、不计分、不累计掌握）
+    // ——为将来"总差一点的词优先复习"预留数据；老记录无 closeCount 字段按 0 算，无需迁移
+    function recordQuizClose(q) {
+      if (!q || !q.targetKey) return
+      var d = srs[q.targetKey]
+      if (!d) { d = { lv: 0, due: 0, ease: 2.5, n: 0 }; srs[q.targetKey] = d }
+      d.closeCount = (d.closeCount || 0) + 1
+      saveUserData()
     }
 
     // 升为已掌握：lv=4 + 21 天复习间隔（与手动标记写法一致）+ 记录掌握日期/今日成果
@@ -521,7 +532,7 @@
       if (!pool || pool.length === 0) return
       quizQuestions = generateQuizQuestions(pool)
       quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
-      quizWriteRevealed = []
+      quizWriteRevealed = []; quizWriteLastActive = -1
       document.getElementById('quiz-setup').style.display = 'none'
       document.getElementById('quiz-play').style.display = 'block'
       document.getElementById('quiz-result').style.display = 'none'
@@ -603,29 +614,34 @@
 
       var area = document.getElementById('quiz-question-area')
       var word = q.word
+      // 自动发音关闭时提示（手动点 🔊 仍可听）；只在会"自动播放"的模式下提示，避免用户以为没声音是 Bug
+      var muteHint = ''
+      if (!isAutoPlayEnabled() && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'listen-kr' || quizMode === 'dict')) {
+        muteHint = '<div style="font-size:11px;color:var(--text-subtle);margin-bottom:6px;">🔇 自动发音已关（手动点 🔊 仍可听）</div>'
+      }
       if (quizMode === 'kr-cn') {
-        area.innerHTML = '<div class="quiz-q-label">韩→中 · 选择正确的中文</div>' +
+        area.innerHTML = muteHint + '<div class="quiz-q-label">韩→中 · 选择正确的中文</div>' +
           '<div class="quiz-q-word" style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">' +
             '<span>' + word.kr + '</span>' +
             '<button class="quiz-q-speak" id="quiz-speak-btn" style="width:32px;height:32px;font-size:15px;margin-top:0;" onclick="event.stopPropagation();quizSpeakWord()" title="听发音">🔊</button>' +
           '</div>' +
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
       } else if (quizMode === 'cn-kr') {
-        area.innerHTML = '<div class="quiz-q-label">中→韩 · 选择正确的韩语</div>' +
+        area.innerHTML = muteHint + '<div class="quiz-q-label">中→韩 · 选择正确的韩语</div>' +
           '<div class="quiz-q-word">' + word.cn + '</div>' +
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>'
       } else if (quizMode === 'listen') {
-        area.innerHTML = '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
+        area.innerHTML = muteHint + '<div class="quiz-q-label">听音选义 · 选择正确的中文</div>' +
           '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>' +
           '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
       } else if (quizMode === 'listen-kr') {
-        area.innerHTML = '<div class="quiz-q-label">听音选词 · 选出你听到的韩语单词</div>' +
+        area.innerHTML = muteHint + '<div class="quiz-q-label">听音选词 · 选出你听到的韩语单词</div>' +
           '<div class="quiz-q-word" style="font-size:14px;color:var(--text-dim);">🔊 正在播放...</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="播放发音">🔊</button>' +
           '<div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">点击 🔊 可重播发音</div>'
       } else {  // dict 听写
-        area.innerHTML = '<div class="quiz-q-label">✍️ 听写 · 听发音写出韩语</div>' +
+        area.innerHTML = muteHint + '<div class="quiz-q-label">✍️ 听写 · 听发音写出韩语</div>' +
           '<div class="quiz-q-word">' + word.cn + '</div>' +
           '<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">' + word.pos + '</div>' +
           '<button class="quiz-q-speak" id="quiz-speak-btn" onclick="quizSpeakWord()" title="重播发音">🔊</button>' +
@@ -677,12 +693,11 @@
       if (prev) {
         if (quizMode === 'dict') {
           if (prev.correct) {
-            if (prev.close) {
-              fb.innerHTML = '✓ 正确（很接近）· 正确写法 <strong>' + q.word.kr + '</strong>'
-            } else {
-              fb.textContent = '✓ 正确！'
-            }
+            fb.textContent = '✓ 正确！'
             fb.style.color = 'var(--accent-green)'
+          } else if (prev.close) {
+            fb.innerHTML = '✗ 很接近！正确写法是 <strong>' + q.word.kr + '</strong>'
+            fb.style.color = '#c7851a'
           } else {
             fb.innerHTML = '✗ 正确答案是 <strong>' + q.word.kr + '</strong>'
             fb.style.color = 'var(--accent-pink)'
@@ -698,8 +713,8 @@
         }
       }
 
-      // 未答过的新题：自动播放发音
-      if (!prev && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'listen-kr' || quizMode === 'dict')) {
+      // 未答过的新题：自动播放发音（受设置页「自动发音」开关控制）
+      if (isAutoPlayEnabled() && !prev && (quizMode === 'kr-cn' || quizMode === 'listen' || quizMode === 'listen-kr' || quizMode === 'dict')) {
         setTimeout(function() { quizSpeakWord() }, 400)
       }
     }
@@ -786,7 +801,9 @@
       // 宽容规则：完全一致；或"距离 ≤1 且正确词 ≥3 字"（短词防变意，必须全对）
       var isCorrect = input === correct
       var isClose = !isCorrect && correct.length >= 3 && dist <= 1
-      quizAnswers[quizIndex] = { correct: isCorrect || isClose, close: isClose, submitted: field ? field.value : '', targetKey: q.targetKey || null, matchedKey: null }
+      // 判分口径：只有完全一致才算对；"很接近"是中性第三态——不计分、不记错、不累计掌握，
+      // 但明确提示正确写法（紧音/送气音等拼写小错不该被当成"对了"）
+      quizAnswers[quizIndex] = { correct: isCorrect, close: isClose, submitted: field ? field.value : '', targetKey: q.targetKey || null, matchedKey: null }
       // 混淆信号（不改变判分）：输入命中了另一个"词形相似"的真实词
       // ——距离 ≤1 且比正确词更接近该词（含"很接近"被判对的情况，如 비싸다 打成 싸다）
       if (!isCorrect && q.targetKey) {
@@ -798,24 +815,30 @@
         }
       }
       var fb = document.getElementById('quiz-feedback')
-      if (isCorrect || isClose) {
+      if (isCorrect) {
         quizScore++
-        // 答对累计 → 自动已掌握（听写"很接近"按现有判分口径同样计入）
+        // 答对累计 → 自动已掌握
         var m = recordQuizCorrect(q)
-        if (isClose) {
-          fb.innerHTML = '✓ 正确（很接近）· 正确写法 <strong>' + q.word.kr + '</strong>'
-        } else {
-          fb.textContent = '✓ 正确！'
-        }
+        fb.textContent = '✓ 正确！'
         fb.style.color = 'var(--accent-green)'
         appendQuizMasteryNote(fb, m)
-        // 答对自动下一题（接近/刚自动掌握时多停留一会儿，方便看清）
-        var dDelay = isClose ? 1200 : 800
-        if (m.newlyMastered) dDelay = 1600
+        // 答对自动下一题（刚自动掌握时多停留一会儿，方便看清）
+        var dDelay = m.newlyMastered ? 1600 : 800
         setTimeout(function() {
           quizIndex++
           showQuizQuestion()
         }, dDelay)
+      } else if (isClose) {
+        // 很接近但拼写有误：中性第三态——不计分、不记错、不累计掌握，
+        // 但明确展示正确写法（紧音/送气音等拼写小错不该被当成"对了"）
+        // 同时记录"接近次数"（只记不显示，为将来"总差一点的词优先复习"预留数据）
+        recordQuizClose(q)
+        fb.innerHTML = '✗ 很接近！正确写法是 <strong>' + q.word.kr + '</strong>'
+        fb.style.color = '#c7851a'
+        setTimeout(function() {
+          quizIndex++
+          showQuizQuestion()
+        }, 1400)
       } else {
         var w = q.word
         quizErrors.push({ kr: w.kr, cn: w.cn, pos: w.pos, lessonNum: w.lessonNum, key: wk(w, w.lessonNum) })
@@ -842,7 +865,9 @@
       var area = document.getElementById('quiz-write-panel')
       if (area) {
         area.style.display = 'block'
-        area.innerHTML = buildQuizWriteRows()
+        var muteHint = isAutoPlayEnabled() ? '' : '<div style="font-size:11px;color:var(--text-subtle);margin-bottom:8px;">🔇 自动发音已关（手动点 🔊 仍可听）</div>'
+        area.innerHTML = muteHint + buildQuizWriteRows() +
+          '<div class="qw-finish-wrap"><button class="qw-finish" onclick="quizWriteFinish()">✅ 完成作答</button></div>'
       }
       quizWriteUpdateFilled()
       // 进入面板自动聚焦第一个输入框（onfocus 统一触发发音）
@@ -926,9 +951,18 @@
       }
     }
 
-    // 输入框聚焦 → 自动播放该词发音（用户手动点击下一个框也算"要填下一个了"，同样发音）
+    // 输入框聚焦：① 自动判"上一行"——填过字的行，点下一个框 = 上一行收工，直接判，不用回车；
+    // ② 自动播放该行发音（受设置页「自动发音」开关控制，关闭后只保留手动 🔊）
     function quizWriteOnFocus(i) {
-      quizWriteSpeakRow(i)
+      if (quizWriteLastActive >= 0 && quizWriteLastActive !== i && !quizWriteIsJudged(quizWriteLastActive)) {
+        var prevInp = document.getElementById('quiz-write-input-' + quizWriteLastActive)
+        if (prevInp && String(prevInp.value || '').trim() !== '') {
+          quizWriteJudgeRowCore(quizWriteLastActive)
+        }
+      }
+      quizWriteLastActive = i
+      if (quizWriteAllJudged()) { showQuizResult(); return }
+      if (isAutoPlayEnabled()) quizWriteSpeakRow(i)
     }
 
     // 下一个未判行
@@ -953,9 +987,8 @@
       speakLocal(q.word, q.word.lessonNum, 'ko')
     }
 
-    // 逐题判分：判当前行（回车触发）；答对走自动掌握链路，答错/空行/想不起来进错题；
-    // 就地反馈后：未判完 → 聚焦下一行（onfocus 自动发音）；全部判完 → 自动进结果页
-    function quizWriteJudgeRow(i) {
+    // 判一行（核心）：就地判分、就地反馈、更新进度；不负责跳焦点（由调用方决定）
+    function quizWriteJudgeRowCore(i) {
       if (quizWriteIsJudged(i)) return
       var q = quizQuestions[i]
       if (!q) return
@@ -967,11 +1000,19 @@
         recordQuizCorrect(q)   // 答对累计 → 自动已掌握（已掌握词不重复处理）
         quizAnswers[i] = { correct: true, submitted: raw, targetKey: q.targetKey || null }
       } else {
-        quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum) })
+        quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum), submitted: raw, revealed: false })
         quizAnswers[i] = { correct: false, submitted: raw, targetKey: q.targetKey || null }
       }
       quizWriteShowRowResult(i)
       quizWriteUpdateFilled()
+    }
+
+    // 逐题判分（回车触发）：判当前行；未判完 → 聚焦下一个未判行；全部判完 → 自动进结果页
+    function quizWriteJudgeRow(i) {
+      if (quizWriteIsJudged(i)) return
+      var q = quizQuestions[i]
+      if (!q) return
+      quizWriteJudgeRowCore(i)
       if (quizWriteAllJudged()) {
         showQuizResult()
       } else {
@@ -988,7 +1029,7 @@
       quizWriteRevealed[i] = true
       var inp = document.getElementById('quiz-write-input-' + i)
       quizAnswers[i] = { correct: false, submitted: inp ? inp.value : '', revealed: true, targetKey: q.targetKey || null }
-      quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum) })
+      quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum), submitted: inp ? inp.value : '', revealed: true })
       quizWriteShowRowResult(i)
       quizWriteUpdateFilled()
       if (quizWriteAllJudged()) {
@@ -997,6 +1038,14 @@
         var next = quizWriteNextRow(i)
         if (next >= 0) quizWriteFocusRow(next)
       }
+    }
+
+    // 「✅ 完成作答」：一键判完所有未判行（含空行，空=答错），全部判完自动进结果页
+    function quizWriteFinish() {
+      for (var i = 0; i < quizQuestions.length; i++) {
+        if (!quizWriteIsJudged(i)) quizWriteJudgeRowCore(i)
+      }
+      if (quizWriteAllJudged()) showQuizResult()
     }
 
     // 就地反馈单行：锁定输入框、标 ✓/✗、显示正确答案、隐藏「想不起来」（逐题判分/想不起来共用）
@@ -1083,7 +1132,13 @@
       if (quizErrors.length > 0) {
         html += '<div class="quiz-errors"><div class="quiz-errors-title">❌ 答错的词（已加入易错本）</div>'
         quizErrors.forEach(function(e) {
-          html += '<div class="quiz-error-item"><div><span class="qe-kr">' + e.kr + '</span> · <span class="qe-cn">' + e.cn + '</span></div><span style="font-size:11px;color:var(--text-subtle);">제' + e.lessonNum + '과</span></div>'
+          // 写义模式：错词行额外显示"你写的"，方便对照正确答案纠错
+          var typedHtml = ''
+          if (quizMode === 'write') {
+            var typed = e.revealed ? '（想不起来）' : (e.submitted ? e.submitted : '（空）')
+            typedHtml = '<div style="font-size:11px;color:var(--accent-pink);margin-bottom:2px;">你写的：' + escapeAttr(typed) + '</div>'
+          }
+          html += '<div class="quiz-error-item"><div>' + typedHtml + '<span class="qe-kr">' + e.kr + '</span> · <span class="qe-cn">' + e.cn + '</span></div><span style="font-size:11px;color:var(--text-subtle);">제' + e.lessonNum + '과</span></div>'
         })
         html += '</div>'
         if (demotedMastered.length > 0) {
@@ -1209,7 +1264,7 @@
     // 重置测验会话回设置页（返回设置 / 退出测验共用）
     function resetQuizToSetup() {
       quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
-      quizWriteRevealed = []
+      quizWriteRevealed = []; quizWriteLastActive = -1
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
@@ -1231,7 +1286,7 @@
     function showQuiz() {
       quizMode = 'kr-cn'; quizScope = 'all'; quizCount = 10
       quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
-      quizWriteRevealed = []
+      quizWriteRevealed = []; quizWriteLastActive = -1
       document.getElementById('quiz-setup').style.display = 'block'
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'

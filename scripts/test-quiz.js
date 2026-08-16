@@ -270,17 +270,18 @@ let gRec = vm.runInContext('quizAnswers[0]', ctx)
 ok(gRec && gRec.correct === false && gRec.matchedKey === K.sa, '输入 사다 → 判错，matchedKey=사다')
 ok(vm.runInContext('getPersonalPairs("yonsei1").length === 1', ctx) === true, '已记录 싸다→사다 混淆')
 
-// G2："很接近"（비싸다 → 输入 싸다）→ 判对（原判分不变）+ 同时记录混淆
+// G2："很接近"（비싸다 → 输入 싸다）→ 中性第三态（不算对、不算错）+ 同时记录混淆
 vm.runInContext('clearConfusions()', ctx)
 const g2Word = vm.runInContext(`testItemByKey('${K.biss}')`, ctx)
-vm.runInContext(`quizQuestions = [{ word: ${JSON.stringify(g2Word)}, targetKey: '${K.biss}', options: [], optionKeys: [], correctIdx: -1 }]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
+vm.runInContext(`quizQuestions = [{ word: ${JSON.stringify(g2Word)}, targetKey: '${K.biss}', options: [], optionKeys: [], correctIdx: -1 }]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []; quizScore = 0`, ctx)
 ctx.document.getElementById('quiz-dict-field').value = '싸다'
 vm.runInContext('dictSubmit()', ctx)
 gRec = vm.runInContext('quizAnswers[0]', ctx)
-ok(gRec && gRec.correct === true && gRec.close === true, '비싸다 输入 싸다 → 仍判"很接近=正确"（原判分逻辑不变）')
+ok(gRec && gRec.correct === false && gRec.close === true, '비싸다 输入 싸다 → 中性：不算对（correct=false，close=true）')
+ok(vm.runInContext('quizScore', ctx) === 0 && vm.runInContext('quizErrors.length', ctx) === 0, '很接近 → 不计分、不进错题')
 ok(gRec && gRec.matchedKey === K.ssa, '同时记录 matchedKey=싸다（潜在混淆信号）')
 const g2Pers = vm.runInContext('getPersonalPairs("yonsei1")', ctx)
-ok(g2Pers.length === 1 && g2Pers[0].ab === 1, '已记录 비싸다→싸다 混淆（ab=1），且未改变判分')
+ok(g2Pers.length === 1 && g2Pers[0].ab === 1, '已记录 비싸다→싸다 混淆（ab=1），且不改变判分')
 
 // G3：单纯拼写错误（乱码）→ 判错 + 不记混淆
 vm.runInContext('clearConfusions()', ctx)
@@ -533,9 +534,11 @@ testSetMode('dict')
 sReset()
 const s7Word = vm.runInContext(`testItemByKey('${K.biss}')`, ctx)
 vm.runInContext(`quizQuestions = [{ word: ${JSON.stringify(s7Word)}, targetKey: '${K.biss}', options: [], optionKeys: [], correctIdx: -1 }]; quizIndex = 0; quizAnswered = false; quizAnswers = []; quizErrors = []`, ctx)
-ctx.document.getElementById('quiz-dict-field').value = '싸다'   // 비싸다 → 싸다：很接近 → 判对
+ctx.document.getElementById('quiz-dict-field').value = '싸다'   // 비싸다 → 싸다：很接近 → 中性第三态
 vm.runInContext('dictSubmit()', ctx)
-ok(sGet(K.biss) && sGet(K.biss).quizCorrect === 1, '听写"很接近"判对 → 计入答对次数 1')
+const s7rec = sGet(K.biss)
+ok(s7rec == null || s7rec.quizCorrect === undefined, '听写"很接近"不计入答对次数（中性第三态，不累计掌握）')
+ok(s7rec != null && s7rec.closeCount === 1, '听写"很接近"记录接近次数 closeCount=1（只记不显示，不影响掌握判定）')
 testSetMode('kr-cn')
 
 // S8: 次数随 srs 一起持久化（saveUserData 写入的数据包含 quizCorrect，刷新/重开不丢）

@@ -118,7 +118,7 @@ async function main() {
   ok(!window.document.querySelector('#ys-error'), '启动无全局错误（#ys-error 不存在）')
   ok(typeof window.startQuiz === 'function' && typeof window.switchQuizMode === 'function', 'quiz.js 已加载（startQuiz/switchQuizMode 可用）')
   ok(typeof window.getConfusionPairsForBook === 'function', 'confusion.js 已加载（易混层可用）')
-  ok(window.eval('APP_CONFIG.version') === '1.26.0', '版本号 = 1.26.0（实际 ' + window.eval('APP_CONFIG.version') + '）')
+  ok(window.eval('APP_CONFIG.version') === '1.29.0', '版本号 = 1.29.0（实际 ' + window.eval('APP_CONFIG.version') + '）')
 
   console.log('── 2. 测验设置页：六种模式按钮 ──')
   window.showQuiz()
@@ -291,6 +291,63 @@ async function main() {
   ok(window.eval('quizErrors.length') === 4, '错题 4 个（填错 + 想不起来 + 2 空行，实际 ' + window.eval('quizErrors.length') + '）')
   ok(window.document.getElementById('quiz-result').style.display === 'block', '最后一行判完 → 自动进入结果页')
   ok((window.document.querySelector('.quiz-score') || {}).textContent === '1/5', '结果页得分 1/5（错词进易错本/历史走现有链路）')
+  ok((window.document.querySelector('.quiz-errors') || {}).textContent.indexOf('你写的：错误答案') >= 0, '结果页错词行显示「你写的」对照（填错行）')
+  ok((window.document.querySelector('.quiz-errors') || {}).textContent.indexOf('（想不起来）') >= 0, '结果页「想不起来」行显示为（想不起来）')
+
+  console.log('── 10b. 写义：点下一个框自动判上一行 + 完成作答 ──')
+  window.quizBackToSetup()
+  window.switchQuizMode('write')
+  window.setQuizCount(5)
+  window.startQuiz()
+  // 填第 1 行 → 点第 2 行的框 → 第 1 行应自动判对（不用回车）
+  const wa0 = window.quizQuestions[0]
+  window.document.getElementById('quiz-write-input-0').focus()
+  window.document.getElementById('quiz-write-input-0').value = wa0.word.cn
+  window.document.getElementById('quiz-write-input-1').focus()
+  ok(window.eval('quizScore') === 1, '填完第1行点第2行 → 第1行自动判对（score=1）')
+  ok(window.document.getElementById('quiz-write-input-0').disabled === true, '自动判后第1行锁定')
+  // 第 2 行填错 → 点第 3 行 → 第 2 行自动判错
+  window.document.getElementById('quiz-write-input-1').value = '错误答案'
+  window.document.getElementById('quiz-write-input-2').focus()
+  ok(window.eval('quizErrors.length') === 1, '填错第2行点第3行 → 第2行自动判错（进错题 1 个）')
+  // 空行保护：第 3 行空着没填 → 点第 4 行不自动判它（可回来填）
+  window.document.getElementById('quiz-write-input-3').focus()
+  ok(window.document.getElementById('quiz-write-input-2').disabled !== true, '空行保护：没填字的第3行不被自动判')
+  // 完成作答：一键判完剩余行（含空行）→ 自动出结果
+  window.quizWriteFinish()
+  ok(window.document.getElementById('quiz-result').style.display === 'block', '完成作答 → 判完剩余行 → 自动出结果')
+  ok(window.eval('quizScore') === 1, '完成作答后总分 = 第1行对（实际 ' + window.eval('quizScore') + '）')
+  ok(window.eval('quizErrors.length') === 4, '错题 4 个（第2行错 + 3 空行，实际 ' + window.eval('quizErrors.length') + '）')
+  ok(!!window.document.querySelector('.qw-finish'), '「完成作答」按钮已渲染')
+
+  console.log('── 11. 自动发音开关 ──')
+  window.eval("localStorage.removeItem('ys-autoplay')")
+  ok(window.eval('isAutoPlayEnabled()') === true, '默认开启（未设置 ys-autoplay 时）')
+  window.eval("localStorage.setItem('ys-autoplay','off')")
+  ok(window.eval('isAutoPlayEnabled()') === false, '关闭后 isAutoPlayEnabled=false')
+  window.eval("localStorage.setItem('ys-autoplay','on')")
+  ok(window.eval('isAutoPlayEnabled()') === true, '重新开启后 isAutoPlayEnabled=true')
+
+  // 学习页顶栏发音快捷开关（与设置页共用同一个 ys-autoplay，图标随开关同步）
+  ok(!!window.document.getElementById('study-sound-btn'), '学习页顶栏发音快捷按钮存在')
+  window.eval("localStorage.setItem('ys-autoplay','off')")
+  window.eval('updateStudySoundBtn()')
+  ok(window.eval("document.getElementById('study-sound-btn').textContent") === '🔇', '关闭后学习页顶栏图标 = 🔇')
+  window.eval('toggleStudySound()')
+  ok(window.eval("document.getElementById('study-sound-btn').textContent") === '🔊', '点击学习页快捷开关 → 重新开启，图标 = 🔊')
+  ok(window.eval('isAutoPlayEnabled()') === true, '学习页快捷开关与设置页同源（点击后自动发音已开）')
+
+  // 自动发音关闭时，测验题区 / 写义面板显示静音提示（防止用户误以为没声音是 Bug）
+  window.eval("localStorage.setItem('ys-autoplay','off')")
+  window.switchQuizMode('kr-cn')
+  window.setQuizCount(5)
+  window.startQuiz()
+  ok((window.document.getElementById('quiz-question-area').textContent || '').indexOf('自动发音已关') >= 0, '自动发音关闭时测验题区显示「🔇 自动发音已关」')
+  window.quizBackToSetup()
+  window.switchQuizMode('write')
+  window.startQuiz()
+  ok((window.document.getElementById('quiz-write-panel').textContent || '').indexOf('自动发音已关') >= 0, '写义批量面板也显示静音提示')
+  window.eval("localStorage.removeItem('ys-autoplay')")
 
   server.close()
   console.log('')

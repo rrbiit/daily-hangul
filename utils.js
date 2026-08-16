@@ -32,6 +32,16 @@
       return null
     }
 
+    /* ═══════════ 自动发音开关 ═══════════ */
+    // 读取设置：默认开（保留原有自动发音体验）；关闭后学习卡片/测验进题/写义聚焦都不自动播。
+    // 存 ys-autoplay，随导出/导入迁移。放 utils 让 study/quiz 都能读；
+    // Node 测试环境无 localStorage → 返回默认 true。
+    function isAutoPlayEnabled() {
+      try {
+        return (typeof localStorage !== 'undefined' && (localStorage.getItem('ys-autoplay') || 'on')) !== 'off'
+      } catch (e) { return true }
+    }
+
     /* ═══════════ SRS 间隔重复系统 ═══════════ */
     function srsInterval(lv) {
       // lv 0: 10分钟(首次), lv 1: 1天, lv 2: 3天, lv 3: 7天, lv 4: 21天, lv 5: 60天, lv 6: 120天

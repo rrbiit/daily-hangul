@@ -131,10 +131,14 @@
       updateSrsStatus()
 
       // 自动播放当前单词发音（韩语优先方向：正面即韩语；中文优先时跳过，避免提前泄露答案）
-      if (cardDirection !== 'cn-first' && w.kr) {
+      // 受设置页「自动发音」开关控制，关闭后只保留手动 🔊
+      if (isAutoPlayEnabled() && cardDirection !== 'cn-first' && w.kr) {
         flashSpeakBtn()
         speakLocal(w, w.lessonNum, 'ko')
       }
+
+      // 刷新顶栏发音快捷开关图标（与设置页同步）
+      updateStudySoundBtn()
     }
 
     // 翻转卡片

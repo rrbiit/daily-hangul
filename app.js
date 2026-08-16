@@ -1008,6 +1008,37 @@
       document.getElementById('tts-rate-label').textContent = label + ' (' + val + ')'
     }
 
+    // ─── 自动发音开关 ───
+    // 读取逻辑在 utils.js 的 isAutoPlayEnabled()（默认开；关闭后学习/测验不自动播）。
+    // 这里只管设置页 UI：开关切换 + 按钮状态。
+    function toggleAutoPlay() {
+      lsSet('ys-autoplay', isAutoPlayEnabled() ? 'off' : 'on')
+      updateAutoPlayToggle()
+    }
+    function updateAutoPlayToggle() {
+      var el = document.getElementById('autoplay-toggle')
+      if (!el) return
+      var on = isAutoPlayEnabled()
+      el.textContent = on ? '开' : '关'
+      el.style.background = on ? 'var(--primary-light)' : 'transparent'
+      el.style.color = on ? 'var(--primary)' : 'var(--text)'
+    }
+
+    // ─── 学习页顶部发音快捷开关 ───
+    // 学习页顶栏的小喇叭，与设置页「自动发音」共用同一个 ys-autoplay 值（两边永远同步）。
+    // 刷新时机：进入学习页（每次翻卡 showCard）都会调用 updateStudySoundBtn()。
+    function toggleStudySound() {
+      toggleAutoPlay()
+      updateStudySoundBtn()
+    }
+    function updateStudySoundBtn() {
+      var el = document.getElementById('study-sound-btn')
+      if (!el) return
+      var on = isAutoPlayEnabled()
+      el.textContent = on ? '🔊' : '🔇'
+      el.title = on ? '自动发音：开（点击关闭）' : '自动发音：关（点击开启）'
+    }
+
     // ─── 数据导出/导入/清除 ───
     // 收集本应用相关的全部本地存储 key（原始字符串，保证跨教材完整还原）
     function collectAppStorageKeys() {
@@ -1270,6 +1301,7 @@
       updateTtsRate(rate)
       document.getElementById('tts-rate').value = rate
       setCardDir(cardDirection)
+      updateAutoPlayToggle()
       // 关于统计（跨全部教材合计；keys 带书前缀，各书不串数据）
       let total = 0, mCount = 0
       BOOKS.forEach(b => {

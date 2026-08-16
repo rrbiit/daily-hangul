@@ -170,6 +170,7 @@
         </button>
         <span class="study-title" id="study-title">제1과</span>
         <span class="study-progress" id="study-progress">1/20</span>
+        <button id="study-sound-btn" onclick="toggleStudySound()" title="自动发音：开" style="width:36px;height:36px;font-size:16px;background:none;border:none;cursor:pointer;padding:0;line-height:1;">🔊</button>
       </div>
 
       <div class="flashcard-area">
@@ -448,6 +449,10 @@
         <div style="margin-bottom:32px;">
           <h3 style="font-size:14px;font-weight:500;color:var(--text-dim);margin-bottom:12px;">🗣️ 发音</h3>
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <span style="font-size:15px;">自动发音</span>
+              <button id="autoplay-toggle" onclick="toggleAutoPlay()" style="border:1px solid var(--border);border-radius:10px;padding:6px 20px;font-size:14px;font-family:var(--font-display);cursor:pointer;background:var(--primary-light);color:var(--primary);">开</button>
+            </div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
               <span style="font-size:15px;">语速</span>
               <span id="tts-rate-label" style="font-size:14px;color:var(--primary);font-weight:500;">正常 (0.85)</span>
