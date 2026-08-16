@@ -92,15 +92,15 @@
       html += '📈 今天掌握了 <strong>' + today.mastered + '</strong> 个词'
       html += '</div>'
       if (today.masteredKeys && today.masteredKeys.length > 0) {
-        var chips = []
+        // 与每日列表同款折叠：最多显示 8 个，更多收进「▾ 展开」
+        var mItems = []
         for (var ci = 0; ci < today.masteredKeys.length; ci++) {
-          var kp = today.masteredKeys[ci].split('|')
+          var kp = String(today.masteredKeys[ci]).split('|')
           // 取最后一段即韩语词：兼容旧格式「3|가족」与新格式「yonsei1|3|가족」
           var krTxt = kp[kp.length - 1] || ''
-          var p2 = chipAudioPath(today.masteredKeys[ci])
-          chips.push('<span class="sdc-chip mastered" data-path="' + (p2 || '') + '">' + krTxt + '</span>')
+          mItems.push({ t: krTxt, p: chipAudioPath(today.masteredKeys[ci]) || '' })
         }
-        html += '<div>' + chips.join('') + '</div>'
+        html += '<div class="sdc-chips">' + buildChipRow(mItems, 'mastered') + '</div>'
       }
 
       // 今日测验正确率
@@ -108,16 +108,18 @@
         var todayPct = today.quizTotal > 0 ? Math.round(today.quizCorrect / today.quizTotal * 100) : 0
         html += '<div style="font-size:13px;color:var(--text);margin-top:2px;">✅ 今日测验 <strong>' + today.quizCorrect + '/' + today.quizTotal + '</strong>（' + todayPct + '%）</div>'
       }
-      // 今日错词（从今日测验记录取，纯展示，与"已掌握"同款 chips，珊瑚色区分）
+      // 今日错词（从今日测验记录取，纯展示，与"已掌握"同款 chips，珊瑚色区分；同样最多显示 8 个可折叠）
       var todayErrors = todayQuizErrors()
       if (todayErrors.length > 0) {
         html += '<div style="font-size:13px;color:var(--text);line-height:1.7;">📕 今日错词：</div>'
-        var errChips = []
+        var errItems = []
         for (var ej = 0; ej < todayErrors.length; ej++) {
-          var errPath = todayErrors[ej].num ? ('audio/' + getCurrentBook().bookId + '/' + todayErrors[ej].num + '/' + encodeURIComponent(todayErrors[ej].kr) + '.mp3') : ''
-          errChips.push('<span class="sdc-chip error" data-path="' + errPath + '">' + todayErrors[ej].kr + '</span>')
+          errItems.push({
+            t: todayErrors[ej].kr,
+            p: todayErrors[ej].num ? ('audio/' + getCurrentBook().bookId + '/' + todayErrors[ej].num + '/' + encodeURIComponent(todayErrors[ej].kr) + '.mp3') : ''
+          })
         }
-        html += '<div>' + errChips.join('') + '</div>'
+        html += '<div class="sdc-chips">' + buildChipRow(errItems, 'error') + '</div>'
       }
 
       // 底部：本月掌握 + 累计测验

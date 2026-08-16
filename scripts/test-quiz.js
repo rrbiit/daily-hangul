@@ -544,6 +544,22 @@ for (let s8i = 0; s8i < 3; s8i++) sAnswer(true)
 const savedBlob = vm.runInContext('__savedSrs', ctx)
 ok(savedBlob && savedBlob[K.ssa] && savedBlob[K.ssa].quizCorrect === 3, '保存的数据包含累计答对次数（3 次答对 → 存储 3/4）')
 
+// S9: 已掌握的词答对 → 不再显示「x/4 · 再答对 N 次自动掌握」进度文案（学习页/刷卡已掌握的词 quizCorrect 为 0，
+//     旧行为会显示误导性的「1/4」；修复后已掌握词答对不显示任何进度）
+sReset()
+vm.runInContext(`srs['${K.ssa}'] = { lv: 4, due: Date.now() + 21 * 86400000, ease: 2.5, n: 1, badCount: 0 }`, ctx)   // 模拟手动标记已掌握
+vm.runInContext("document.getElementById('quiz-feedback').innerHTML = ''", ctx)   // 清掉前序测试遗留（模拟浏览器逐题清空反馈区）
+sAnswer(true)
+let s9fb = vm.runInContext("document.getElementById('quiz-feedback').innerHTML", ctx)
+ok(s9fb.indexOf('再答对') === -1 && s9fb.indexOf('1/4') === -1, '已掌握的词答对 → 不显示进度文案（无 1/4）')
+ok(vm.runInContext('quizAutoMasteredKeys.length', ctx) === 0, '已掌握的词不触发"自动掌握"（保持掌握）')
+// 降级回未掌握后答对 → 恢复显示 x/4 进度（规则自洽）
+vm.runInContext(`srs['${K.ssa}'].lv = 3; srs['${K.ssa}'].quizCorrect = 0`, ctx)
+vm.runInContext("document.getElementById('quiz-feedback').innerHTML = ''", ctx)
+sAnswer(true)
+s9fb = vm.runInContext("document.getElementById('quiz-feedback').innerHTML", ctx)
+ok(s9fb.indexOf('再答对') !== -1, '降级回未掌握后答对 → 正常显示「再答对 x 次自动掌握」进度')
+
 console.log('── T. 词数不足 → 毛玻璃确认弹窗 ──')
 // 用 testItemByKey 构造确定词数的池（testPoolOf 会跨课重复收集，词数不确定）
 const tW1 = vm.runInContext(`testItemByKey('${K.ssa}')`, ctx)

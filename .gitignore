@@ -8,3 +8,6 @@ desktop.ini
 
 # Editor config
 .vscode/settings.json
+
+# 本地启动脚本（不随网站发布）
+_start-daily-hangul.ps1

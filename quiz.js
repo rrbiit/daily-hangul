@@ -29,14 +29,15 @@
     // 记录一次答对：累计 +1（封顶 4）；达到阈值且当前未掌握 → 自动标记已掌握。
     // 次数按「书|课|韩语」key 隔离（wk 生成），不同教材的同形词互不影响；
     // 答错不加减、不清零（错题处理在 persistQuizRecord，与本计数无关）。
-    // 已掌握的词继续答对 → 不重复处理；若被现有规则（测验降级/SRS重学）移出已掌握，
-    // 次数仍保留 4，下次答对按同一规则自动恢复。
-    // 返回 { count, newlyMastered } 供 UI 展示。
+    // 已掌握的词继续答对 → 只累计不标记（alreadyMastered 供 UI 决定是否显示进度文案）；
+    // 若被现有规则（测验降级/SRS重学）移出已掌握，次数仍保留，下次答对按同一规则自动恢复。
+    // 返回 { count, newlyMastered, alreadyMastered } 供 UI 展示。
     function recordQuizCorrect(q) {
-      if (!q || !q.targetKey) return { count: 0, newlyMastered: false }
+      if (!q || !q.targetKey) return { count: 0, newlyMastered: false, alreadyMastered: false }
       var key = q.targetKey
       var d = srs[key]
       if (!d) { d = { lv: 0, due: 0, ease: 2.5, n: 0 }; srs[key] = d }
+      var alreadyMastered = d.lv >= 4
       var count = (d.quizCorrect || 0)
       var newlyMastered = false
       if (count < QUIZ_MASTER_THRESHOLD) {
@@ -49,7 +50,7 @@
         newlyMastered = true
       }
       saveUserData()
-      return { count: Math.min(count, QUIZ_MASTER_THRESHOLD), newlyMastered: newlyMastered }
+      return { count: Math.min(count, QUIZ_MASTER_THRESHOLD), newlyMastered: newlyMastered, alreadyMastered: alreadyMastered }
     }
 
     // 升为已掌握：lv=4 + 21 天复习间隔（与手动标记写法一致）+ 记录掌握日期/今日成果
@@ -66,12 +67,14 @@
     }
 
     // 在答对反馈下方追加一行进度小字（沿用现有 feedback 元素，不新增卡片）
+    // 已掌握的词答对 → 不显示任何进度（避免「已掌握却显示 1/4 · 再答对3次自动掌握」的误导）；
+    // 只有未掌握的词在向 4 次目标累计时才显示 x/4。
     function appendQuizMasteryNote(fb, m) {
       if (!fb || !m) return
       if (m.newlyMastered) {
         fb.innerHTML = (fb.innerHTML || fb.textContent) +
           '<br><span style="font-size:12px;color:var(--accent-green);">🎉 已掌握！累计答对 ' + QUIZ_MASTER_THRESHOLD + ' 次</span>'
-      } else if (m.count >= 1 && m.count < QUIZ_MASTER_THRESHOLD) {
+      } else if (!m.alreadyMastered && m.count >= 1 && m.count < QUIZ_MASTER_THRESHOLD) {
         fb.innerHTML = (fb.innerHTML || fb.textContent) +
           '<br><span style="font-size:12px;color:var(--text-subtle);">该词已答对 ' + m.count + '/' + QUIZ_MASTER_THRESHOLD + ' · 再答对 ' + (QUIZ_MASTER_THRESHOLD - m.count) + ' 次自动掌握</span>'
       }
