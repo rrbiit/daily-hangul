@@ -19,6 +19,8 @@
     var quizHistory = []
     var quizAnswered = false
     var quizAnswers = []  // 每道题的作答记录：{ correct, selectedIdx } / { correct, submitted }，未答为 undefined
+    // 写义模式（✍️ 写义：整页批量 · 逐题即判）专属状态
+    var quizWriteRevealed = []       // 各行是否点了「想不起来」（true 的行判错）
 
     /* ═══════════ 测验答对累计 → 自动已掌握 ═══════════ */
     // 累计答对阈值：达到 4 次自动标记为「已掌握」（封顶 4，不重复累计、不出现 5/4）
@@ -179,7 +181,7 @@
         container.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:13px;">暂无测验记录</div>'
         return
       }
-      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音选义', 'listen-kr': '🔊 听音选词', 'dict': '✍️ 听写' }
+      var modeLabels = { 'kr-cn': '🇰🇷→🇨🇳', 'cn-kr': '🇨🇳→🇰🇷', 'listen': '🔊 听音选义', 'listen-kr': '🔊 听音选词', 'dict': '✍️ 听写', 'write': '✍️ 写义' }
       var html = ''
       // 倒序显示，最新的在前面
       for (var i = history.length - 1; i >= 0; i--) {
@@ -220,7 +222,8 @@
           'cn-kr': '看中文，选正确的韩语',
           'listen': '听发音，选正确的中文意思',
           'listen-kr': '听发音，选出听到的韩语单词',
-          'dict': '听发音，打出韩语'
+          'dict': '听发音，打出韩语',
+          'write': '看韩语，写出中文意思（整页批量作答）'
         }[mode] || ''
       }
       renderQuizLessons()
@@ -493,8 +496,8 @@
       slots.forEach(function(w) {
         if (!w) return
         var targetKey = wk(w, w.lessonNum)
-        // 听写模式无需选项，直接输入韩语
-        if (quizMode === 'dict') {
+        // 听写/写义模式无需选项，直接输入（写义=整页批量，每题同样携带 targetKey 走自动掌握/错题链路）
+        if (quizMode === 'dict' || quizMode === 'write') {
           questions.push({ word: w, targetKey: targetKey, options: [], optionKeys: [], correctIdx: -1, contrastKeys: [] })
           return
         }
@@ -518,6 +521,7 @@
       if (!pool || pool.length === 0) return
       quizQuestions = generateQuizQuestions(pool)
       quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
+      quizWriteRevealed = []
       document.getElementById('quiz-setup').style.display = 'none'
       document.getElementById('quiz-play').style.display = 'block'
       document.getElementById('quiz-result').style.display = 'none'
@@ -573,6 +577,13 @@
       markStudyDay()
       if (quizIndex >= quizQuestions.length) { showQuizResult(); return }
       var q = quizQuestions[quizIndex]
+
+      // 写义模式：整页批量作答（一屏列全部词，不逐题；由 panel 自行渲染并管理进度）
+      if (quizMode === 'write') {
+        renderQuizWritePanel()
+        return
+      }
+
       // 已答过的题进入"回顾"态（锁定不可改），未答过才是正常作答
       var prev = quizAnswers[quizIndex] || null
       quizAnswered = prev ? true : false
@@ -816,6 +827,202 @@
       document.getElementById('quiz-score-live').textContent = '✅ ' + quizScore
     }
 
+    /* ═══════════ 写义模式（✍️ 写义：整页批量 · 逐题即判）═══════════ */
+    // 渲染整页批量面板：一屏列全部词，每行 = 韩语词 + 🔊 + 词性 + 输入框 + 「想不起来ㅠㅠ」
+    // 判分方式：填完一行按回车（或点想不起来）→ 这一行立即判分就地反馈 → 自动跳下一行；全部判完自动进结果页
+    function renderQuizWritePanel() {
+      // 隐藏单题元素，显示批量面板
+      document.getElementById('quiz-question-area').style.display = 'none'
+      document.getElementById('quiz-options').style.display = 'none'
+      var dictInput = document.getElementById('quiz-dict-input')
+      if (dictInput) dictInput.style.display = 'none'
+      var fb = document.getElementById('quiz-feedback')
+      fb.textContent = ''; fb.style.display = 'none'
+      document.getElementById('quiz-nav').style.display = 'none'
+      var area = document.getElementById('quiz-write-panel')
+      if (area) {
+        area.style.display = 'block'
+        area.innerHTML = buildQuizWriteRows()
+      }
+      quizWriteUpdateFilled()
+      // 进入面板自动聚焦第一个输入框（onfocus 统一触发发音）
+      if (quizQuestions.length > 0) {
+        setTimeout(function() { quizWriteFocusRow(0) }, 400)
+      }
+    }
+
+    // 构建批量行 HTML（逐题即判：已判的行锁定并就地显示对错与正确答案）
+    function buildQuizWriteRows() {
+      var html = ''
+      for (var i = 0; i < quizQuestions.length; i++) {
+        var q = quizQuestions[i]
+        var judged = quizWriteIsJudged(i)
+        var revealed = !!quizWriteRevealed[i]
+        var a = quizAnswers[i] || null
+        var ans = a && a.submitted != null ? a.submitted : ''
+        var okCls = judged ? (a && a.correct ? ' ok' : ' bad') : ''
+        html += '<div class="qw-row" id="qw-row-' + i + '">'
+        html += '<div class="qw-head">'
+        html += '<span class="qw-num">' + (i + 1) + '</span>'
+        html += '<span class="qw-word">' + q.word.kr + '</span>'
+        html += '<button class="quiz-q-speak qw-speak" onclick="quizWriteSpeakRow(' + i + ')" title="听发音">🔊</button>'
+        html += '<span class="qw-pos">' + (q.word.pos || '') + '</span>'
+        html += '<span class="qw-result" id="qw-result-' + i + '">' + (judged ? (a && a.correct ? '✓' : '✗') : '') + '</span>'
+        html += '</div>'
+        html += '<div class="qw-body">'
+        html += '<input id="quiz-write-input-' + i + '" class="qw-input' + okCls + '"' +
+          (judged ? ' disabled' : '') +
+          ' value="' + escapeAttr(ans) + '" placeholder="写中文意思…"' +
+          ' onkeydown="quizWriteKey(event,' + i + ')" onfocus="quizWriteOnFocus(' + i + ')" oninput="quizWriteUpdateFilled()" autocomplete="off" autocorrect="off" spellcheck="false" />'
+        html += '<button class="qw-dontknow" id="qw-dk-' + i + '" onclick="quizWriteDontKnow(' + i + ')"' +
+          (judged ? ' style="display:none;"' : '') + '>想不起来ㅠㅠ</button>'
+        if (judged && a && !a.correct) {
+          html += '<span class="qw-answer">' + (revealed ? '💡 答案：' : '正确答案：') + q.word.cn + '</span>'
+        }
+        html += '</div>'
+        html += '</div>'
+      }
+      return html
+    }
+
+    // 输入值里的引号/尖括号转义（写进 value 属性前）
+    function escapeAttr(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    }
+
+    // 某行是否已判（想不起来也算已判）
+    function quizWriteIsJudged(i) {
+      return !!quizWriteRevealed[i] || !!(quizAnswers[i] && quizAnswers[i].correct !== undefined)
+    }
+
+    // 全部行是否已判完
+    function quizWriteAllJudged() {
+      for (var i = 0; i < quizQuestions.length; i++) {
+        if (!quizWriteIsJudged(i)) return false
+      }
+      return true
+    }
+
+    // 顶部进度：已判 X/N + 进度条 + 实时分数
+    function quizWriteUpdateFilled() {
+      var judged = 0
+      for (var i = 0; i < quizQuestions.length; i++) {
+        if (quizWriteIsJudged(i)) judged++
+      }
+      var total = quizQuestions.length
+      var pt = document.getElementById('quiz-progress-text')
+      if (pt) pt.textContent = '已判 ' + judged + '/' + total
+      var fill = document.getElementById('quiz-progress-fill')
+      if (fill) fill.style.width = (total > 0 ? (judged / total * 100) : 0) + '%'
+      var score = document.getElementById('quiz-score-live')
+      if (score) score.textContent = '✅ ' + quizScore
+    }
+
+    // 回车 → 判当前行（做完直接判）：判完自动跳下一个未判行；全部判完自动出结果
+    function quizWriteKey(ev, i) {
+      if (ev.key === 'Enter') {
+        ev.preventDefault()
+        quizWriteJudgeRow(i)
+      }
+    }
+
+    // 输入框聚焦 → 自动播放该词发音（用户手动点击下一个框也算"要填下一个了"，同样发音）
+    function quizWriteOnFocus(i) {
+      quizWriteSpeakRow(i)
+    }
+
+    // 下一个未判行
+    function quizWriteNextRow(from) {
+      for (var j = from + 1; j < quizQuestions.length; j++) {
+        if (!quizWriteIsJudged(j)) return j
+      }
+      return -1
+    }
+
+    function quizWriteFocusRow(i) {
+      var inp = document.getElementById('quiz-write-input-' + i)
+      if (inp && !inp.disabled) inp.focus()
+    }
+
+    // 播放某一行韩语词的发音（🔊 按钮 / 自动发音共用）
+    function quizWriteSpeakRow(i) {
+      var q = quizQuestions[i]
+      if (!q) return
+      var btn = document.querySelector('#qw-row-' + i + ' .qw-speak')
+      if (btn) { btn.classList.add('playing'); setTimeout(function() { btn.classList.remove('playing') }, 1500) }
+      speakLocal(q.word, q.word.lessonNum, 'ko')
+    }
+
+    // 逐题判分：判当前行（回车触发）；答对走自动掌握链路，答错/空行/想不起来进错题；
+    // 就地反馈后：未判完 → 聚焦下一行（onfocus 自动发音）；全部判完 → 自动进结果页
+    function quizWriteJudgeRow(i) {
+      if (quizWriteIsJudged(i)) return
+      var q = quizQuestions[i]
+      if (!q) return
+      var inp = document.getElementById('quiz-write-input-' + i)
+      var raw = inp ? inp.value : ''
+      var correct = cnAnswerMatch(raw, q.word.cn)
+      if (correct) {
+        quizScore++
+        recordQuizCorrect(q)   // 答对累计 → 自动已掌握（已掌握词不重复处理）
+        quizAnswers[i] = { correct: true, submitted: raw, targetKey: q.targetKey || null }
+      } else {
+        quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum) })
+        quizAnswers[i] = { correct: false, submitted: raw, targetKey: q.targetKey || null }
+      }
+      quizWriteShowRowResult(i)
+      quizWriteUpdateFilled()
+      if (quizWriteAllJudged()) {
+        showQuizResult()
+      } else {
+        var next = quizWriteNextRow(i)
+        if (next >= 0) quizWriteFocusRow(next)
+      }
+    }
+
+    // 「想不起来ㅠㅠ」：就地显示答案、立即记错、锁定该行，跳下一个未判行（全部判完自动出结果）
+    function quizWriteDontKnow(i) {
+      if (quizWriteIsJudged(i)) return
+      var q = quizQuestions[i]
+      if (!q) return
+      quizWriteRevealed[i] = true
+      var inp = document.getElementById('quiz-write-input-' + i)
+      quizAnswers[i] = { correct: false, submitted: inp ? inp.value : '', revealed: true, targetKey: q.targetKey || null }
+      quizErrors.push({ kr: q.word.kr, cn: q.word.cn, pos: q.word.pos, lessonNum: q.word.lessonNum, key: wk(q.word, q.word.lessonNum) })
+      quizWriteShowRowResult(i)
+      quizWriteUpdateFilled()
+      if (quizWriteAllJudged()) {
+        showQuizResult()
+      } else {
+        var next = quizWriteNextRow(i)
+        if (next >= 0) quizWriteFocusRow(next)
+      }
+    }
+
+    // 就地反馈单行：锁定输入框、标 ✓/✗、显示正确答案、隐藏「想不起来」（逐题判分/想不起来共用）
+    function quizWriteShowRowResult(i) {
+      var q = quizQuestions[i]
+      if (!q) return
+      var a = quizAnswers[i] || null
+      var inp = document.getElementById('quiz-write-input-' + i)
+      if (inp) {
+        inp.disabled = true
+        inp.classList.remove('ok', 'bad')
+        inp.classList.add(a && a.correct ? 'ok' : 'bad')
+      }
+      var dk = document.getElementById('qw-dk-' + i)
+      if (dk) dk.style.display = 'none'
+      var res = document.getElementById('qw-result-' + i)
+      if (res) res.textContent = a && a.correct ? '✓' : '✗'
+      var row = document.getElementById('qw-row-' + i)
+      if (row && !a.correct && !row.querySelector('.qw-answer')) {
+        var ans = document.createElement('span')
+        ans.className = 'qw-answer'
+        ans.textContent = (quizWriteRevealed[i] ? '💡 答案：' : '正确答案：') + q.word.cn
+        row.appendChild(ans)
+      }
+    }
+
     // 上一题
     function quizPrev() {
       if (quizIndex <= 0) return
@@ -1002,11 +1209,21 @@
     // 重置测验会话回设置页（返回设置 / 退出测验共用）
     function resetQuizToSetup() {
       quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
+      quizWriteRevealed = []
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'
       document.getElementById('quiz-result').innerHTML = ''
       document.getElementById('quiz-setup').style.display = 'block'
       document.getElementById('quiz-tab-bar').style.display = ''
+      var wp = document.getElementById('quiz-write-panel')
+      if (wp) { wp.style.display = 'none'; wp.innerHTML = '' }
+      // 恢复写义面板隐藏掉的单题元素（下次进入其他模式时正常显示）
+      var qa = document.getElementById('quiz-question-area')
+      if (qa) qa.style.display = ''
+      var qnav = document.getElementById('quiz-nav')
+      if (qnav) qnav.style.display = ''
+      var qfb = document.getElementById('quiz-feedback')
+      if (qfb) qfb.style.display = ''
       switchQuizTab('quiz')
       renderQuizLessons()
     }
@@ -1014,6 +1231,7 @@
     function showQuiz() {
       quizMode = 'kr-cn'; quizScope = 'all'; quizCount = 10
       quizSelectedLessons.clear(); quizQuestions = []; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []
+      quizWriteRevealed = []
       document.getElementById('quiz-setup').style.display = 'block'
       document.getElementById('quiz-play').style.display = 'none'
       document.getElementById('quiz-result').style.display = 'none'

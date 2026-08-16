@@ -100,6 +100,12 @@ async function main() {
   })
 
   const { window } = dom
+  // 点击通用毛玻璃弹窗的确认按钮（v1.25.2 起应用用 showAppDialog 替代原生 confirm，
+  // 测试须真实点击按钮触发 onConfirm，而不是桩 confirm/alert）
+  function clickAppDialogConfirm() {
+    const btn = window.document.getElementById('app-dialog-confirm')
+    if (btn) btn.click()
+  }
   try {
     await new Promise(resolve => window.addEventListener('load', resolve))
   } catch (e) {
@@ -112,16 +118,18 @@ async function main() {
   ok(!window.document.querySelector('#ys-error'), '启动无全局错误（#ys-error 不存在）')
   ok(typeof window.startQuiz === 'function' && typeof window.switchQuizMode === 'function', 'quiz.js 已加载（startQuiz/switchQuizMode 可用）')
   ok(typeof window.getConfusionPairsForBook === 'function', 'confusion.js 已加载（易混层可用）')
-  ok(window.eval('APP_CONFIG.version') === '1.24.0', '版本号 = 1.24.0（实际 ' + window.eval('APP_CONFIG.version') + '）')
+  ok(window.eval('APP_CONFIG.version') === '1.26.0', '版本号 = 1.26.0（实际 ' + window.eval('APP_CONFIG.version') + '）')
 
-  console.log('── 2. 测验设置页：五种模式按钮 ──')
+  console.log('── 2. 测验设置页：六种模式按钮 ──')
   window.showQuiz()
   const modeBtns = window.document.querySelectorAll('#quiz-mode-bar .tab-btn')
-  ok(modeBtns.length === 5, '模式栏 5 个按钮（实际 ' + modeBtns.length + '）')
+  ok(modeBtns.length === 6, '模式栏 6 个按钮（实际 ' + modeBtns.length + '）')
   const krBtn = window.document.querySelector('#quiz-mode-bar .tab-btn[data-mode="listen-kr"]')
-  ok(!!krBtn && krBtn.textContent.indexOf('听词') >= 0, '新增「听词」按钮存在（data-mode="listen-kr"）')
+  ok(!!krBtn && krBtn.textContent.indexOf('听词') >= 0, '「听词」按钮存在（data-mode="listen-kr"）')
+  const wrBtn = window.document.querySelector('#quiz-mode-bar .tab-btn[data-mode="write"]')
+  ok(!!wrBtn && wrBtn.textContent.indexOf('写义') >= 0, '「写义」按钮存在（data-mode="write"）')
   const modeOrder = Array.from(modeBtns).map(b => b.getAttribute('data-mode')).join(',')
-  ok(modeOrder === 'kr-cn,cn-kr,listen,listen-kr,dict', '按钮顺序：韩→中,中→韩,听音,听词,听写（实际 ' + modeOrder + '）')
+  ok(modeOrder === 'kr-cn,cn-kr,listen,listen-kr,dict,write', '按钮顺序：韩→中,中→韩,听音,听词,听写,写义（实际 ' + modeOrder + '）')
 
   console.log('── 3. 听音→韩语（listen-kr）真实出题与答题 ──')
   window.switchQuizMode('listen-kr')
@@ -180,7 +188,8 @@ async function main() {
   await waitFor(() => window.document.getElementById('quiz-result').style.display === 'block', 3000)
   ok(window.eval('quizErrors.length') === 5, '5 题全错 → quizErrors=5（易错本数据源）')
   ok(window.eval('Object.keys(srs).length') >= 5, 'SRS 已为错词建立条目（' + window.eval('Object.keys(srs).length') + ' 个）')
-  ok(window.eval('Object.keys(srs).every(function(k){ return (srs[k].badCount||0) >= 1 })') === true, '错词 badCount ≥ 1（薄弱词判定生效）')
+  // 只检查本轮答错的 5 个词 badCount ≥ 1（前面答对的词没有 badCount，不应参与 every）
+  ok(window.eval('quizErrors.length === 5 && quizErrors.every(function(e){ return (srs[e.key] && (srs[e.key].badCount || 0) >= 1) })') === true, '本轮答错的 5 个词 badCount ≥ 1（薄弱词判定生效）')
   const h5 = window.quizHistory[window.quizHistory.length - 1]
   ok(!!h5 && h5.errors && h5.errors.length === 5 && h5.score === 0, '测验历史记录 5 个错词、得分 0（历史结构未变）')
 
@@ -223,10 +232,13 @@ async function main() {
   window.eval('collectAppStorageKeys().forEach(function(k){ localStorage.removeItem(k) })')
   ok(window.localStorage.getItem('ys-confusions') === null && window.localStorage.getItem('yonsei-study-data') === null, '已模拟全部数据丢失')
   window.__importFile = new window.File([backupText], 'backup.json', { type: 'application/json' })
-  window.confirm = () => true
   window.alert = () => {}
   window.importData()
-  await sleep(200)
+  await sleep(100)
+  clickAppDialogConfirm()   // 「覆盖导入」确认 → 写回 localStorage
+  await sleep(100)
+  clickAppDialogConfirm()   // 「导入成功」确认 → 触发刷新（jsdom 无刷新，仅产生环境噪音）
+  await sleep(100)
   window.eval('loadConfusions()')   // 真实浏览器里 importData 会 location.reload() 自动重读；jsdom 无刷新，手动等价模拟
   ok(window.localStorage.getItem('ys-confusions') !== null, '导入后 ys-confusions 已写回 localStorage')
   ok(window.localStorage.getItem('yonsei-study-data') !== null, '导入后原有学习数据一并恢复')
@@ -238,13 +250,47 @@ async function main() {
   window.eval(`recordConfusion('yonsei1|6|싸다', 'yonsei1|3|사다')`)
   ok(window.eval('getPersonalPairs("yonsei1").length') >= 1, '存在个人混淆记录（实测 ' + window.eval('getPersonalPairs("yonsei1").length') + ' 组）')
   ok(window.localStorage.getItem('ys-confusions') !== null, 'ys-confusions 已写入 localStorage')
-  window.confirm = () => true
   window.alert = () => {}
   window.resetAllData()
+  await sleep(100)
+  clickAppDialogConfirm()   // 「全部清除」确认 → 清内存 + 删 localStorage
+  await sleep(100)
+  clickAppDialogConfirm()   // 「已清除」确认 → 触发刷新（jsdom 无刷新，仅产生环境噪音）
+  await sleep(100)
   ok(window.localStorage.getItem('ys-confusions') === null, '清除后 ys-confusions 已从 localStorage 删除（不留空壳 key）')
   ok(window.localStorage.getItem('yonsei-study-data') === null, '清除后 yonsei-study-data 已删除')
   ok(window.eval('getPersonalPairs("yonsei1").length') === 0, '内存混淆关系已清空（clearConfusions 生效，不残留旧数据）')
   ok(window.eval('Object.keys(srs).length') === 0, 'SRS 内存已清空')
+
+  console.log('── 10. 写义模式（✍️ 写义：整页批量 · 逐题即判）──')
+  window.showQuiz()
+  window.switchQuizMode('write')
+  ok(window.document.getElementById('quiz-mode-hint').textContent === '看韩语，写出中文意思（整页批量作答）', '写义模式提示正常')
+  window.setQuizCount(5)
+  window.startQuiz()
+  ok(window.document.getElementById('quiz-write-panel').style.display === 'block', '写义面板已显示（整页批量）')
+  const wRows = window.document.querySelectorAll('.qw-row')
+  ok(wRows.length === 5, '一屏渲染 5 行（实际 ' + wRows.length + '）')
+  ok(!window.document.getElementById('quiz-write-submit'), '无底部提交栏（逐题即判，无需统一提交）')
+  // 逐题即判：第 1 行填对 → 判对；第 2 行填错 → 判错就地显示答案；第 3 行想不起来 → 立即记错；第 4/5 行空 → 判错
+  const wq0 = window.quizQuestions[0]
+  window.document.getElementById('quiz-write-input-0').value = wq0.word.cn
+  window.quizWriteJudgeRow(0)
+  ok(window.eval('quizScore') === 1, '第 1 行判对（score=1）')
+  ok(window.document.getElementById('quiz-write-input-0').disabled === true, '判后输入框锁定')
+  ok(window.document.getElementById('qw-result-0').textContent === '✓', '判对行就地标 ✓')
+  window.document.getElementById('quiz-write-input-1').value = '错误答案'
+  window.quizWriteJudgeRow(1)
+  ok(window.document.getElementById('qw-result-1').textContent === '✗', '判错行就地标 ✗')
+  ok((window.document.querySelector('#qw-row-1 .qw-answer') || {}).textContent === '正确答案：' + window.quizQuestions[1].word.cn, '判错行就地显示正确答案')
+  window.quizWriteDontKnow(2)
+  ok(window.eval('quizErrors.length') === 2, '想不起来立即进错题（错1 + 想不起来1）')
+  window.quizWriteJudgeRow(3)   // 空 → 判错
+  window.quizWriteJudgeRow(4)   // 空 → 判错 → 全部判完自动出结果
+  ok(window.eval('quizScore') === 1, '最终判分：仅第 1 行对（实际 ' + window.eval('quizScore') + '）')
+  ok(window.eval('quizErrors.length') === 4, '错题 4 个（填错 + 想不起来 + 2 空行，实际 ' + window.eval('quizErrors.length') + '）')
+  ok(window.document.getElementById('quiz-result').style.display === 'block', '最后一行判完 → 自动进入结果页')
+  ok((window.document.querySelector('.quiz-score') || {}).textContent === '1/5', '结果页得分 1/5（错词进易错本/历史走现有链路）')
 
   server.close()
   console.log('')

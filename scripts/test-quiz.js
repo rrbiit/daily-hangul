@@ -26,7 +26,7 @@ function fakeEl() {
     classList: { add() {}, remove() {}, contains() { return false }, toggle() {} },
     textContent: '', innerHTML: '', value: '', disabled: false,
     setAttribute() {}, getAttribute() { return null },
-    appendChild() {}, querySelectorAll() { return [] }, focus() {}
+    appendChild() {}, querySelectorAll() { return [] }, querySelector() { return null }, focus() {}
   }
 }
 function makeDom() {
@@ -76,6 +76,7 @@ const ctx = {
   addQuizSummary: () => {},
   unmarkMastered: () => {},
   getStudyDay: () => '2026-01-01',
+  updateHomeStats: () => {},
 }
 vm.createContext(ctx)
 const FILES = ['data-books.js', 'data-yonsei1.js', 'data-yonsei2.js', 'utils.js', 'confusion.js', 'quiz.js']
@@ -559,6 +560,65 @@ vm.runInContext("document.getElementById('quiz-feedback').innerHTML = ''", ctx)
 sAnswer(true)
 s9fb = vm.runInContext("document.getElementById('quiz-feedback').innerHTML", ctx)
 ok(s9fb.indexOf('再答对') !== -1, '降级回未掌握后答对 → 正常显示「再答对 x 次自动掌握」进度')
+
+console.log('── V. 写义模式（✍️ 写义：中文判分 + 批量提交）──')
+// V1: cnAnswerMatch 判分纯函数（宽容一档：义项拆分 + 去括号 + 归一化 + L1 包含）
+ok(vm.runInContext("cnAnswerMatch('先生','先生/女士')", ctx) === true, '多义项：填「先生」对')
+ok(vm.runInContext("cnAnswerMatch('女士','先生/女士')", ctx) === true, '多义项：填「女士」对')
+ok(vm.runInContext("cnAnswerMatch('什么','什么（修饰语）')", ctx) === true, '去括号注释：填「什么」对')
+ok(vm.runInContext("cnAnswerMatch('什么？','什么（修饰语）')", ctx) === true, '标点归一：填「什么？」对')
+ok(vm.runInContext("cnAnswerMatch('购买','买')", ctx) === true, 'L1 包含：答案「买」填「购买」对')
+ok(vm.runInContext("cnAnswerMatch('买','购买')", ctx) === false, '反向不做：答案「购买」填「买」错')
+ok(vm.runInContext("cnAnswerMatch('','家人')", ctx) === false, '空输入判错')
+ok(vm.runInContext("cnAnswerMatch('喝','吃/喝（敬语）')", ctx) === true, '义项拆分+去括号：填「喝」对')
+
+// V2: 写义题目结构（无选项，携带 targetKey）
+testSetMode('write')
+const v2qs = vm.runInContext('generateQuizQuestions(testPool())', ctx)
+ok(v2qs.length === 10, '写义生成 10 题')
+ok(v2qs.every(q => q.options.length === 0 && q.correctIdx === -1 && !!q.targetKey), '写义题无选项、携带 targetKey')
+
+// V3: 逐题即判（对 2 错 1，空行算错，答对走自动掌握链路，已判行重复判不生效）
+const vQ = [
+  { word: { kr: '싸다', cn: '便宜', pos: '形容词', lessonNum: 6 }, targetKey: 'yonsei1|6|싸다', options: [], optionKeys: [], correctIdx: -1, contrastKeys: [] },
+  { word: { kr: '가족', cn: '家人', pos: '名词', lessonNum: 2 }, targetKey: 'yonsei1|2|가족', options: [], optionKeys: [], correctIdx: -1, contrastKeys: [] },
+  { word: { kr: '학교', cn: '学校', pos: '名词', lessonNum: 3 }, targetKey: 'yonsei1|3|학교', options: [], optionKeys: [], correctIdx: -1, contrastKeys: [] },
+]
+vm.runInContext("srs = {}; quizMode = 'write'; quizQuestions = " + JSON.stringify(vQ) + "; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []; quizWriteRevealed = []", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-0').value = '便宜'", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-1').value = '家人'", ctx)
+vm.runInContext('quizWriteJudgeRow(0)', ctx)   // 判对
+vm.runInContext('quizWriteJudgeRow(1)', ctx)   // 判对
+vm.runInContext('quizWriteJudgeRow(2)', ctx)   // 空 → 判错；全部判完 → 自动出结果
+ok(vm.runInContext('quizScore', ctx) === 2, '逐题判分：对 2 错 1')
+ok(vm.runInContext('quizErrors.length', ctx) === 1 && vm.runInContext('quizErrors[0] && quizErrors[0].kr', ctx) === '학교', '空行判错进错题（학교）')
+ok(vm.runInContext('quizAnswers[0].correct === true && quizAnswers[2].correct === false', ctx) === true, 'quizAnswers 就地反馈标记正确')
+ok(vm.runInContext("srs['yonsei1|6|싸다'] && srs['yonsei1|6|싸다'].quizCorrect === 1 && srs['yonsei1|2|가족'] && srs['yonsei1|2|가족'].quizCorrect === 1", ctx) === true, '答对计入自动掌握累计（quizCorrect=1）')
+ok(vm.runInContext('quizWriteAllJudged()', ctx) === true, '全部判完（quizWriteAllJudged）')
+vm.runInContext('quizWriteJudgeRow(0)', ctx)
+ok(vm.runInContext('quizScore', ctx) === 2, '已判行重复判分不生效')
+
+// V4: 想不起来 → 立即记错进错题（即使填了正确字）
+vm.runInContext("srs = {}; quizMode = 'write'; quizQuestions = " + JSON.stringify(vQ) + "; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []; quizWriteRevealed = []", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-0').value = '便宜'", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-1').value = '家人'", ctx)
+vm.runInContext('quizWriteDontKnow(1)', ctx)
+ok(vm.runInContext('quizAnswers[1].correct === false', ctx) === true, '想不起来 → 立即记错（即使填了正确字）')
+ok(vm.runInContext('quizErrors.length', ctx) === 1, '想不起来 → 立即进错题')
+vm.runInContext('quizWriteJudgeRow(0)', ctx)
+vm.runInContext('quizWriteJudgeRow(2)', ctx)
+ok(vm.runInContext('quizScore', ctx) === 1, '想不起来行不计分')
+
+// V5: 最后一行回车 → 判该行 → 全部判完自动出结果（发音由 onfocus 统一驱动：点击输入框也发音）
+vm.runInContext("srs = {}; quizMode = 'write'; quizQuestions = " + JSON.stringify(vQ) + "; quizIndex = 0; quizScore = 0; quizErrors = []; quizAnswers = []; quizAutoMasteredKeys = []; quizWriteRevealed = []", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-0').value = '便宜'", ctx)
+vm.runInContext("document.getElementById('quiz-write-input-1').value = '家人'", ctx)
+vm.runInContext('quizWriteJudgeRow(0)', ctx)   // 前两行先判
+vm.runInContext('quizWriteJudgeRow(1)', ctx)
+vm.runInContext("quizWriteKey({ key: 'Enter', preventDefault: function(){} }, 2)", ctx)   // 最后一行（index 2）回车 → 判分
+ok(vm.runInContext('quizWriteAllJudged()', ctx) === true, '最后一行回车 → 全部判完')
+ok(vm.runInContext('quizScore', ctx) === 2, '判分：对 2 错 1（最后一行空）')
+testSetMode('kr-cn')
 
 console.log('── T. 词数不足 → 毛玻璃确认弹窗 ──')
 // 用 testItemByKey 构造确定词数的池（testPoolOf 会跨课重复收集，词数不确定）

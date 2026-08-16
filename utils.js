@@ -50,6 +50,43 @@
       return s.trim().replace(/\s+/g, ' ')
     }
 
+    /* ═══════════ 中文释义判分（写义模式用）═══════════ */
+    // 中文归一化：全半角 → 去掉常见中英文标点 → 去首尾空格
+    function normalizeCnMeaning(str) {
+      var s = String(str || '')
+      s = normalizeForCompare(s)
+      s = s.replace(/[，。！？；：、,.!?;:'"“”‘’（）()《》〈〉「」『』【】·…~～\-]/g, '')
+      return s
+    }
+
+    // 中文义项清单：先去掉括号注释（什么（修饰语）→ 什么），再按 / ；、 拆多个义项，
+    // 每个义项归一化后去重（数据里的多义项结构就是"允许的答案清单"）
+    function cnMeaningAlternatives(cn) {
+      var s = String(cn || '').replace(/[（(][^）)]*[）)]/g, '')
+      var out = []
+      String(s).split(/[/／;；、]/).forEach(function(p) {
+        p = normalizeCnMeaning(p)
+        if (p && out.indexOf(p) === -1) out.push(p)
+      })
+      return out
+    }
+
+    // 写义判分（宽容一档，规则可解释）：
+    // ① 任一义项与输入完全一致 → 对（先生/女士 填任一都对）
+    // ② 输入包含完整义项 → 对（多写了字也算对：答案「买」填「购买」）
+    // 反向不做：答案「购买」填「买」判错（字符串上看不出"买"是"购买"的可接受缩写，
+    // 需要时在数据里写成「购买/买」让义项清单直接包含它）
+    function cnAnswerMatch(input, cn) {
+      var inp = normalizeCnMeaning(input)
+      if (!inp) return false
+      var alts = cnMeaningAlternatives(cn)
+      for (var i = 0; i < alts.length; i++) {
+        if (inp === alts[i]) return true
+        if (inp.indexOf(alts[i]) !== -1) return true
+      }
+      return false
+    }
+
     /* ═══════════ 编辑距离（听写宽容判分用）═══════════ */
     function levenshtein(a, b) {
       a = String(a || ''); b = String(b || '')

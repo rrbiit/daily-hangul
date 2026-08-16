@@ -363,9 +363,10 @@
           <div class="tab-bar" id="quiz-mode-bar" style="margin-bottom:12px;">
             <button class="tab-btn active" data-mode="kr-cn" onclick="switchQuizMode('kr-cn')">韩→中</button>
             <button class="tab-btn" data-mode="cn-kr" onclick="switchQuizMode('cn-kr')">中→韩</button>
-            <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">🔊 听音</button>
-            <button class="tab-btn" data-mode="listen-kr" onclick="switchQuizMode('listen-kr')">🔊 听词</button>
-            <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">✍️ 听写</button>
+            <button class="tab-btn" data-mode="listen" onclick="switchQuizMode('listen')">听音</button>
+            <button class="tab-btn" data-mode="listen-kr" onclick="switchQuizMode('listen-kr')">听词</button>
+            <button class="tab-btn" data-mode="dict" onclick="switchQuizMode('dict')">听写</button>
+            <button class="tab-btn" data-mode="write" onclick="switchQuizMode('write')">写义</button>
           </div>
           <!-- 每轮题数 -->
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -415,6 +416,9 @@
             <button onclick="quizPrev()" id="quiz-prev-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--font-display);font-size:14px;cursor:pointer;">◀ 上一题</button>
             <button onclick="quizNext()" id="quiz-next-btn" style="padding:8px 20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--font-display);font-size:14px;cursor:pointer;display:none;">下一题 ▶</button>
           </div>
+
+          <!-- 写义模式：整页批量作答面板（一屏列全部词，逐题即判，无提交按钮） -->
+          <div id="quiz-write-panel" style="display:none;margin-top:6px;padding-bottom:40px;"></div>
         </div>
 
         <!-- 结果区 -->

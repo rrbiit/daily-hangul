@@ -690,6 +690,48 @@
     .quiz-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
     .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent-green)); border-radius: 3px; transition: width 0.3s; }
 
+    /* ─── 写义模式（✍️ 写义：整页批量作答）─── */
+    .qw-row {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
+    }
+    .qw-head { display: flex; align-items: center; gap: 8px; }
+    .qw-num {
+      font-size: 12px; color: var(--text-subtle); font-family: var(--font-display);
+      min-width: 18px;
+    }
+    .qw-word {
+      font-family: var(--font-display); font-size: 18px; font-weight: 500;
+      color: var(--text); word-break: keep-all;
+    }
+    .qw-speak {
+      width: 30px; height: 30px; font-size: 14px; margin-top: 0; flex-shrink: 0;
+    }
+    .qw-pos { font-size: 11px; color: var(--text-subtle); flex: 1; text-align: right; }
+    .qw-result { font-size: 18px; font-weight: 600; min-width: 20px; text-align: right; }
+    .qw-result:empty { display: none; }
+    .qw-body { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .qw-input {
+      flex: 1; min-width: 120px; padding: 10px 12px; font-size: 15px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      background: var(--bg); color: var(--text); font-family: var(--font-body);
+      outline: none; box-sizing: border-box;
+    }
+    .qw-input:focus { border-color: var(--primary); background: var(--surface); }
+    .qw-input.ok { border-color: var(--accent-green); background: var(--accent-green-light); color: #2e7d32; }
+    .qw-input.bad { border-color: var(--accent-pink); background: var(--accent-pink-light); color: #c62828; }
+    .qw-input:disabled { cursor: default; }
+    .qw-dontknow {
+      border: 1px solid var(--border); background: transparent; color: var(--text-subtle);
+      border-radius: 8px; padding: 4px 9px; font-size: 11px; cursor: pointer;
+      font-family: var(--font-body); white-space: nowrap; flex-shrink: 0;
+    }
+    .qw-dontknow:active { opacity: 0.7; }
+    .qw-answer {
+      font-size: 12px; color: var(--accent-pink); background: var(--accent-pink-light);
+      border-radius: 8px; padding: 4px 8px; display: inline-block;
+    }
+
     .quiz-result-card {
       text-align: center; padding: 36px 24px; background: var(--surface);
       border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow);
